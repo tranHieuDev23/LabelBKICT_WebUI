@@ -1,4 +1,33 @@
-<!-- NG-ZORRO -->
-<a href="https://github.com/NG-ZORRO/ng-zorro-antd" target="_blank" style="display: flex;align-items: center;justify-content: center;height: 100%;width: 100%;">
-  <img height="300" src="https://img.alicdn.com/tfs/TB1X.qJJgHqK1RjSZFgXXa7JXXa-89-131.svg">
-</a>
+<nz-layout #allContent class="app-layout">
+  <nz-header class="app-header">
+    <ul nz-menu nzTheme="dark" nzMode="horizontal">
+      <a nz-menu-item routerLink="" class="header-logo">
+        <img src="assets/image/logo-hust-igh.png" alt="logo" />
+        <h1>{{ appTitle }}</h1>
+      </a>
+
+      <li *ngFor="let menuItem of menuItemList" nz-submenu [nzTitle]="menuItem.title| emptyStringOnMobile"
+        [nzIcon]="menuItem.icon" class="header-item">
+        <ul>
+          <li *ngFor="let submenuItem of menuItem.submenuItemList" nz-menu-item>
+            <a [routerLink]="submenuItem.url">{{ submenuItem.title }}</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </nz-header>
+
+  <nz-layout>
+    <nz-content>
+      <router-outlet></router-outlet>
+    </nz-content>
+
+    <nz-footer>
+      {{ appTitle }} ©2022 by <a target="blank" href="https://github.com/tranHieuDev23">tranHieuDev23</a> <br />
+      Icon <img src="/assets/image/favicon-16x16.png" alt="Doctor Icon" /> made by <a href="https://www.freepik.com"
+        title="Freepik" target="blank">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"
+        target="blank">www.flaticon.com</a>
+    </nz-footer>
+  </nz-layout>
+</nz-layout>
+<nz-back-top></nz-back-top>
