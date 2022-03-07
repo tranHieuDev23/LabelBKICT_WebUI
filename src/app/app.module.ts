@@ -14,6 +14,7 @@ import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzBackTopModule } from 'ng-zorro-antd/back-top';
 import { EmptyStringOnMobileModule } from './pipes/empty-string-on-mobile/empty-string-on-mobile.module';
+import { Axios } from 'axios';
 
 registerLocaleData(en);
 
@@ -31,7 +32,10 @@ registerLocaleData(en);
     NzBackTopModule,
     EmptyStringOnMobileModule,
   ],
-  providers: [{ provide: NZ_I18N, useValue: en_US }],
+  providers: [
+    { provide: NZ_I18N, useValue: en_US },
+    { provide: Axios, useClass: Axios },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
