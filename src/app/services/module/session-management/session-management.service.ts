@@ -30,7 +30,7 @@ export class SessionManagementService {
     throw new Error('not implemented');
   }
 
-  public async getUserFromSession(): Promise<SessionUserInfo> {
+  public async getUserFromSession(): Promise<SessionUserInfo | null> {
     throw new Error('not implemented');
   }
 
