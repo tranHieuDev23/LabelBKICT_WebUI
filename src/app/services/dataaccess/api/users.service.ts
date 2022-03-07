@@ -52,9 +52,9 @@ export class UsersService {
 
   public async updateUser(
     id: number,
-    username: string,
-    displayName: string,
-    password: string
+    username: string | undefined,
+    displayName: string | undefined,
+    password: string | undefined
   ): Promise<User> {
     throw new Error('not implemented');
   }

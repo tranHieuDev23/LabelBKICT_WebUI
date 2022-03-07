@@ -23,8 +23,8 @@ export class PermissionsService {
 
   public async updateUserPermission(
     id: number,
-    permissionName: string,
-    description: string
+    permissionName: string | undefined,
+    description: string | undefined
   ): Promise<UserPermission> {
     throw new Error('not implemented');
   }
