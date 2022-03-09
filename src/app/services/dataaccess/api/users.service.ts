@@ -1,5 +1,11 @@
+import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Axios } from 'axios';
+import axios, { Axios } from 'axios';
+import {
+  UnauthenticatedError,
+  UnauthorizedError,
+  UnknownAPIError,
+} from './errors';
 import { User, UserRole } from './schemas';
 
 export enum UserListSortOrder {
@@ -23,6 +29,12 @@ export class UsernameTakenError extends Error {
   }
 }
 
+export class InvalidUserListArgument extends Error {
+  constructor() {
+    super('Invalid argument to retrieve user list');
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -34,7 +46,26 @@ export class UsersService {
     displayName: string,
     password: string
   ): Promise<User> {
-    throw new Error('not implemented');
+    try {
+      const response = await this.axios.post('/api/users', {
+        username: username,
+        display_name: displayName,
+        password: password,
+      });
+      return User.fromJSON(response.data);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidUserInformationError();
+        case HttpStatusCode.Conflict:
+          throw new UsernameTakenError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
   }
 
   public async getUserList(
@@ -47,7 +78,42 @@ export class UsersService {
     userList: User[];
     userRoleList: UserRole[][] | undefined;
   }> {
-    throw new Error('not implemented');
+    try {
+      const response = await this.axios.get('/api/users', {
+        params: {
+          offset: offset,
+          limit: limit,
+          sort_order: sortOrder,
+          with_user_role: withUserRole,
+        },
+      });
+
+      const totalUserCount = +response.data.total_user_count;
+      const userList = response.data.user_list.map(User.fromJSON);
+      if (!withUserRole) {
+        return { totalUserCount, userList, userRoleList: undefined };
+      }
+
+      const userRoleJSONList = response.data.user_role_list as any[];
+      const userRoleList = userRoleJSONList.map((list) =>
+        list.map(UserRole.fromJSON)
+      );
+      return { totalUserCount, userList, userRoleList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidUserListArgument();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
   }
 
   public async updateUser(
@@ -56,20 +122,81 @@ export class UsersService {
     displayName: string | undefined,
     password: string | undefined
   ): Promise<User> {
-    throw new Error('not implemented');
+    try {
+      const response = await this.axios.patch(`/api/users/${id}`, {
+        username: username,
+        display_name: displayName,
+        password: password,
+      });
+      return User.fromJSON(response.data);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidUserInformationError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.Conflict:
+          throw new UsernameTakenError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
   }
 
   public async addUserRoleToUser(
     userID: number,
     userRoleID: number
   ): Promise<void> {
-    throw new Error('not implemented');
+    try {
+      await this.axios.post(`/api/users/${userID}/roles`, {
+        user_role_id: userRoleID,
+      });
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidUserInformationError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.Conflict:
+          throw new UsernameTakenError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
   }
 
   public async removeUserRoleFromUser(
     userID: number,
     userRoleID: number
   ): Promise<void> {
-    throw new Error('not implemented');
+    try {
+      await this.axios.delete(`/api/users/${userID}/roles/${userRoleID}`);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidUserInformationError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.Conflict:
+          throw new UsernameTakenError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
   }
 }
