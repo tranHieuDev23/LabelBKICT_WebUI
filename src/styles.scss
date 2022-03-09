@@ -1,1 +1,28 @@
 /* You can add global styles to this file, and also import other style files */
+
+.carded-content {
+  padding: 36px;
+  background: #fff;
+  min-height: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 100vw;
+
+  @media (min-width: 576px) {
+    width: 540px;
+  }
+
+  @media (min-width: 768px) {
+    margin-top: 24px;
+    width: 720px;
+  }
+
+  @media (min-width: 992px) {
+    width: 960px;
+  }
+
+  @media (min-width: 1200px) {
+    width: 1140px;
+  }
+}

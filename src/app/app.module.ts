@@ -15,6 +15,7 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzBackTopModule } from 'ng-zorro-antd/back-top';
 import { EmptyStringOnMobileModule } from './pipes/empty-string-on-mobile/empty-string-on-mobile.module';
 import { Axios } from 'axios';
+import { getAxiosInstance } from './services/dataaccess/api/axios';
 
 registerLocaleData(en);
 
@@ -34,7 +35,7 @@ registerLocaleData(en);
   ],
   providers: [
     { provide: NZ_I18N, useValue: en_US },
-    { provide: Axios, useClass: Axios },
+    { provide: Axios, useFactory: getAxiosInstance },
   ],
   bootstrap: [AppComponent],
 })

@@ -1,0 +1,70 @@
+<div class="carded-content">
+    <div nz-row nzJustify="center">
+        <div nz-col nzSpan="24" nzMd="12" nzLg="8">
+            <nz-tabset>
+                <nz-tab nzTitle="Login">
+                    <form nz-form>
+                        <nz-form-item>
+                            <nz-form-control nzErrorTip="Please input your username">
+                                <nz-input-group nzPrefixIcon="user">
+                                    <input type="text" nz-input placeholder="Username" name="username"
+                                        [(ngModel)]="username" />
+                                </nz-input-group>
+                            </nz-form-control>
+                        </nz-form-item>
+                        <nz-form-item>
+                            <nz-form-control nzErrorTip="Please input your password">
+                                <nz-input-group nzPrefixIcon="lock">
+                                    <input type="password" nz-input placeholder="Password" name="password"
+                                        [(ngModel)]="password" />
+                                </nz-input-group>
+                            </nz-form-control>
+                        </nz-form-item>
+                        <button style="width: 100%;" nz-button [nzType]="'primary'" (click)="onLoginClicked()">
+                            Log in
+                        </button>
+                    </form>
+                </nz-tab>
+                <nz-tab nzTitle="Register">
+                    <form nz-form>
+                        <nz-form-item>
+                            <nz-form-control nzErrorTip="Please input your display name">
+                                <nz-input-group nzPrefixIcon="user">
+                                    <input type="text" nz-input placeholder="Display name" name="displayName"
+                                        [(ngModel)]="displayName" />
+                                </nz-input-group>
+                            </nz-form-control>
+                        </nz-form-item>
+                        <nz-form-item>
+                            <nz-form-control nzErrorTip="Please input your username">
+                                <nz-input-group nzPrefixIcon="user">
+                                    <input type="text" nz-input placeholder="Username" name="username"
+                                        [(ngModel)]="username" />
+                                </nz-input-group>
+                            </nz-form-control>
+                        </nz-form-item>
+                        <nz-form-item>
+                            <nz-form-control nzErrorTip="Please input your password">
+                                <nz-input-group nzPrefixIcon="lock">
+                                    <input type="password" nz-input placeholder="Password" name="password"
+                                        [(ngModel)]="password" />
+                                </nz-input-group>
+                            </nz-form-control>
+                        </nz-form-item>
+                        <nz-form-item>
+                            <nz-form-control nzErrorTip="Please input your password again">
+                                <nz-input-group nzPrefixIcon="lock">
+                                    <input type="password" nz-input placeholder="Verify password" name="passwordRetype"
+                                        [(ngModel)]="passwordRetype" />
+                                </nz-input-group>
+                            </nz-form-control>
+                        </nz-form-item>
+                        <button style="width: 100%;" nz-button [nzType]="'primary'" (click)="onRegisterClicked()">
+                            Register
+                        </button>
+                    </form>
+                </nz-tab>
+            </nz-tabset>
+        </div>
+    </div>
+</div>
