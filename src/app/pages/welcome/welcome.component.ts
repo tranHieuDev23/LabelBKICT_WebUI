@@ -19,16 +19,10 @@ export class WelcomeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    (async () => {
-      this.sessionUserInfo =
-        await this.sessionManagementService.getUserFromSession();
-      if (this.sessionUserInfo === null) {
-        this.router.navigateByUrl('/login');
-        return;
-      }
-    })().then(
-      () => {},
-      (error) => {}
-    );
+    this.sessionUserInfo = this.sessionManagementService.getSessionUserInfo();
+    if (this.sessionUserInfo === null) {
+      this.router.navigateByUrl('/login');
+      return;
+    }
   }
 }
