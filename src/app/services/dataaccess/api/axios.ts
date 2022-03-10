@@ -1,5 +1,5 @@
-import { Axios } from 'axios';
+import axios, { Axios } from 'axios';
 
 export function getAxiosInstance(): Axios {
-  return new Axios({});
+  return axios;
 }

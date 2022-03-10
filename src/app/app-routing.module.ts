@@ -7,7 +7,12 @@ const routes: Routes = [
     loadChildren: () =>
       import('./pages/login/login.module').then((m) => m.LoginModule),
   },
-  { path: '**', pathMatch: 'full', redirectTo: '/login' },
+  {
+    path: 'welcome',
+    loadChildren: () =>
+      import('./pages/welcome/welcome.module').then((m) => m.WelcomeModule),
+  },
+  { path: '**', pathMatch: 'full', redirectTo: '/welcome' },
 ];
 
 @NgModule({

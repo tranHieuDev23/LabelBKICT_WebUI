@@ -81,7 +81,8 @@
               "browserTarget": "label.bkict.org:build:production"
             },
             "development": {
-              "browserTarget": "label.bkict.org:build:development"
+              "browserTarget": "label.bkict.org:build:development",
+              "proxyConfig": "src/proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
