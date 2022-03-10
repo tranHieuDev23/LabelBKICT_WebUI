@@ -8,9 +8,9 @@ import {
 
 export class SessionUserInfo {
   constructor(
-    public readonly user: User,
-    public readonly userRoleList: UserRole[],
-    public readonly userPermissionList: UserPermission[]
+    public user: User,
+    public userRoleList: UserRole[],
+    public userPermissionList: UserPermission[]
   ) {}
 }
 
@@ -18,8 +18,9 @@ export class SessionUserInfo {
   providedIn: 'root',
 })
 export class SessionManagementService {
-  public readonly sessionUser: EventEmitter<SessionUserInfo> =
-    new EventEmitter<SessionUserInfo>();
+  private sessionUserInfo: SessionUserInfo | null = null;
+  private readonly sessionUserInfoEventEmitter =
+    new EventEmitter<SessionUserInfo | null>();
 
   constructor(private readonly sessionDataAccessService: SessionsService) {}
 
@@ -27,12 +28,36 @@ export class SessionManagementService {
     username: string,
     password: string
   ): Promise<SessionUserInfo> {
-    throw new Error('not implemented');
+    const sessionUserInfo =
+      await this.sessionDataAccessService.loginWithPassword(username, password);
+    this.setSessionUserInfo(sessionUserInfo);
+    return sessionUserInfo;
   }
 
   public async getUserFromSession(): Promise<SessionUserInfo | null> {
-    throw new Error('not implemented');
+    const sessionUserInfo =
+      await this.sessionDataAccessService.getUserFromSession();
+    this.setSessionUserInfo(sessionUserInfo);
+    return this.sessionUserInfo;
   }
 
-  public async logout(): Promise<void> {}
+  public async logout(): Promise<void> {
+    await this.sessionDataAccessService.logout();
+    this.setSessionUserInfo(null);
+  }
+
+  public getSessionUserInfo(): SessionUserInfo | null {
+    return this.sessionUserInfo;
+  }
+
+  public setSessionUserInfo(sessionUserInfo: SessionUserInfo | null): void {
+    this.sessionUserInfo = sessionUserInfo;
+    this.sessionUserInfoEventEmitter.emit(sessionUserInfo);
+  }
+
+  public subscribeForSessionUserInfo(
+    next: (sessionUserInfo: SessionUserInfo | null) => void
+  ) {
+    this.sessionUserInfoEventEmitter.subscribe(next);
+  }
 }

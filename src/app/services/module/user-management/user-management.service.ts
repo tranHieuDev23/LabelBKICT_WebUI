@@ -5,19 +5,27 @@ import {
   UserListSortOrder,
   UsersService,
 } from '../../dataaccess/api';
+import { SessionManagementService } from '../session-management';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserManagementService {
-  constructor(private readonly userDataAccessService: UsersService) {}
+  constructor(
+    private readonly userDataAccessService: UsersService,
+    private readonly sessionManagementService: SessionManagementService
+  ) {}
 
   public async createUser(
     username: string,
     displayName: string,
     password: string
   ): Promise<User> {
-    throw new Error('not implemented');
+    return await this.userDataAccessService.createUser(
+      username.trim(),
+      displayName.trim(),
+      password
+    );
   }
 
   public async getUserList(
@@ -30,7 +38,12 @@ export class UserManagementService {
     userList: User[];
     userRoleList: UserRole[][] | undefined;
   }> {
-    throw new Error('not implemented');
+    return await this.userDataAccessService.getUserList(
+      offset,
+      limit,
+      sortOrder,
+      withUserRole
+    );
   }
 
   public async updateUser(
@@ -39,6 +52,22 @@ export class UserManagementService {
     displayName: string | undefined,
     password: string | undefined
   ): Promise<User> {
-    throw new Error('not implemented');
+    if (username !== undefined) username = username.trim();
+    if (displayName !== undefined) displayName = displayName.trim();
+
+    const updatedUser = await this.userDataAccessService.updateUser(
+      id,
+      username,
+      displayName,
+      password
+    );
+
+    const sessionUserInfo = this.sessionManagementService.getSessionUserInfo();
+    if (sessionUserInfo?.user.id === id) {
+      sessionUserInfo.user = updatedUser;
+      this.sessionManagementService.setSessionUserInfo(sessionUserInfo);
+    }
+
+    return updatedUser;
   }
 }
