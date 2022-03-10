@@ -1,3 +1,26 @@
 <div class="carded-content">
-    Welcome, {{sessionUserInfo?.user?.displayName}}
+    <h1 nz-typography>
+        Greeting, {{sessionUserInfo?.user?.displayName}}
+    </h1>
+    <p nz-typography class="leading" nzType="secondary">
+        What would you like to do?
+    </p>
+    <div nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24, lg: 32, xl: 32, xxl: 32 }">
+        <div *ngFor="let menuItem of menuItemList" nz-col [nzSpan]="24" [nzMd]="12" [nzLg]="8">
+            <div nz-row>
+                <div nz-col nzSpan="24">
+                    <h2 nz-typography>
+                        <i nz-icon [nzType]="menuItem.icon" nzTheme="outline"></i> {{ menuItem.title }}
+                    </h2>
+                </div>
+                <div *ngFor="let submenuItem of menuItem.submenuItemList" nz-col nzSpan="24">
+                    <h3 nz-typography>
+                        <a [routerLink]="submenuItem.url">
+                            {{ submenuItem.title }}
+                        </a>
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
