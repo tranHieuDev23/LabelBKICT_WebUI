@@ -16,6 +16,8 @@ import { NzBackTopModule } from 'ng-zorro-antd/back-top';
 import { EmptyStringOnMobileModule } from './pipes/empty-string-on-mobile/empty-string-on-mobile.module';
 import { Axios } from 'axios';
 import { getAxiosInstance } from './services/dataaccess/api/axios';
+import { UserLoggedInGuard } from './services/utils/route-guards/logged-in-guard';
+import { UserLoggedOutGuard } from './services/utils/route-guards/logged-out-guard';
 
 registerLocaleData(en);
 
@@ -34,6 +36,8 @@ registerLocaleData(en);
     EmptyStringOnMobileModule,
   ],
   providers: [
+    UserLoggedInGuard,
+    UserLoggedOutGuard,
     { provide: NZ_I18N, useValue: en_US },
     { provide: Axios, useFactory: getAxiosInstance },
   ],

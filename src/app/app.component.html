@@ -9,7 +9,7 @@
       <li *ngFor="let menuItem of menuItemList" nz-submenu [nzTitle]="menuItem.title| emptyStringOnMobile"
         [nzIcon]="menuItem.icon" class="header-item">
         <ul>
-          <li *ngFor="let submenuItem of menuItem.submenuItemList" nz-menu-item>
+          <li *ngFor="let submenuItem of menuItem.submenuItemList" nz-menu-item (click)="submenuItem.onClick()">
             <a [routerLink]="submenuItem.url">{{ submenuItem.title }}</a>
           </li>
         </ul>

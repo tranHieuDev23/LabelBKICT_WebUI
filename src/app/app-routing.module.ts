@@ -1,16 +1,20 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { UserLoggedInGuard } from './services/utils/route-guards/logged-in-guard';
+import { UserLoggedOutGuard } from './services/utils/route-guards/logged-out-guard';
 
 const routes: Routes = [
   {
     path: 'login',
     loadChildren: () =>
       import('./pages/login/login.module').then((m) => m.LoginModule),
+    canActivate: [UserLoggedOutGuard],
   },
   {
     path: 'welcome',
     loadChildren: () =>
       import('./pages/welcome/welcome.module').then((m) => m.WelcomeModule),
+    canActivate: [UserLoggedInGuard],
   },
   { path: '**', pathMatch: 'full', redirectTo: '/welcome' },
 ];

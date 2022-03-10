@@ -5,6 +5,7 @@ import {
   UserPermission,
   SessionsService,
 } from '../../dataaccess/api';
+import { UnauthenticatedError } from '../../dataaccess/api/errors';
 
 export class SessionUserInfo {
   constructor(
@@ -35,10 +36,18 @@ export class SessionManagementService {
   }
 
   public async getUserFromSession(): Promise<SessionUserInfo | null> {
-    const sessionUserInfo =
-      await this.sessionDataAccessService.getUserFromSession();
-    this.setSessionUserInfo(sessionUserInfo);
-    return this.sessionUserInfo;
+    try {
+      const sessionUserInfo =
+        await this.sessionDataAccessService.getUserFromSession();
+      this.setSessionUserInfo(sessionUserInfo);
+      return sessionUserInfo;
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.setSessionUserInfo(null);
+        return null;
+      }
+      throw e;
+    }
   }
 
   public async logout(): Promise<void> {
