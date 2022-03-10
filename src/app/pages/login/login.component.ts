@@ -41,6 +41,10 @@ export class LoginComponent {
         this.displayName,
         this.password
       );
+      await this.sessionManagementService.loginWithPassword(
+        this.username,
+        this.password
+      );
       this.router.navigateByUrl('/welcome');
     } catch (e) {}
   }
