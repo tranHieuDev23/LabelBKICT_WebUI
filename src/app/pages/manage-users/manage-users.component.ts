@@ -36,6 +36,12 @@ export class ManageUsersComponent implements OnInit {
   public userList: User[] = [];
   public userRoleList: UserRole[][] = [];
 
+  public isCreateNewUserModalVisible: boolean = false;
+  public createNewUserDisplayName: string = '';
+  public createNewUserUsername: string = '';
+  public createNewUserPassword: string = '';
+  public createNewUserPasswordRetype: string = '';
+
   constructor(
     private readonly userManagementService: UserManagementService,
     private readonly activatedRoute: ActivatedRoute,
@@ -45,19 +51,7 @@ export class ManageUsersComponent implements OnInit {
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe((params) => {
       this.getPaginationInfoFromQueryParams(params);
-      (async () => {
-        const offset = this.getCurrentPageOffset();
-        const { totalUserCount, userList, userRoleList } =
-          await this.userManagementService.getUserList(
-            offset,
-            this.pageSize,
-            this.sortOrder,
-            true
-          );
-        this.totalUserCount = totalUserCount;
-        this.userList = userList;
-        this.userRoleList = userRoleList || [];
-      })().then(
+      this.loadPageData().then(
         () => {},
         (error) => {
           console.error(error);
@@ -76,6 +70,20 @@ export class ManageUsersComponent implements OnInit {
     if (params['sort'] !== undefined) {
       this.sortOrder = +params['sort'];
     }
+  }
+
+  private async loadPageData(): Promise<void> {
+    const offset = this.getCurrentPageOffset();
+    const { totalUserCount, userList, userRoleList } =
+      await this.userManagementService.getUserList(
+        offset,
+        this.pageSize,
+        this.sortOrder,
+        true
+      );
+    this.totalUserCount = totalUserCount;
+    this.userList = userList;
+    this.userRoleList = userRoleList || [];
   }
 
   private getCurrentPageOffset(): number {
@@ -113,5 +121,30 @@ export class ManageUsersComponent implements OnInit {
         sort: sortOrder,
       },
     });
+  }
+
+  public onCreateNewUserClicked(): void {
+    this.createNewUserDisplayName = '';
+    this.createNewUserUsername = '';
+    this.createNewUserPassword = '';
+    this.createNewUserPasswordRetype = '';
+    this.isCreateNewUserModalVisible = true;
+  }
+
+  public onCreateNewUserModalCancel(): void {
+    this.isCreateNewUserModalVisible = false;
+  }
+
+  public async onCreateNewUserModalOk(): Promise<void> {
+    if (this.createNewUserPassword !== this.createNewUserPasswordRetype) {
+      return;
+    }
+    await this.userManagementService.createUser(
+      this.createNewUserUsername,
+      this.createNewUserDisplayName,
+      this.createNewUserPassword
+    );
+    await this.loadPageData();
+    this.isCreateNewUserModalVisible = false;
   }
 }

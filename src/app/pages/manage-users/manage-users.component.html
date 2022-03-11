@@ -2,6 +2,9 @@
     <h1 nz-typography>
         Manage users
     </h1>
+    <button nz-button nzType="primary" class="create-new-user-btn" (click)="onCreateNewUserClicked()">
+        <i nz-icon nzType="user-add" nzTheme="outline"></i> Create a new user
+    </button>
     <ul nz-list [nzDataSource]="userList" nzBordered nzItemLayout="vertical">
         <nz-list-header>
             Sort by:
@@ -34,3 +37,43 @@
         </nz-list-footer>
     </ul>
 </div>
+
+<nz-modal [(nzVisible)]="isCreateNewUserModalVisible" nzTitle="Create a new user"
+    (nzOnCancel)="onCreateNewUserModalCancel()" (nzOnOk)="onCreateNewUserModalOk()">
+    <ng-container *nzModalContent>
+        <form nz-form>
+            <nz-form-item>
+                <nz-form-control nzErrorTip="Please input the new user's display name">
+                    <nz-input-group nzPrefixIcon="user">
+                        <input type="text" nz-input placeholder="Display name" name="displayName"
+                            [(ngModel)]="createNewUserDisplayName" />
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-control nzErrorTip="Please input the new user's username">
+                    <nz-input-group nzPrefixIcon="user">
+                        <input type="text" nz-input placeholder="Username" name="username"
+                            [(ngModel)]="createNewUserUsername" />
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-control nzErrorTip="Please input the new user's password">
+                    <nz-input-group nzPrefixIcon="lock">
+                        <input type="password" nz-input placeholder="Password" name="password"
+                            [(ngModel)]="createNewUserPassword" />
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-control nzErrorTip="Please input the new user's password again">
+                    <nz-input-group nzPrefixIcon="lock">
+                        <input type="password" nz-input placeholder="Verify password" name="passwordRetype"
+                            [(ngModel)]="createNewUserPasswordRetype" />
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+    </ng-container>
+</nz-modal>
