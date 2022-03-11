@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "label.bkict.org": {
+    "label_bkict_org": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -78,10 +78,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "label.bkict.org:build:production"
+              "browserTarget": "label_bkict_org:build:production"
             },
             "development": {
-              "browserTarget": "label.bkict.org:build:development",
+              "browserTarget": "label_bkict_org:build:development",
               "proxyConfig": "src/proxy.conf.json"
             }
           },
@@ -90,7 +90,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "label.bkict.org:build"
+            "browserTarget": "label_bkict_org:build"
           }
         },
         "test": {
@@ -110,9 +110,21 @@
             ],
             "scripts": []
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     }
   },
-  "defaultProject": "label.bkict.org"
+  "defaultProject": "label_bkict_org",
+  "cli": {
+    "defaultCollection": "@angular-eslint/schematics"
+  }
 }
