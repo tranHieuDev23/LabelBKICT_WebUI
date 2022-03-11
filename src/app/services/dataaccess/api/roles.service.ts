@@ -94,7 +94,7 @@ export class RolesService {
           offset: offset,
           limit: limit,
           sort_order: sortOrder,
-          with_user_permission: withUserPermission,
+          with_user_permission: withUserPermission ? 1 : 0,
         },
       });
 

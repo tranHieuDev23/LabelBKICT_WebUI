@@ -84,7 +84,7 @@ export class UsersService {
           offset: offset,
           limit: limit,
           sort_order: sortOrder,
-          with_user_role: withUserRole,
+          with_user_role: withUserRole ? 1 : 0,
         },
       });
 

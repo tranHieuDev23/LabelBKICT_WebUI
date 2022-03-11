@@ -16,6 +16,14 @@ const routes: Routes = [
       import('./pages/welcome/welcome.module').then((m) => m.WelcomeModule),
     canActivate: [UserLoggedInGuard],
   },
+  {
+    path: 'manage-users',
+    loadChildren: () =>
+      import('./pages/manage-users/manage-users.module').then(
+        (m) => m.ManageUsersModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
   { path: '**', pathMatch: 'full', redirectTo: '/welcome' },
 ];
 

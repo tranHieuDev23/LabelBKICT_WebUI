@@ -5,6 +5,7 @@ import {
   Router,
   UrlTree,
 } from '@angular/router';
+import { UserPermission } from '../../dataaccess/api';
 import {
   SessionManagementService,
   SessionUserInfo,
@@ -38,10 +39,23 @@ class UserLoggedInGuard implements CanActivate {
     if (route.url.length === 0) {
       return true;
     }
+    const userPermissionNameSet = this.getUserPermissionNameSet(
+      sessionUserInfo.userPermissionList
+    );
     switch (route.url[0].path) {
+      case 'manage-users':
+        return userPermissionNameSet.has('users.write');
       default:
         return true;
     }
+  }
+
+  private getUserPermissionNameSet(
+    userPermissionList: UserPermission[]
+  ): Set<string> {
+    return new Set<string>(
+      userPermissionList.map((userPermission) => userPermission.permissionName)
+    );
   }
 }
 

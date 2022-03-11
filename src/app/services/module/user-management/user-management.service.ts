@@ -62,7 +62,8 @@ export class UserManagementService {
       password
     );
 
-    const sessionUserInfo = this.sessionManagementService.getSessionUserInfo();
+    const sessionUserInfo =
+      await this.sessionManagementService.getUserFromSession();
     if (sessionUserInfo?.user.id === id) {
       sessionUserInfo.user = updatedUser;
       this.sessionManagementService.setSessionUserInfo(sessionUserInfo);

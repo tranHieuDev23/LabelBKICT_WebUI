@@ -33,14 +33,18 @@ export class WelcomeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const sessionUserInfo = this.sessionManagementService.getSessionUserInfo();
-    if (sessionUserInfo === null) {
-      this.router.navigateByUrl('/login');
-      return;
-    }
-
-    this.sessionUserInfo = sessionUserInfo;
-    this.updateMenuItemList(sessionUserInfo);
+    (async () => {
+      this.sessionUserInfo =
+        await this.sessionManagementService.getUserFromSession();
+      if (this.sessionUserInfo === null) {
+        this.router.navigateByUrl('/login');
+        return;
+      }
+      this.updateMenuItemList(this.sessionUserInfo);
+    })().then(
+      () => {},
+      () => {}
+    );
   }
 
   private updateMenuItemList(sessionUserInfo: SessionUserInfo): void {

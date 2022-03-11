@@ -19,7 +19,7 @@ export class SessionUserInfo {
   providedIn: 'root',
 })
 export class SessionManagementService {
-  private sessionUserInfo: SessionUserInfo | null = null;
+  private sessionUserInfo: SessionUserInfo | null | undefined = undefined;
   private readonly sessionUserInfoEventEmitter =
     new EventEmitter<SessionUserInfo | null>();
 
@@ -36,6 +36,9 @@ export class SessionManagementService {
   }
 
   public async getUserFromSession(): Promise<SessionUserInfo | null> {
+    if (this.sessionUserInfo !== undefined) {
+      return this.sessionUserInfo;
+    }
     try {
       const sessionUserInfo =
         await this.sessionDataAccessService.getUserFromSession();
@@ -53,10 +56,6 @@ export class SessionManagementService {
   public async logout(): Promise<void> {
     await this.sessionDataAccessService.logout();
     this.setSessionUserInfo(null);
-  }
-
-  public getSessionUserInfo(): SessionUserInfo | null {
-    return this.sessionUserInfo;
   }
 
   public setSessionUserInfo(sessionUserInfo: SessionUserInfo | null): void {
