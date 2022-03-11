@@ -25,7 +25,7 @@
             </nz-list-item-meta>
             <ul nz-list-item-actions>
                 <nz-list-item-action>
-                    <a>Edit</a>
+                    <a (click)="onEditUserClicked(i)">Edit</a>
                 </nz-list-item-action>
             </ul>
         </li>
@@ -75,5 +75,55 @@
                 </nz-form-control>
             </nz-form-item>
         </form>
+    </ng-container>
+</nz-modal>
+
+<nz-modal [(nzVisible)]="isEditUserModalVisible" nzTitle="Edit user information" [nzFooter]="null"
+    (nzOnCancel)="onEditUserModalCancel()">
+    <ng-container *nzModalContent>
+        <nz-collapse nzAccordion>
+            <nz-collapse-panel nzHeader="User information" [nzActive]="true">
+                <form nz-form>
+                    <nz-form-item>
+                        <nz-form-control nzErrorTip="Please input the user's new display name">
+                            <nz-input-group nzPrefixIcon="user">
+                                <input type="text" nz-input placeholder="Display name" name="displayName"
+                                    [(ngModel)]="editUserModalDisplayName" />
+                            </nz-input-group>
+                        </nz-form-control>
+                    </nz-form-item>
+                    <nz-form-item>
+                        <nz-form-control nzErrorTip="Please input the user's new username">
+                            <nz-input-group nzPrefixIcon="user">
+                                <input type="text" nz-input placeholder="Username" name="username"
+                                    [(ngModel)]="editUserModalUsername" />
+                            </nz-input-group>
+                        </nz-form-control>
+                    </nz-form-item>
+                    <nz-form-item>
+                        <nz-form-control nzErrorTip="Please input the user's new password">
+                            <nz-input-group nzPrefixIcon="lock">
+                                <input type="password" nz-input placeholder="Password (leave blank to not change)"
+                                    name="password" [(ngModel)]="editUserModalPassword" />
+                            </nz-input-group>
+                        </nz-form-control>
+                    </nz-form-item>
+                    <nz-form-item>
+                        <nz-form-control nzErrorTip="Please input the new user's password again">
+                            <nz-input-group nzPrefixIcon="lock">
+                                <input type="password" nz-input placeholder="Verify password" name="passwordRetype"
+                                    [(ngModel)]="editUserModalPasswordRetype" />
+                            </nz-input-group>
+                        </nz-form-control>
+                    </nz-form-item>
+                </form>
+                <button nz-button [nzType]="'primary'" (click)="onEditUserModalSubmitClicked()">
+                    Submit
+                </button>
+            </nz-collapse-panel>
+            <nz-collapse-panel nzHeader="Assigned roles">
+
+            </nz-collapse-panel>
+        </nz-collapse>
     </ng-container>
 </nz-modal>

@@ -42,6 +42,14 @@ export class ManageUsersComponent implements OnInit {
   public createNewUserPassword: string = '';
   public createNewUserPasswordRetype: string = '';
 
+  public isEditUserModalVisible: boolean = false;
+  public editUserModalUserID: number = 0;
+  public editUserModalDisplayName: string = '';
+  public editUserModalUsername: string = '';
+  public editUserModalPassword: string = '';
+  public editUserModalPasswordRetype: string = '';
+  public editUserModalUserRoleList: UserRole[] | null = null;
+
   constructor(
     private readonly userManagementService: UserManagementService,
     private readonly activatedRoute: ActivatedRoute,
@@ -146,5 +154,37 @@ export class ManageUsersComponent implements OnInit {
     );
     await this.loadPageData();
     this.isCreateNewUserModalVisible = false;
+  }
+
+  public onEditUserClicked(index: number): void {
+    this.editUserModalUserID = this.userList[index].id;
+    this.editUserModalDisplayName = this.userList[index].displayName;
+    this.editUserModalUsername = this.userList[index].username;
+    this.editUserModalPassword = '';
+    this.editUserModalPasswordRetype = '';
+    this.editUserModalUserRoleList = this.userRoleList[index];
+    this.isEditUserModalVisible = true;
+  }
+
+  public onEditUserModalCancel(): void {
+    this.isEditUserModalVisible = false;
+  }
+
+  public async onEditUserModalSubmitClicked(): Promise<void> {
+    let newPassword: string | undefined = undefined;
+    if (this.editUserModalPassword !== '') {
+      if (this.editUserModalPassword !== this.editUserModalPasswordRetype) {
+        return;
+      }
+      newPassword = this.editUserModalPassword;
+    }
+    await this.userManagementService.updateUser(
+      this.editUserModalUserID,
+      this.editUserModalUsername,
+      this.editUserModalDisplayName,
+      newPassword
+    );
+    await this.loadPageData();
+    this.isEditUserModalVisible = false;
   }
 }

@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzCollapseModule } from 'ng-zorro-antd/collapse';
 
 @NgModule({
   declarations: [ManageUsersComponent],
@@ -19,6 +20,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
     CommonModule,
     ManageUsersRoutingModule,
     NzButtonModule,
+    NzCollapseModule,
     NzFormModule,
     NzIconModule,
     NzInputModule,
