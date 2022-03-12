@@ -24,6 +24,22 @@ const routes: Routes = [
       ),
     canActivate: [UserLoggedInGuard],
   },
+  {
+    path: 'manage-roles',
+    loadChildren: () =>
+      import('./pages/manage-roles/manage-roles.module').then(
+        (m) => m.ManageRolesModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
+  {
+    path: 'manage-permissions',
+    loadChildren: () =>
+      import('./pages/manage-permissions/manage-permissions.module').then(
+        (m) => m.ManagePermissionsModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
   { path: '**', pathMatch: 'full', redirectTo: '/welcome' },
 ];
 
