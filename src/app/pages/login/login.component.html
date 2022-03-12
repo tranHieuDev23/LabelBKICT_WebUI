@@ -37,16 +37,13 @@
                                         name="displayName" nzRequired />
                                     <ng-template #displayNameErrorTpl let-control>
                                         <ng-container *ngIf="control.errors.required">
-                                            Please enter your username
+                                            Please enter your display name
                                         </ng-container>
                                         <ng-container *ngIf="control.errors.minLength">
-                                            Username must be at least 6 character long
+                                            Display name must be at least 1 character long
                                         </ng-container>
                                         <ng-container *ngIf="control.errors.maxLength">
-                                            Username must not be longer than 64 character
-                                        </ng-container>
-                                        <ng-container *ngIf="control.errors.pattern">
-                                            Username must only contain English letters and digits
+                                            Display name must not be longer than 256 character
                                         </ng-container>
                                     </ng-template>
                                 </nz-input-group>
