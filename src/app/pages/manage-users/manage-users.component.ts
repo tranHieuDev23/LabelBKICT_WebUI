@@ -54,10 +54,7 @@ export class ManageUsersComponent implements OnInit {
   public isEditUserModalVisible: boolean = false;
   public editUserModalUserListItemIndex: number = 0;
   public editUserModalUserID: number = 0;
-  public editUserModalDisplayName: string = '';
-  public editUserModalUsername: string = '';
-  public editUserModalPassword: string = '';
-  public editUserModalPasswordRetype: string = '';
+  public editUserModalFormGroup: FormGroup;
 
   public isAddUserRoleModalVisible: boolean = false;
   public addUserRoleModalSortOrderOptions: {
@@ -98,13 +95,35 @@ export class ManageUsersComponent implements OnInit {
     private readonly router: Router,
     formBuilder: FormBuilder
   ) {
-    this.createNewUserModalFormGroup = formBuilder.group({
-      displayName: ['', [Validators.required, this.displayNameValidator()]],
-      username: ['', [Validators.required, this.usernameValidator()]],
-      password: ['', [Validators.required, this.passwordValidator()]],
-      passwordConfirm: ['', [Validators.required]],
-    });
+    this.createNewUserModalFormGroup = formBuilder.group(
+      {
+        displayName: ['', [Validators.required, this.displayNameValidator()]],
+        username: ['', [Validators.required, this.usernameValidator()]],
+        password: ['', [Validators.required, this.passwordValidator()]],
+        passwordConfirm: ['', [Validators.required]],
+      },
+      {
+        validator: [ConfirmedValidator('password', 'passwordConfirm')],
+      }
+    );
     this.createNewUserModalFormGroup.reset({
+      displayName: '',
+      username: '',
+      password: '',
+      passwordType: '',
+    });
+    this.editUserModalFormGroup = formBuilder.group(
+      {
+        displayName: ['', [Validators.required, this.displayNameValidator()]],
+        username: ['', [Validators.required, this.usernameValidator()]],
+        password: ['', [this.passwordValidator()]],
+        passwordConfirm: ['', []],
+      },
+      {
+        validator: [ConfirmedValidator('password', 'passwordConfirm')],
+      }
+    );
+    this.editUserModalFormGroup.reset({
       displayName: '',
       username: '',
       password: '',
@@ -236,10 +255,12 @@ export class ManageUsersComponent implements OnInit {
   public onEditUserClicked(index: number): void {
     this.editUserModalUserListItemIndex = index;
     this.editUserModalUserID = this.userList[index].id;
-    this.editUserModalDisplayName = this.userList[index].displayName;
-    this.editUserModalUsername = this.userList[index].username;
-    this.editUserModalPassword = '';
-    this.editUserModalPasswordRetype = '';
+    this.editUserModalFormGroup.reset({
+      displayName: this.userList[index].displayName,
+      username: this.userList[index].username,
+      password: '',
+      passwordConfirm: '',
+    });
     this.isEditUserModalVisible = true;
   }
 
@@ -248,17 +269,16 @@ export class ManageUsersComponent implements OnInit {
   }
 
   public async onEditUserModalSubmitClicked(): Promise<void> {
+    const { displayName, username, formPassword } =
+      this.editUserModalFormGroup.value;
     let newPassword: string | undefined = undefined;
-    if (this.editUserModalPassword !== '') {
-      if (this.editUserModalPassword !== this.editUserModalPasswordRetype) {
-        return;
-      }
-      newPassword = this.editUserModalPassword;
+    if (formPassword !== '') {
+      newPassword = formPassword;
     }
     await this.userManagementService.updateUser(
       this.editUserModalUserID,
-      this.editUserModalUsername,
-      this.editUserModalDisplayName,
+      username,
+      displayName,
       newPassword
     );
     await this.loadPageUserList();
