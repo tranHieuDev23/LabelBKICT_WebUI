@@ -41,36 +41,80 @@
 <nz-modal [(nzVisible)]="isCreateNewUserModalVisible" nzTitle="Create a new user"
     (nzOnCancel)="onCreateNewUserModalCancel()" (nzOnOk)="onCreateNewUserModalOk()">
     <ng-container *nzModalContent>
-        <form nz-form>
+        <form nz-form [formGroup]="createNewUserModalFormGroup">
             <nz-form-item>
-                <nz-form-control nzErrorTip="Please input the new user's display name">
+                <nz-form-control [nzErrorTip]="displayNameErrorTpl">
                     <nz-input-group nzPrefixIcon="user">
-                        <input type="text" nz-input placeholder="Display name" name="displayName"
-                            [(ngModel)]="createNewUserDisplayName" />
+                        <input type="text" nz-input formControlName="displayName" placeholder="Display name"
+                            name="displayName" nzRequired />
+                        <ng-template #displayNameErrorTpl let-control>
+                            <ng-container *ngIf="control.errors.required">
+                                Please enter your display name
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.minLength">
+                                Display name must be at least 1 character long
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.maxLength">
+                                Display name must not be longer than 256 character
+                            </ng-container>
+                        </ng-template>
                     </nz-input-group>
                 </nz-form-control>
             </nz-form-item>
+
             <nz-form-item>
-                <nz-form-control nzErrorTip="Please input the new user's username">
+                <nz-form-control [nzErrorTip]="usernameErrorTpl">
                     <nz-input-group nzPrefixIcon="user">
-                        <input type="text" nz-input placeholder="Username" name="username"
-                            [(ngModel)]="createNewUserUsername" />
+                        <input type="text" formControlName="username" nz-input placeholder="Username" name="username"
+                            nzRequired />
+                        <ng-template #usernameErrorTpl let-control>
+                            <ng-container *ngIf="control.errors.required">
+                                Please enter your username
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.minLength">
+                                Username must be at least 6 character long
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.maxLength">
+                                Username must not be longer than 64 character
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.pattern">
+                                Username must only contain English letters and digits
+                            </ng-container>
+                        </ng-template>
                     </nz-input-group>
                 </nz-form-control>
             </nz-form-item>
+
             <nz-form-item>
-                <nz-form-control nzErrorTip="Please input the new user's password">
+                <nz-form-control [nzErrorTip]="passwordErrorTpl">
                     <nz-input-group nzPrefixIcon="lock">
-                        <input type="password" nz-input placeholder="Password" name="password"
-                            [(ngModel)]="createNewUserPassword" />
+                        <input type="password" nz-input formControlName="password" placeholder="Password"
+                            name="password" nzRequired />
+                        <ng-template #passwordErrorTpl let-control>
+                            <ng-container *ngIf="control.errors.required">
+                                Please enter your password
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.minLength">
+                                Password must be at least 8 character long
+                            </ng-container>
+                        </ng-template>
                     </nz-input-group>
                 </nz-form-control>
             </nz-form-item>
+
             <nz-form-item>
-                <nz-form-control nzErrorTip="Please input the new user's password again">
+                <nz-form-control [nzErrorTip]="passwordRetypeErrorTpl">
                     <nz-input-group nzPrefixIcon="lock">
-                        <input type="password" nz-input placeholder="Verify password" name="passwordRetype"
-                            [(ngModel)]="createNewUserPasswordRetype" />
+                        <input type="password" nz-input formControlName="passwordRetype" placeholder="Verify password"
+                            name="passwordRetype" nzRequired />
+                        <ng-template #passwordRetypeErrorTpl let-control>
+                            <ng-container *ngIf="control.errors.required">
+                                Please confirm your password
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.equal">
+                                Two passwords that you entered are not equal
+                            </ng-container>
+                        </ng-template>
                     </nz-input-group>
                 </nz-form-control>
             </nz-form-item>

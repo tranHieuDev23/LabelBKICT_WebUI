@@ -1,4 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ValidatorFn,
+} from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import {
   User,
@@ -6,6 +12,7 @@ import {
   UserRole,
   UserRoleListSortOrder,
 } from 'src/app/services/dataaccess/api';
+import { SessionManagementService } from 'src/app/services/module/session-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
 import { UserRoleManagementService } from 'src/app/services/module/user-role-management';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
@@ -40,10 +47,7 @@ export class ManageUsersComponent implements OnInit {
   public userRoleList: UserRole[][] = [];
 
   public isCreateNewUserModalVisible: boolean = false;
-  public createNewUserDisplayName: string = '';
-  public createNewUserUsername: string = '';
-  public createNewUserPassword: string = '';
-  public createNewUserPasswordRetype: string = '';
+  public createNewUserModalFormGroup: FormGroup;
 
   public isEditUserModalVisible: boolean = false;
   public editUserModalUserListItemIndex: number = 0;
@@ -85,11 +89,61 @@ export class ManageUsersComponent implements OnInit {
 
   constructor(
     private readonly userManagementService: UserManagementService,
+    private readonly sessionManagementService: SessionManagementService,
     private readonly userRoleManagementService: UserRoleManagementService,
     private readonly paginationService: PaginationService,
     private readonly activatedRoute: ActivatedRoute,
-    private readonly router: Router
-  ) {}
+    private readonly router: Router,
+    formBuilder: FormBuilder
+  ) {
+    this.createNewUserModalFormGroup = formBuilder.group({
+      displayName: ['', [this.displayNameValidator()]],
+      username: ['', [this.usernameValidator()]],
+      password: ['', [this.passwordValidator()]],
+      passwordRetype: ['', [this.passwordRetypeValidator()]],
+    });
+    this.createNewUserModalFormGroup.reset({
+      displayName: '',
+      username: '',
+      password: '',
+      passwordType: '',
+    });
+  }
+
+  private usernameValidator(): ValidatorFn {
+    return (control: AbstractControl): { [k: string]: boolean } | null => {
+      const username: string = control.value;
+      return this.userManagementService.isValidUsername(username);
+    };
+  }
+
+  private displayNameValidator(): ValidatorFn {
+    return (control: AbstractControl): { [k: string]: boolean } | null => {
+      const displayName: string = control.value;
+      return this.userManagementService.isValidDisplayName(displayName);
+    };
+  }
+
+  private passwordValidator(): ValidatorFn {
+    return (control: AbstractControl): { [k: string]: boolean } | null => {
+      const password: string = control.value;
+      return this.sessionManagementService.isValidPassword(password);
+    };
+  }
+
+  private passwordRetypeValidator(): ValidatorFn {
+    return (control: AbstractControl): { [k: string]: boolean } | null => {
+      const passwordRetype: string = control.value;
+      if (passwordRetype === '') {
+        return { error: true, required: true };
+      }
+      const password: string = this.createNewUserModalFormGroup?.value.password;
+      if (passwordRetype !== password) {
+        return { error: true, equal: true };
+      }
+      return null;
+    };
+  }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe((params) => {
@@ -166,10 +220,12 @@ export class ManageUsersComponent implements OnInit {
   }
 
   public onCreateNewUserClicked(): void {
-    this.createNewUserDisplayName = '';
-    this.createNewUserUsername = '';
-    this.createNewUserPassword = '';
-    this.createNewUserPasswordRetype = '';
+    this.createNewUserModalFormGroup.reset({
+      displayName: '',
+      username: '',
+      password: '',
+      passwordType: '',
+    });
     this.isCreateNewUserModalVisible = true;
   }
 
@@ -178,13 +234,12 @@ export class ManageUsersComponent implements OnInit {
   }
 
   public async onCreateNewUserModalOk(): Promise<void> {
-    if (this.createNewUserPassword !== this.createNewUserPasswordRetype) {
-      return;
-    }
+    const { displayName, username, password } =
+      this.createNewUserModalFormGroup.value;
     await this.userManagementService.createUser(
-      this.createNewUserUsername,
-      this.createNewUserDisplayName,
-      this.createNewUserPassword
+      username,
+      displayName,
+      password
     );
     await this.loadPageUserList();
     this.isCreateNewUserModalVisible = false;
