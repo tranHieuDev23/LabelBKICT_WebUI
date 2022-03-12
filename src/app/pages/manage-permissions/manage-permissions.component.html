@@ -1,1 +1,155 @@
-<p>manage-permissions works!</p>
+<div class="carded-content">
+    <h1 nz-typography>
+        Manage user permissions
+    </h1>
+
+    <button nz-button nzType="primary" class="create-new-user-permission-btn"
+        (click)="onCreateNewUserPermissionClicked()">
+        <i nz-icon nzType="user-add" nzTheme="outline"></i> Create a new user permission
+    </button>
+
+    <nz-tree [nzData]="permissionTreeRootList" [nzTreeTemplate]="permissionTreeTemplate"></nz-tree>
+
+    <ng-template #permissionTreeTemplate let-node let-origin="origin">
+        <span class="permission-tree-node">
+            <span *ngIf="!node.isLeaf">
+                <i nz-icon [nzType]="node.isExpanded ? 'folder-open' : 'folder'"></i>
+                <span class="permission-tree-node-title" nz-typography>{{ node.title }}</span>
+            </span>
+            <span *ngIf="node.isLeaf">
+                <i nz-icon nzType="user"></i>
+                <strong class="permission-tree-node-title" nz-typography>
+                    {{ node.title }}
+                </strong>
+                <a nz-typography (click)="onUpdateUserPermissionClicked(origin.userPermission)">
+                    <i nz-icon nzType="edit"></i>
+                </a>
+                <a nz-typography nzType="danger">
+                    <i nz-icon nzType="delete"></i>
+                </a> <br />
+                <span class="permission-tree-node-description" nz-typography>
+                    {{ origin.userPermission.description }}
+                </span>
+            </span>
+        </span>
+    </ng-template>
+</div>
+<nz-modal [(nzVisible)]="isCreateNewUserPermissionModalVisible" nzTitle="Create new user permission"
+    [nzOkDisabled]="createNewUserPermissionModalFormGroup.invalid" (nzOnCancel)="onNewUserPermissionModalCancel()"
+    (nzOnOk)="onNewUserPermissionModalOk()">
+    <ng-container *nzModalContent>
+        <form nz-form [formGroup]="createNewUserPermissionModalFormGroup">
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="permissionNameErrorTpl">
+                    <nz-input-group nzPrefixIcon="user">
+                        <input type="text" nz-input formControlName="permissionName" placeholder="Permission name"
+                            name="permissionName" nzRequired />
+                        <ng-template #permissionNameErrorTpl let-control>
+                            <ng-container *ngIf="control.errors.required">
+                                Please enter your permission name
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.minLength">
+                                Permission name must be at least 1 character long
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.maxLength">
+                                Permission name must not be longer than 256 character
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.pattern">
+                                Permission name must only contain English characters, digits, underscore (_) and dot (.)
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.startDot">
+                                Permission name cannot start with a dot character (.)
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.endDot">
+                                Permission name cannot end with a dot character (.)
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.twoDot">
+                                Permission name cannot have two consecutive dot characters (.)
+                            </ng-container>
+                        </ng-template>
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="descriptionErrorTpl">
+                    <nz-input-group nzPrefixIcon="info-circle">
+                        <input type="text" nz-input formControlName="description" placeholder="Description"
+                            name="description" nzRequired />
+                        <ng-template #descriptionErrorTpl let-control>
+                            <ng-container *ngIf="control.errors.required">
+                                Please enter a description
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.minLength">
+                                Description must be at least 1 character long
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.maxLength">
+                                Description must not be longer than 256 character
+                            </ng-container>
+                        </ng-template>
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+    </ng-container>
+</nz-modal>
+
+<nz-modal [(nzVisible)]="isUpdateUserPermissionModalVisible" nzTitle="Update user permission"
+    [nzOkDisabled]="updateUserPermissionModalFormGroup.invalid" (nzOnCancel)="onUpdatePermissionModalCancel()"
+    (nzOnOk)="onUpdatePermissionModalOk()">
+    <ng-container *nzModalContent>
+        <form nz-form [formGroup]="updateUserPermissionModalFormGroup">
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="permissionNameErrorTpl">
+                    <nz-input-group nzPrefixIcon="user">
+                        <input type="text" nz-input formControlName="permissionName" placeholder="Permission name"
+                            name="permissionName" nzRequired />
+                        <ng-template #permissionNameErrorTpl let-control>
+                            <ng-container *ngIf="control.errors.required">
+                                Please enter your permission name
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.minLength">
+                                Permission name must be at least 1 character long
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.maxLength">
+                                Permission name must not be longer than 256 character
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.pattern">
+                                Permission name must only contain English characters, digits, underscore (_) and dot (.)
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.startDot">
+                                Permission name cannot start with a dot character (.)
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.endDot">
+                                Permission name cannot end with a dot character (.)
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.twoDot">
+                                Permission name cannot have two consecutive dot characters (.)
+                            </ng-container>
+                        </ng-template>
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="descriptionErrorTpl">
+                    <nz-input-group nzPrefixIcon="info-circle">
+                        <input type="text" nz-input formControlName="description" placeholder="Description"
+                            name="description" nzRequired />
+                        <ng-template #descriptionErrorTpl let-control>
+                            <ng-container *ngIf="control.errors.required">
+                                Please enter a description
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.minLength">
+                                Description must be at least 1 character long
+                            </ng-container>
+                            <ng-container *ngIf="control.errors.maxLength">
+                                Description must not be longer than 256 character
+                            </ng-container>
+                        </ng-template>
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+    </ng-container>
+</nz-modal>

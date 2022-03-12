@@ -33,9 +33,6 @@ export class UserManagementService {
   public isValidDisplayName(
     displayName: string
   ): { [k: string]: boolean } | null {
-    if (0 < displayName.length && displayName.length < 1) {
-      return { error: true, minLength: true };
-    }
     if (displayName.length > 256) {
       return { error: true, maxLength: true };
     }

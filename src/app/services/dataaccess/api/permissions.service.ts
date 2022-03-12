@@ -52,9 +52,7 @@ export class PermissionsService {
     }
   }
 
-  public async getUserPermissionList(): Promise<{
-    userPermissionList: UserPermission[];
-  }> {
+  public async getUserPermissionList(): Promise<UserPermission[]> {
     try {
       const response = await this.axios.get('/api/permissions');
       return response.data.user_permission_list.map(UserPermission.fromJSON);
