@@ -1,4 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
+import validator from 'validator';
 import {
   User,
   UserRole,
@@ -24,6 +25,16 @@ export class SessionManagementService {
     new EventEmitter<SessionUserInfo | null>();
 
   constructor(private readonly sessionDataAccessService: SessionsService) {}
+
+  public isValidPassword(password: string): { [k: string]: boolean } | null {
+    if (validator.isEmpty(password)) {
+      return { error: true, required: true };
+    }
+    if (password.length < 8) {
+      return { error: true, minLength: true };
+    }
+    return null;
+  }
 
   public async loginWithPassword(
     username: string,

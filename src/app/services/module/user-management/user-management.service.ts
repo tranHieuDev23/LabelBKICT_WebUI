@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import validator from 'validator';
 import {
   User,
   UserRole,
@@ -15,6 +16,37 @@ export class UserManagementService {
     private readonly userDataAccessService: UsersService,
     private readonly sessionManagementService: SessionManagementService
   ) {}
+
+  public isValidUsername(username: string): { [k: string]: boolean } | null {
+    if (validator.isEmpty(username)) {
+      return { error: true, required: true };
+    }
+    if (username.length < 6) {
+      return { error: true, minLength: true };
+    }
+    if (username.length > 64) {
+      return { error: true, maxLength: true };
+    }
+    if (!/^[a-zA-Z0-9]+$/.test(username)) {
+      return { error: true, pattern: true };
+    }
+    return null;
+  }
+
+  public isValidDisplayName(
+    displayName: string
+  ): { [k: string]: boolean } | null {
+    if (validator.isEmpty(displayName)) {
+      return { error: true, required: true };
+    }
+    if (displayName.length < 1) {
+      return { error: true, minLength: true };
+    }
+    if (displayName.length > 256) {
+      return { error: true, maxLength: true };
+    }
+    return null;
+  }
 
   public async createUser(
     username: string,

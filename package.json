@@ -23,6 +23,7 @@
     "ng-zorro-antd": "^13.1.1",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",
+    "validator": "^13.7.0",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
@@ -36,6 +37,7 @@
     "@angular/compiler-cli": "~13.1.0",
     "@types/jasmine": "~3.10.0",
     "@types/node": "^12.11.1",
+    "@types/validator": "^13.7.1",
     "@typescript-eslint/eslint-plugin": "5.11.0",
     "@typescript-eslint/parser": "5.11.0",
     "eslint": "^8.2.0",
