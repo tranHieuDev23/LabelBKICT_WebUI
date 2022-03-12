@@ -4,8 +4,11 @@ import {
   User,
   UserListSortOrder,
   UserRole,
+  UserRoleListSortOrder,
 } from 'src/app/services/dataaccess/api';
 import { UserManagementService } from 'src/app/services/module/user-management';
+import { UserRoleManagementService } from 'src/app/services/module/user-role-management';
+import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
 
 @Component({
   selector: 'app-manage-users',
@@ -43,15 +46,47 @@ export class ManageUsersComponent implements OnInit {
   public createNewUserPasswordRetype: string = '';
 
   public isEditUserModalVisible: boolean = false;
+  public editUserModalUserListItemIndex: number = 0;
   public editUserModalUserID: number = 0;
   public editUserModalDisplayName: string = '';
   public editUserModalUsername: string = '';
   public editUserModalPassword: string = '';
   public editUserModalPasswordRetype: string = '';
-  public editUserModalUserRoleList: UserRole[] | null = null;
+
+  public isAddUserRoleModalVisible: boolean = false;
+  public addUserRoleModalSortOrderOptions: {
+    value: UserRoleListSortOrder;
+    title: string;
+  }[] = [
+    {
+      value: UserRoleListSortOrder.ID_ASCENDING,
+      title: 'User role ID (Asc.)',
+    },
+    {
+      value: UserRoleListSortOrder.ID_DESCENDING,
+      title: 'User role ID (Desc.)',
+    },
+    {
+      value: UserRoleListSortOrder.DISPLAY_NAME_ASCENDING,
+      title: 'Display name (A-Z)',
+    },
+    {
+      value: UserRoleListSortOrder.DISPLAY_NAME_DESCENDING,
+      title: 'Display name (Z-A)',
+    },
+  ];
+  public addUserRoleModalPageSizeOptions: number[] = [10, 20, 50, 100];
+  public addUserRoleModalPageIndex: number = 0;
+  public addUserRoleModalPageSize: number = 10;
+  public addUserRoleModalTotalUserRoleCount: number = 0;
+  public addUserRoleModalSortOrder: UserRoleListSortOrder =
+    UserRoleListSortOrder.ID_ASCENDING;
+  public addUserRoleModalUserRoleList: UserRole[] = [];
 
   constructor(
     private readonly userManagementService: UserManagementService,
+    private readonly userRoleManagementService: UserRoleManagementService,
+    private readonly paginationService: PaginationService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router
   ) {}
@@ -59,7 +94,7 @@ export class ManageUsersComponent implements OnInit {
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe((params) => {
       this.getPaginationInfoFromQueryParams(params);
-      this.loadPageData().then(
+      this.loadPageUserList().then(
         () => {},
         (error) => {
           console.error(error);
@@ -80,8 +115,11 @@ export class ManageUsersComponent implements OnInit {
     }
   }
 
-  private async loadPageData(): Promise<void> {
-    const offset = this.getCurrentPageOffset();
+  private async loadPageUserList(): Promise<void> {
+    const offset = this.paginationService.getPageOffset(
+      this.pageIndex,
+      this.pageSize
+    );
     const { totalUserCount, userList, userRoleList } =
       await this.userManagementService.getUserList(
         offset,
@@ -92,10 +130,6 @@ export class ManageUsersComponent implements OnInit {
     this.totalUserCount = totalUserCount;
     this.userList = userList;
     this.userRoleList = userRoleList || [];
-  }
-
-  private getCurrentPageOffset(): number {
-    return (this.pageIndex - 1) * this.pageSize;
   }
 
   public getUserRoleListString(userRoleList: UserRole[]): string {
@@ -152,17 +186,17 @@ export class ManageUsersComponent implements OnInit {
       this.createNewUserDisplayName,
       this.createNewUserPassword
     );
-    await this.loadPageData();
+    await this.loadPageUserList();
     this.isCreateNewUserModalVisible = false;
   }
 
   public onEditUserClicked(index: number): void {
+    this.editUserModalUserListItemIndex = index;
     this.editUserModalUserID = this.userList[index].id;
     this.editUserModalDisplayName = this.userList[index].displayName;
     this.editUserModalUsername = this.userList[index].username;
     this.editUserModalPassword = '';
     this.editUserModalPasswordRetype = '';
-    this.editUserModalUserRoleList = this.userRoleList[index];
     this.isEditUserModalVisible = true;
   }
 
@@ -184,7 +218,83 @@ export class ManageUsersComponent implements OnInit {
       this.editUserModalDisplayName,
       newPassword
     );
-    await this.loadPageData();
+    await this.loadPageUserList();
     this.isEditUserModalVisible = false;
+  }
+
+  public async onEditUserModalUserRoleListDeleteClicked(
+    userRole: UserRole
+  ): Promise<void> {
+    await this.userRoleManagementService.removeUserRoleFromUser(
+      this.editUserModalUserID,
+      userRole.id
+    );
+    this.userRoleList[this.editUserModalUserListItemIndex] = this.userRoleList[
+      this.editUserModalUserListItemIndex
+    ].filter((userRoleItem) => userRoleItem.id != userRole.id);
+  }
+
+  public async onAddUserRoleClicked(): Promise<void> {
+    this.addUserRoleModalPageIndex = 1;
+    this.addUserRoleModalPageSize = 10;
+    this.addUserRoleModalSortOrder = UserRoleListSortOrder.ID_ASCENDING;
+    await this.loadUserRoleList();
+    this.isAddUserRoleModalVisible = true;
+  }
+
+  public onAddUserRoleModalCancel(): void {
+    this.isAddUserRoleModalVisible = false;
+  }
+
+  public async onAddUserRoleModalSortOrderChanged(
+    newSortOrder: UserRoleListSortOrder
+  ): Promise<void> {
+    this.addUserRoleModalSortOrder = newSortOrder;
+    await this.loadUserRoleList();
+  }
+
+  public async onAddUserRoleModalPageIndexChanged(
+    newPageIndex: number
+  ): Promise<void> {
+    this.addUserRoleModalPageIndex = newPageIndex;
+    await this.loadUserRoleList();
+  }
+
+  public async onAddUserRoleModalPageSizeChanged(
+    newPageSize: number
+  ): Promise<void> {
+    this.addUserRoleModalPageSize = newPageSize;
+    await this.loadUserRoleList();
+  }
+
+  private async loadUserRoleList(): Promise<void> {
+    const offset = this.paginationService.getPageOffset(
+      this.addUserRoleModalPageIndex,
+      this.addUserRoleModalPageSize
+    );
+    const { totalUserRoleCount, userRoleList } =
+      await this.userRoleManagementService.getUserRoleList(
+        offset,
+        this.addUserRoleModalPageSize,
+        this.addUserRoleModalSortOrder,
+        false
+      );
+    this.addUserRoleModalTotalUserRoleCount = totalUserRoleCount;
+    this.addUserRoleModalUserRoleList = userRoleList;
+  }
+
+  public async onAddUserRoleModalItemClicked(
+    userRole: UserRole
+  ): Promise<void> {
+    console.log(userRole);
+    await this.userRoleManagementService.addUserRoleToUser(
+      this.editUserModalUserID,
+      userRole.id
+    );
+    this.userRoleList[this.editUserModalUserListItemIndex] = [
+      ...this.userRoleList[this.editUserModalUserListItemIndex],
+      userRole,
+    ];
+    this.isAddUserRoleModalVisible = false;
   }
 }

@@ -99,7 +99,7 @@ export class RolesService {
       });
 
       const totalUserRoleCount = +response.data.total_user_role_count;
-      const userRoleList = response.data.user_list.map(UserRole.fromJSON);
+      const userRoleList = response.data.user_role_list.map(UserRole.fromJSON);
       if (!withUserPermission) {
         return {
           totalUserRoleCount,
@@ -108,7 +108,8 @@ export class RolesService {
         };
       }
 
-      const userPermissionJSONList = response.data.user_role_list as any[];
+      const userPermissionJSONList = response.data
+        .user_permission_list as any[];
       const userPermissionList = userPermissionJSONList.map((list) =>
         list.map(UserPermission.fromJSON)
       );

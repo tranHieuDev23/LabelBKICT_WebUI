@@ -13,14 +13,17 @@ import {
 export class UserRoleManagementService {
   constructor(
     private readonly rolesDataAccessService: RolesService,
-    private readonly userDataAccessService: UsersService
+    private readonly usersDataAccessService: UsersService
   ) {}
 
   public async createUserRole(
     displayName: string,
     description: string
   ): Promise<UserRole> {
-    throw new Error('not implemented');
+    return await this.rolesDataAccessService.createUserRole(
+      displayName.trim(),
+      description.trim()
+    );
   }
 
   public async getUserRoleList(
@@ -31,9 +34,14 @@ export class UserRoleManagementService {
   ): Promise<{
     totalUserRoleCount: number;
     userRoleList: UserRole[];
-    userPermissionList: UserPermission[][];
+    userPermissionList: UserPermission[][] | undefined;
   }> {
-    throw new Error('not implemented');
+    return await this.rolesDataAccessService.getUserRoleList(
+      offset,
+      limit,
+      sortOrder,
+      withUserPermission
+    );
   }
 
   public async updateUserRole(
@@ -41,20 +49,33 @@ export class UserRoleManagementService {
     displayName: string,
     description: string
   ): Promise<UserRole> {
-    throw new Error('not implemented');
+    if (displayName !== undefined) displayName = displayName.trim();
+    if (description !== undefined) description = description.trim();
+    return await this.rolesDataAccessService.updateUserRole(
+      id,
+      displayName,
+      description
+    );
+  }
+
+  public async deleteUserRole(id: number): Promise<void> {
+    return await this.rolesDataAccessService.deleteUserRole(id);
   }
 
   public async addUserRoleToUser(
     userID: number,
     userRoleID: number
   ): Promise<void> {
-    throw new Error('not implemented');
+    await this.usersDataAccessService.addUserRoleToUser(userID, userRoleID);
   }
 
   public async removeUserRoleFromUser(
     userID: number,
     userRoleID: number
   ): Promise<void> {
-    throw new Error('not implemented');
+    await this.usersDataAccessService.removeUserRoleFromUser(
+      userID,
+      userRoleID
+    );
   }
 }

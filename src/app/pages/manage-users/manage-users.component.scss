@@ -2,6 +2,19 @@
   margin-bottom: 8px;
 }
 
+.add-user-role-btn {
+  margin-top: 8px;
+}
+
+.add-user-role-list-item {
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+}
+
 nz-select {
   width: 200px;
 }
