@@ -18,16 +18,13 @@ export class UserManagementService {
   ) {}
 
   public isValidUsername(username: string): { [k: string]: boolean } | null {
-    if (validator.isEmpty(username)) {
-      return { error: true, required: true };
-    }
-    if (username.length < 6) {
+    if (0 < username.length && username.length < 6) {
       return { error: true, minLength: true };
     }
     if (username.length > 64) {
       return { error: true, maxLength: true };
     }
-    if (!/^[a-zA-Z0-9]+$/.test(username)) {
+    if (!/^[a-zA-Z0-9]*$/.test(username)) {
       return { error: true, pattern: true };
     }
     return null;
@@ -36,10 +33,7 @@ export class UserManagementService {
   public isValidDisplayName(
     displayName: string
   ): { [k: string]: boolean } | null {
-    if (validator.isEmpty(displayName)) {
-      return { error: true, required: true };
-    }
-    if (displayName.length < 1) {
+    if (0 < displayName.length && displayName.length < 1) {
       return { error: true, minLength: true };
     }
     if (displayName.length > 256) {

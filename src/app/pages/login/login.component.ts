@@ -16,6 +16,7 @@ import {
 } from 'src/app/services/dataaccess/api';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
+import { ConfirmedValidator } from 'src/app/services/utils/confirmed-validator/confirmed-validator';
 
 @Component({
   selector: 'app-login',
@@ -38,12 +39,17 @@ export class LoginComponent {
       password: ['', [Validators.required]],
     });
     this.loginForm.reset({ username: '', password: '' });
-    this.registerForm = formBuilder.group({
-      displayName: ['', [this.displayNameValidator()]],
-      username: ['', [this.usernameValidator()]],
-      password: ['', [this.passwordValidator()]],
-      passwordRetype: ['', [this.passwordRetypeValidator()]],
-    });
+    this.registerForm = formBuilder.group(
+      {
+        displayName: ['', [Validators.required, this.displayNameValidator()]],
+        username: ['', [Validators.required, this.usernameValidator()]],
+        password: ['', [Validators.required, this.passwordValidator()]],
+        passwordConfirm: ['', [Validators.required]],
+      },
+      {
+        validator: [ConfirmedValidator('password', 'passwordConfirm')],
+      }
+    );
     this.registerForm.reset({
       displayName: '',
       username: '',
@@ -70,20 +76,6 @@ export class LoginComponent {
     return (control: AbstractControl): { [k: string]: boolean } | null => {
       const password: string = control.value;
       return this.sessionManagementService.isValidPassword(password);
-    };
-  }
-
-  private passwordRetypeValidator(): ValidatorFn {
-    return (control: AbstractControl): { [k: string]: boolean } | null => {
-      const passwordRetype: string = control.value;
-      if (passwordRetype === '') {
-        return { error: true, required: true };
-      }
-      const password: string = this.registerForm?.value.password;
-      if (passwordRetype !== password) {
-        return { error: true, equal: true };
-      }
-      return null;
     };
   }
 

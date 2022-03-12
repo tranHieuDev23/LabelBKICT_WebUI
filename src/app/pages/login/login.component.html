@@ -91,15 +91,15 @@
                         </nz-form-item>
 
                         <nz-form-item>
-                            <nz-form-control [nzErrorTip]="passwordRetypeErrorTpl">
+                            <nz-form-control [nzErrorTip]="passwordConfirmErrorTpl">
                                 <nz-input-group nzPrefixIcon="lock">
-                                    <input type="password" nz-input formControlName="passwordRetype"
-                                        placeholder="Verify password" name="passwordRetype" nzRequired />
-                                    <ng-template #passwordRetypeErrorTpl let-control>
+                                    <input type="password" nz-input formControlName="passwordConfirm"
+                                        placeholder="Verify password" name="passwordConfirm" nzRequired />
+                                    <ng-template #passwordConfirmErrorTpl let-control>
                                         <ng-container *ngIf="control.errors.required">
                                             Please confirm your password
                                         </ng-container>
-                                        <ng-container *ngIf="control.errors.equal">
+                                        <ng-container *ngIf="control.errors.confirmed">
                                             Two passwords that you entered are not equal
                                         </ng-container>
                                     </ng-template>

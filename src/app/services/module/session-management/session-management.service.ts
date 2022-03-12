@@ -1,5 +1,4 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import validator from 'validator';
 import {
   User,
   UserRole,
@@ -27,10 +26,7 @@ export class SessionManagementService {
   constructor(private readonly sessionDataAccessService: SessionsService) {}
 
   public isValidPassword(password: string): { [k: string]: boolean } | null {
-    if (validator.isEmpty(password)) {
-      return { error: true, required: true };
-    }
-    if (password.length < 8) {
+    if (0 < password.length && password.length < 8) {
       return { error: true, minLength: true };
     }
     return null;

@@ -4,6 +4,7 @@ import {
   FormBuilder,
   FormGroup,
   ValidatorFn,
+  Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import {
@@ -15,6 +16,7 @@ import {
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
 import { UserRoleManagementService } from 'src/app/services/module/user-role-management';
+import { ConfirmedValidator } from 'src/app/services/utils/confirmed-validator/confirmed-validator';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
 
 @Component({
@@ -97,10 +99,10 @@ export class ManageUsersComponent implements OnInit {
     formBuilder: FormBuilder
   ) {
     this.createNewUserModalFormGroup = formBuilder.group({
-      displayName: ['', [this.displayNameValidator()]],
-      username: ['', [this.usernameValidator()]],
-      password: ['', [this.passwordValidator()]],
-      passwordRetype: ['', [this.passwordRetypeValidator()]],
+      displayName: ['', [Validators.required, this.displayNameValidator()]],
+      username: ['', [Validators.required, this.usernameValidator()]],
+      password: ['', [Validators.required, this.passwordValidator()]],
+      passwordConfirm: ['', [Validators.required]],
     });
     this.createNewUserModalFormGroup.reset({
       displayName: '',
@@ -128,20 +130,6 @@ export class ManageUsersComponent implements OnInit {
     return (control: AbstractControl): { [k: string]: boolean } | null => {
       const password: string = control.value;
       return this.sessionManagementService.isValidPassword(password);
-    };
-  }
-
-  private passwordRetypeValidator(): ValidatorFn {
-    return (control: AbstractControl): { [k: string]: boolean } | null => {
-      const passwordRetype: string = control.value;
-      if (passwordRetype === '') {
-        return { error: true, required: true };
-      }
-      const password: string = this.createNewUserModalFormGroup?.value.password;
-      if (passwordRetype !== password) {
-        return { error: true, equal: true };
-      }
-      return null;
     };
   }
 
