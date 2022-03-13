@@ -44,11 +44,11 @@ class UserLoggedInGuard implements CanActivate {
     );
     switch (route.url[0].path) {
       case 'manage-users':
-        return userPermissionNameSet.has('users.write');
+        return userPermissionNameSet.has('users.manage');
       case 'manage-roles':
-        return userPermissionNameSet.has('user_roles.write');
+        return userPermissionNameSet.has('user_roles.manage');
       case 'manage-permissions':
-        return userPermissionNameSet.has('user_permissions.write');
+        return userPermissionNameSet.has('user_permissions.manage');
       default:
         return true;
     }
