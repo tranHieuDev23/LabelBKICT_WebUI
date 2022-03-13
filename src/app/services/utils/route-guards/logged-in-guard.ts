@@ -26,40 +26,32 @@ class UserLoggedInGuard implements CanActivate {
     if (sessionUserInfo === null) {
       return this.router.parseUrl('/login');
     }
-    if (!this.isUserAuthorized(route, sessionUserInfo)) {
+    if (!this.isUserAuthorized(route)) {
       return this.router.parseUrl('/welcome');
     }
     return true;
   }
 
-  private isUserAuthorized(
-    route: ActivatedRouteSnapshot,
-    sessionUserInfo: SessionUserInfo
-  ): boolean {
+  private isUserAuthorized(route: ActivatedRouteSnapshot): boolean {
     if (route.url.length === 0) {
       return true;
     }
-    const userPermissionNameSet = this.getUserPermissionNameSet(
-      sessionUserInfo.userPermissionList
-    );
     switch (route.url[0].path) {
       case 'manage-users':
-        return userPermissionNameSet.has('users.manage');
+        return this.sessionManagementService.checkSessionUserHasPermission(
+          'users.manage'
+        );
       case 'manage-roles':
-        return userPermissionNameSet.has('user_roles.manage');
+        return this.sessionManagementService.checkSessionUserHasPermission(
+          'user_roles.manage'
+        );
       case 'manage-permissions':
-        return userPermissionNameSet.has('user_permissions.manage');
+        return this.sessionManagementService.checkSessionUserHasPermission(
+          'user_permissions.manage'
+        );
       default:
         return true;
     }
-  }
-
-  private getUserPermissionNameSet(
-    userPermissionList: UserPermission[]
-  ): Set<string> {
-    return new Set<string>(
-      userPermissionList.map((userPermission) => userPermission.permissionName)
-    );
   }
 }
 

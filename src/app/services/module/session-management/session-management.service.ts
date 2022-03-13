@@ -20,6 +20,7 @@ export class SessionUserInfo {
 })
 export class SessionManagementService {
   private sessionUserInfo: SessionUserInfo | null | undefined = undefined;
+  private sessionUserPermissionNameSet: Set<string> = new Set<string>();
   private readonly sessionUserInfoEventEmitter =
     new EventEmitter<SessionUserInfo | null>();
 
@@ -30,6 +31,10 @@ export class SessionManagementService {
       return { error: true, minLength: true };
     }
     return null;
+  }
+
+  public checkSessionUserHasPermission(permissionName: string): boolean {
+    return this.sessionUserPermissionNameSet.has(permissionName);
   }
 
   public async loginWithPassword(
@@ -67,6 +72,11 @@ export class SessionManagementService {
 
   public setSessionUserInfo(sessionUserInfo: SessionUserInfo | null): void {
     this.sessionUserInfo = sessionUserInfo;
+    this.sessionUserPermissionNameSet = new Set(
+      sessionUserInfo?.userPermissionList.map(
+        (userPermission) => userPermission.permissionName
+      )
+    );
     this.sessionUserInfoEventEmitter.emit(sessionUserInfo);
   }
 

@@ -46,10 +46,6 @@ export class AppComponent {
       return;
     }
 
-    const userPermissionSet = this.getUserPermissionNameSet(
-      sessionUserInfo.userPermissionList
-    );
-
     // Label menu
     this.menuItemList.push(new AppMenuItem('Label data', 'edit', []));
 
@@ -58,17 +54,29 @@ export class AppComponent {
     settingsSubmenuList.push(
       new AppSubmenuItem('My profile', '/my-profile', () => {})
     );
-    if (userPermissionSet.has('users.write')) {
+    if (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'users.manage'
+      )
+    ) {
       settingsSubmenuList.push(
         new AppSubmenuItem('Manage users', '/manage-users', () => {})
       );
     }
-    if (userPermissionSet.has('user_roles.write')) {
+    if (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'user_roles.manage'
+      )
+    ) {
       settingsSubmenuList.push(
         new AppSubmenuItem('Manage roles', '/manage-roles', () => {})
       );
     }
-    if (userPermissionSet.has('user_permissions.write')) {
+    if (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'user_permissions.manage'
+      )
+    ) {
       settingsSubmenuList.push(
         new AppSubmenuItem(
           'Manage permissions',
@@ -89,14 +97,6 @@ export class AppComponent {
     // Experimental features menu
     this.menuItemList.push(
       new AppMenuItem('Experimental features', 'experiment', [])
-    );
-  }
-
-  private getUserPermissionNameSet(
-    userPermissionList: UserPermission[]
-  ): Set<string> {
-    return new Set<string>(
-      userPermissionList.map((userPermission) => userPermission.permissionName)
     );
   }
 

@@ -49,24 +49,33 @@ export class WelcomeComponent implements OnInit {
 
   private updateMenuItemList(sessionUserInfo: SessionUserInfo): void {
     this.menuItemList = [];
-    const userPermissionNameSet = this.getUserPermissionNameSet(
-      sessionUserInfo.userPermissionList
-    );
 
     // User management
-    if (this.isUserManagementMenuItemAvailable(userPermissionNameSet)) {
+    if (this.isUserManagementMenuItemAvailable()) {
       const submenuItemList: WelcomeSubmenuItem[] = [];
-      if (userPermissionNameSet.has('users.write')) {
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'users.manage'
+        )
+      ) {
         submenuItemList.push(
           new WelcomeSubmenuItem('Manage users', '/manage-users')
         );
       }
-      if (userPermissionNameSet.has('user_roles.write')) {
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'user_roles.manage'
+        )
+      ) {
         submenuItemList.push(
           new WelcomeSubmenuItem('Manage user roles', '/manage-roles')
         );
       }
-      if (userPermissionNameSet.has('user_permissions.write')) {
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'user_permissions.manage'
+        )
+      ) {
         submenuItemList.push(
           new WelcomeSubmenuItem(
             'Manage user permissions',
@@ -80,21 +89,17 @@ export class WelcomeComponent implements OnInit {
     }
   }
 
-  private getUserPermissionNameSet(
-    userPermissionList: UserPermission[]
-  ): Set<string> {
-    return new Set<string>(
-      userPermissionList.map((userPermission) => userPermission.permissionName)
-    );
-  }
-
-  private isUserManagementMenuItemAvailable(
-    userPermissionNameSet: Set<string>
-  ): boolean {
+  private isUserManagementMenuItemAvailable(): boolean {
     return (
-      userPermissionNameSet.has('users.write') ||
-      userPermissionNameSet.has('user_roles.write') ||
-      userPermissionNameSet.has('user_permissions.write')
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'users.manage'
+      ) ||
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'user_roles.manage'
+      ) ||
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'user_permissions.manage'
+      )
     );
   }
 }
