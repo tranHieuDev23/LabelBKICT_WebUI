@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { UserPermissionManagementService } from 'src/app/services/module/user-permission-management';
-import { NzTreeNodeOptions } from 'ng-zorro-antd/tree';
 import {
   InvalidUserPermissionInformationError,
+  UnauthenticatedError,
+  UnauthorizedError,
   UserPermission,
   UserPermissionNotFoundError,
 } from 'src/app/services/dataaccess/api';
@@ -14,10 +15,6 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import {
-  UnauthenticatedError,
-  UnauthorizedError,
-} from 'src/app/services/dataaccess/api/errors';
 import { Router } from '@angular/router';
 import {
   PermissionTreeNode,

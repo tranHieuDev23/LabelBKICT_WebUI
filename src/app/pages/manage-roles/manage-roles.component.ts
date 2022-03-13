@@ -16,11 +16,9 @@ import {
   InvalidUserRoleListArgument,
   InvalidUserRoleInformationError,
   UserRoleNotFoundError,
-} from 'src/app/services/dataaccess/api';
-import {
   UnauthenticatedError,
   UnauthorizedError,
-} from 'src/app/services/dataaccess/api/errors';
+} from 'src/app/services/dataaccess/api';
 import { UserPermissionManagementService } from 'src/app/services/module/user-permission-management';
 import { UserRoleManagementService } from 'src/app/services/module/user-role-management';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
