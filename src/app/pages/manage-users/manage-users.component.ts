@@ -7,9 +7,18 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
+  InvalidUserInformationError,
+  InvalidUserListArgument,
+  InvalidUserRoleListArgument,
+  UnauthenticatedError,
+  UnauthorizedError,
   User,
+  UserAlreadyHasUserRoleError,
   UserListSortOrder,
+  UserNotFoundError,
+  UserOrUserRoleNotFoundError,
   UserRole,
   UserRoleListSortOrder,
 } from 'src/app/services/dataaccess/api';
@@ -18,6 +27,10 @@ import { UserManagementService } from 'src/app/services/module/user-management';
 import { UserRoleManagementService } from 'src/app/services/module/user-role-management';
 import { ConfirmedValidator } from 'src/app/services/utils/confirmed-validator/confirmed-validator';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
+
+const DEFAULT_PAGE_INDEX = 1;
+const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_SORT_ORDER = UserListSortOrder.ID_ASCENDING;
 
 @Component({
   selector: 'app-manage-users',
@@ -41,9 +54,9 @@ export class ManageUsersComponent implements OnInit {
   ];
   public pageSizeOptions: number[] = [10, 20, 50, 100];
 
-  public pageIndex: number = 1;
-  public pageSize: number = 10;
-  public sortOrder: UserListSortOrder = UserListSortOrder.ID_ASCENDING;
+  public pageIndex: number = DEFAULT_PAGE_INDEX;
+  public pageSize: number = DEFAULT_PAGE_SIZE;
+  public sortOrder: UserListSortOrder = DEFAULT_SORT_ORDER;
   public totalUserCount: number = 0;
   public userList: User[] = [];
   public userRoleList: UserRole[][] = [];
@@ -93,6 +106,7 @@ export class ManageUsersComponent implements OnInit {
     private readonly paginationService: PaginationService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
+    private readonly notificationService: NzNotificationService,
     formBuilder: FormBuilder
   ) {
     this.createNewUserModalFormGroup = formBuilder.group(
@@ -167,12 +181,18 @@ export class ManageUsersComponent implements OnInit {
   private getPaginationInfoFromQueryParams(params: Params): void {
     if (params['page'] !== undefined) {
       this.pageIndex = +params['page'];
+    } else {
+      this.pageIndex = DEFAULT_PAGE_INDEX;
     }
     if (params['size'] !== undefined) {
       this.pageSize = +params['size'];
+    } else {
+      this.pageSize = DEFAULT_PAGE_SIZE;
     }
     if (params['sort'] !== undefined) {
       this.sortOrder = +params['sort'];
+    } else {
+      this.sortOrder = DEFAULT_SORT_ORDER;
     }
   }
 
@@ -181,16 +201,43 @@ export class ManageUsersComponent implements OnInit {
       this.pageIndex,
       this.pageSize
     );
-    const { totalUserCount, userList, userRoleList } =
-      await this.userManagementService.getUserList(
-        offset,
-        this.pageSize,
-        this.sortOrder,
-        true
-      );
-    this.totalUserCount = totalUserCount;
-    this.userList = userList;
-    this.userRoleList = userRoleList || [];
+    try {
+      const { totalUserCount, userList, userRoleList } =
+        await this.userManagementService.getUserList(
+          offset,
+          this.pageSize,
+          this.sortOrder,
+          true
+        );
+      this.totalUserCount = totalUserCount;
+      this.userList = userList;
+      this.userRoleList = userRoleList || [];
+    } catch (e) {
+      if (e instanceof InvalidUserListArgument) {
+        this.notificationService.error(
+          'Failed to retrieve user list',
+          'Invalid page arguments'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to retrieve user list',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to retrieve user list',
+          "User doesn't have the required permission"
+        );
+        this.router.navigateByUrl('/welcome');
+      } else {
+        this.notificationService.error(
+          'Failed to retrieve user list',
+          'Unknown error'
+        );
+      }
+    }
   }
 
   public getUserRoleListString(userRoleList: UserRole[]): string {
@@ -243,11 +290,41 @@ export class ManageUsersComponent implements OnInit {
   public async onCreateNewUserModalOk(): Promise<void> {
     const { displayName, username, password } =
       this.createNewUserModalFormGroup.value;
-    await this.userManagementService.createUser(
-      username,
-      displayName,
-      password
-    );
+    try {
+      await this.userManagementService.createUser(
+        username,
+        displayName,
+        password
+      );
+    } catch (e) {
+      if (e instanceof InvalidUserInformationError) {
+        this.notificationService.error(
+          'Failed to create new user',
+          'Invalid user role information'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to create new user',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to create new user',
+          "User doesn't have the required permission"
+        );
+        this.router.navigateByUrl('/welcome');
+      } else {
+        this.notificationService.error(
+          'Failed to create new user',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+
+    this.notificationService.success('Successfully created new user', '');
     await this.loadPageUserList();
     this.isCreateNewUserModalVisible = false;
   }
@@ -275,12 +352,49 @@ export class ManageUsersComponent implements OnInit {
     if (formPassword !== '') {
       newPassword = formPassword;
     }
-    await this.userManagementService.updateUser(
-      this.editUserModalUserID,
-      username,
-      displayName,
-      newPassword
-    );
+
+    try {
+      await this.userManagementService.updateUser(
+        this.editUserModalUserID,
+        username,
+        displayName,
+        newPassword
+      );
+    } catch (e) {
+      if (e instanceof InvalidUserInformationError) {
+        this.notificationService.error(
+          'Failed to update user',
+          'Invalid user information'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to update user',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to update user',
+          "User doesn't have the required permission"
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof UserNotFoundError) {
+        this.notificationService.error(
+          'Failed to update user',
+          'Cannot find user'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else {
+        this.notificationService.error(
+          'Failed to update user',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+
+    this.notificationService.success('Successfully updated user', '');
     await this.loadPageUserList();
     this.isEditUserModalVisible = false;
   }
@@ -288,9 +402,41 @@ export class ManageUsersComponent implements OnInit {
   public async onEditUserModalUserRoleListDeleteClicked(
     userRole: UserRole
   ): Promise<void> {
-    await this.userRoleManagementService.removeUserRoleFromUser(
-      this.editUserModalUserID,
-      userRole.id
+    try {
+      await this.userRoleManagementService.removeUserRoleFromUser(
+        this.editUserModalUserID,
+        userRole.id
+      );
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to remove user role from user',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to remove user role from user',
+          "User doesn't have the required permission"
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof UserOrUserRoleNotFoundError) {
+        this.notificationService.error(
+          'Failed to remove user role from user',
+          'Cannot find user or user role'
+        );
+      } else {
+        this.notificationService.error(
+          'Failed to remove user role from user',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+
+    this.notificationService.success(
+      'Successfully remove user role from user',
+      ''
     );
     this.userRoleList[this.editUserModalUserListItemIndex] = this.userRoleList[
       this.editUserModalUserListItemIndex
@@ -335,24 +481,87 @@ export class ManageUsersComponent implements OnInit {
       this.addUserRoleModalPageIndex,
       this.addUserRoleModalPageSize
     );
-    const { totalUserRoleCount, userRoleList } =
-      await this.userRoleManagementService.getUserRoleList(
-        offset,
-        this.addUserRoleModalPageSize,
-        this.addUserRoleModalSortOrder,
-        false
-      );
-    this.addUserRoleModalTotalUserRoleCount = totalUserRoleCount;
-    this.addUserRoleModalUserRoleList = userRoleList;
+    try {
+      const { totalUserRoleCount, userRoleList } =
+        await this.userRoleManagementService.getUserRoleList(
+          offset,
+          this.addUserRoleModalPageSize,
+          this.addUserRoleModalSortOrder,
+          false
+        );
+      this.addUserRoleModalTotalUserRoleCount = totalUserRoleCount;
+      this.addUserRoleModalUserRoleList = userRoleList;
+    } catch (e) {
+      if (e instanceof InvalidUserRoleListArgument) {
+        this.notificationService.error(
+          'Failed to retrieve user role list',
+          'Invalid page arguments'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to retrieve user role list',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to retrieve user role list',
+          "User doesn't have the required permission"
+        );
+        this.router.navigateByUrl('/welcome');
+      } else {
+        this.notificationService.error(
+          'Failed to retrieve user role list',
+          'Unknown error'
+        );
+      }
+    }
   }
 
   public async onAddUserRoleModalItemClicked(
     userRole: UserRole
   ): Promise<void> {
-    console.log(userRole);
-    await this.userRoleManagementService.addUserRoleToUser(
-      this.editUserModalUserID,
-      userRole.id
+    try {
+      await this.userRoleManagementService.addUserRoleToUser(
+        this.editUserModalUserID,
+        userRole.id
+      );
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to add user role to user',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to add user role to user',
+          "User doesn't have the required permission"
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof UserOrUserRoleNotFoundError) {
+        this.notificationService.error(
+          'Failed to add user role to user',
+          'Cannot find user or user role'
+        );
+      } else if (e instanceof UserAlreadyHasUserRoleError) {
+        this.notificationService.error(
+          'Failed to add user role to user',
+          'User already has user role'
+        );
+      } else {
+        this.notificationService.error(
+          'Failed to add user role to user',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+
+    this.notificationService.success(
+      'Successfully added user role to user',
+      ''
     );
     this.userRoleList[this.editUserModalUserListItemIndex] = [
       ...this.userRoleList[this.editUserModalUserListItemIndex],

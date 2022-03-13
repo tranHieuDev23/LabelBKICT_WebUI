@@ -35,6 +35,24 @@ export class InvalidUserListArgument extends Error {
   }
 }
 
+export class UserNotFoundError extends Error {
+  constructor() {
+    super('Cannot find user');
+  }
+}
+
+export class UserOrUserRoleNotFoundError extends Error {
+  constructor() {
+    super('Cannot find user or user role');
+  }
+}
+
+export class UserAlreadyHasUserRoleError extends Error {
+  constructor() {
+    super('User already has user role');
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -140,6 +158,8 @@ export class UsersService {
           throw new UnauthenticatedError();
         case HttpStatusCode.Forbidden:
           throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new UserNotFoundError();
         case HttpStatusCode.Conflict:
           throw new UsernameTakenError();
         default:
@@ -161,14 +181,14 @@ export class UsersService {
         throw e;
       }
       switch (e.response?.status) {
-        case HttpStatusCode.BadRequest:
-          throw new InvalidUserInformationError();
         case HttpStatusCode.Unauthorized:
           throw new UnauthenticatedError();
         case HttpStatusCode.Forbidden:
           throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new UserOrUserRoleNotFoundError();
         case HttpStatusCode.Conflict:
-          throw new UsernameTakenError();
+          throw new UserAlreadyHasUserRoleError();
         default:
           throw new UnknownAPIError(e);
       }
@@ -186,14 +206,12 @@ export class UsersService {
         throw e;
       }
       switch (e.response?.status) {
-        case HttpStatusCode.BadRequest:
-          throw new InvalidUserInformationError();
         case HttpStatusCode.Unauthorized:
           throw new UnauthenticatedError();
         case HttpStatusCode.Forbidden:
           throw new UnauthorizedError();
-        case HttpStatusCode.Conflict:
-          throw new UsernameTakenError();
+        case HttpStatusCode.NotFound:
+          throw new UserOrUserRoleNotFoundError();
         default:
           throw new UnknownAPIError(e);
       }

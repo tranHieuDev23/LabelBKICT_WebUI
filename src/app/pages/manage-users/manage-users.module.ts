@@ -13,6 +13,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
+import { NzNotificationModule } from 'ng-zorro-antd/notification';
 
 @NgModule({
   declarations: [ManageUsersComponent],
@@ -31,6 +32,7 @@ import { NzCollapseModule } from 'ng-zorro-antd/collapse';
     NzSelectModule,
     FormsModule,
     ReactiveFormsModule,
+    NzNotificationModule,
   ],
   exports: [ManageUsersComponent],
 })
