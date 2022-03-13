@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import validator from 'validator';
 import {
   PermissionsService,
   RolesService,
@@ -30,7 +29,7 @@ export class UserPermissionManagementService {
     if (permissionName.endsWith('.')) {
       return { error: true, endDot: true };
     }
-    if (validator.contains(permissionName, '..')) {
+    if (permissionName.indexOf('..') !== -1) {
       return { error: true, twoDot: true };
     }
     return null;

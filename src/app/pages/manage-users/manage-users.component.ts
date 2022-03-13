@@ -16,6 +16,7 @@ import {
   UnauthorizedError,
   User,
   UserAlreadyHasUserRoleError,
+  UserDoesNotHaveUserRoleError,
   UserListSortOrder,
   UserNotFoundError,
   UserOrUserRoleNotFoundError,
@@ -424,6 +425,11 @@ export class ManageUsersComponent implements OnInit {
         this.notificationService.error(
           'Failed to remove user role from user',
           'Cannot find user or user role'
+        );
+      } else if (e instanceof UserDoesNotHaveUserRoleError) {
+        this.notificationService.error(
+          'Failed to remove user role from user',
+          'User does not have user role'
         );
       } else {
         this.notificationService.error(

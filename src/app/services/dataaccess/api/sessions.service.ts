@@ -78,7 +78,7 @@ export class SessionsService {
     userPermissionList: UserPermission[];
   }> {
     try {
-      const response = await this.axios.get('/api/sessions');
+      const response = await this.axios.get('/api/sessions/user');
       const user = User.fromJSON(response.data.user);
       const userRoleList = response.data.user_role_list.map(UserRole.fromJSON);
       const userPermissionList = response.data.user_permission_list.map(

@@ -53,6 +53,12 @@ export class UserAlreadyHasUserRoleError extends Error {
   }
 }
 
+export class UserDoesNotHaveUserRoleError extends Error {
+  constructor() {
+    super('User does not have user role');
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -212,6 +218,8 @@ export class UsersService {
           throw new UnauthorizedError();
         case HttpStatusCode.NotFound:
           throw new UserOrUserRoleNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserDoesNotHaveUserRoleError();
         default:
           throw new UnknownAPIError(e);
       }

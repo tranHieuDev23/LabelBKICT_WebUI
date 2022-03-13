@@ -21,6 +21,7 @@ import {
   UnauthorizedError,
   UserRoleOrUserPermissionNotFoundError,
   UserRoleAlreadyHasUserPermissionError,
+  UserRoleDoesNotHaveUserPermissionError,
 } from 'src/app/services/dataaccess/api';
 import { UserPermissionManagementService } from 'src/app/services/module/user-permission-management';
 import { UserRoleManagementService } from 'src/app/services/module/user-role-management';
@@ -401,6 +402,11 @@ export class ManageRolesComponent implements OnInit {
         this.notificationService.error(
           'Failed to remove user permission from user role',
           'Cannot find user role or user permission'
+        );
+      } else if (e instanceof UserRoleDoesNotHaveUserPermissionError) {
+        this.notificationService.error(
+          'Failed to remove user permission from user role',
+          'User role does not have user permission'
         );
       } else {
         this.notificationService.error(

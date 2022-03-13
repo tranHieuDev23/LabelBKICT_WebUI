@@ -45,6 +45,12 @@ export class UserRoleAlreadyHasUserPermissionError extends Error {
   }
 }
 
+export class UserRoleDoesNotHaveUserPermissionError extends Error {
+  constructor() {
+    super('User role does not have user permission');
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -227,6 +233,8 @@ export class RolesService {
           throw new UnauthorizedError();
         case HttpStatusCode.NotFound:
           throw new UserRoleOrUserPermissionNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserRoleDoesNotHaveUserPermissionError();
         default:
           throw new UnknownAPIError(e);
       }
