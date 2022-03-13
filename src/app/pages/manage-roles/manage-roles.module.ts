@@ -14,6 +14,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
 import { NzNotificationModule } from 'ng-zorro-antd/notification';
+import { NzTreeModule } from 'ng-zorro-antd/tree';
 
 @NgModule({
   declarations: [ManageRolesComponent],
@@ -33,6 +34,7 @@ import { NzNotificationModule } from 'ng-zorro-antd/notification';
     FormsModule,
     ReactiveFormsModule,
     NzNotificationModule,
+    NzTreeModule,
   ],
   exports: [ManageRolesComponent],
 })

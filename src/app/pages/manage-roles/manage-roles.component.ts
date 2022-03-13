@@ -9,6 +9,7 @@ import {
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { NzFormatEmitEvent, NzTreeNode } from 'ng-zorro-antd/tree';
 import {
   UserRole,
   UserRoleListSortOrder,
@@ -18,6 +19,8 @@ import {
   UserRoleNotFoundError,
   UnauthenticatedError,
   UnauthorizedError,
+  UserRoleOrUserPermissionNotFoundError,
+  UserRoleAlreadyHasUserPermissionError,
 } from 'src/app/services/dataaccess/api';
 import { UserPermissionManagementService } from 'src/app/services/module/user-permission-management';
 import { UserRoleManagementService } from 'src/app/services/module/user-role-management';
@@ -371,5 +374,148 @@ export class ManageRolesComponent implements OnInit {
         await this.loadPageUserRoleList();
       },
     });
+  }
+
+  public async onEditUserRoleModalUserPermissionListDeleteClicked(
+    userPermission: UserPermission
+  ): Promise<void> {
+    try {
+      await this.userPermissionManagementService.removeUserPermissionFromUserRole(
+        this.editUserRoleModalUserRoleID,
+        userPermission.id
+      );
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to remove user permission from user role',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to remove user permission from user role',
+          "User doesn't have the required permission"
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof UserRoleOrUserPermissionNotFoundError) {
+        this.notificationService.error(
+          'Failed to remove user permission from user role',
+          'Cannot find user role or user permission'
+        );
+      } else {
+        this.notificationService.error(
+          'Failed to remove user permission from user role',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+
+    this.notificationService.success(
+      'Successfully removed user permission from user role',
+      ''
+    );
+    this.userPermissionList[this.editUserRoleModalUserListItemIndex] =
+      this.userPermissionList[this.editUserRoleModalUserListItemIndex].filter(
+        (userPermissionItem) => userPermissionItem.id !== userPermission.id
+      );
+  }
+
+  public async onAddUserPermissionClicked(): Promise<void> {
+    try {
+      this.addUserPermissionModalUserPermissionList =
+        await this.userPermissionManagementService.getUserPermissionList();
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to retrieve user permission list',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to retrieve user permission list',
+          "User doesn't have the required permission"
+        );
+        this.router.navigateByUrl('/welcome');
+      } else {
+        this.notificationService.error(
+          'Failed to retrieve user permission list',
+          'Unknown error'
+        );
+        this.router.navigateByUrl('/welcome');
+      }
+      return;
+    }
+
+    this.addUserPermissionModalPermissionTreeRootList =
+      this.permissionTreeService.getPermissionTree(
+        this.addUserPermissionModalUserPermissionList
+      );
+    this.isAddUserPermissionModalVisible = true;
+  }
+
+  public onAddUserPermissionModalCancel(): void {
+    this.isAddUserPermissionModalVisible = false;
+  }
+
+  public async onAddUserPermissionModalUserPermissionListItemClicked(
+    event: NzFormatEmitEvent
+  ): Promise<void> {
+    if (!event.node || !event.node.origin) {
+      return;
+    }
+    const origin = event.node.origin as PermissionTreeNode;
+    if (!origin.userPermission) {
+      return;
+    }
+    const userPermission = origin.userPermission;
+
+    try {
+      await this.userPermissionManagementService.addUserPermissionToUserRole(
+        this.editUserRoleModalUserRoleID,
+        userPermission.id
+      );
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to add user permission to user role',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to add user permission to user role',
+          "User doesn't have the required permission"
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof UserRoleOrUserPermissionNotFoundError) {
+        this.notificationService.error(
+          'Failed to add user permission to user role',
+          'Cannot find user role or user permission'
+        );
+      } else if (e instanceof UserRoleAlreadyHasUserPermissionError) {
+        this.notificationService.error(
+          'Failed to add user permission to user role',
+          'User role already has user permission'
+        );
+      } else {
+        this.notificationService.error(
+          'Failed to add user permission to user role',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+
+    this.notificationService.success(
+      'Successfully added user permission to user role',
+      ''
+    );
+    this.userPermissionList[this.editUserRoleModalUserListItemIndex] = [
+      ...this.userPermissionList[this.editUserRoleModalUserListItemIndex],
+      userPermission,
+    ];
+    this.isAddUserPermissionModalVisible = false;
   }
 }

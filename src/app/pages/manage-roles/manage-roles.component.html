@@ -141,7 +141,58 @@
                 </button>
             </nz-collapse-panel>
             <nz-collapse-panel nzHeader="Assigned permissions">
+                <nz-list [nzDataSource]="userPermissionList[editUserRoleModalUserListItemIndex]" nzBordered>
+                    <nz-list-item *ngFor="let userPermission of userPermissionList[editUserRoleModalUserListItemIndex]">
+                        <nz-list-item-meta>
+                            <nz-list-item-meta-title>
+                                {{ userPermission.permissionName }}
+                            </nz-list-item-meta-title>
+                            <nz-list-item-meta-description>
+                                {{ userPermission.description }}
+                            </nz-list-item-meta-description>
+                        </nz-list-item-meta>
+                        <ul nz-list-item-actions>
+                            <nz-list-item-action>
+                                <a nz-typography nzType="danger"
+                                    (click)="onEditUserRoleModalUserPermissionListDeleteClicked(userPermission)">
+                                    <i nz-icon nzType="delete" nzTheme="outline"></i>
+                                </a>
+                            </nz-list-item-action>
+                        </ul>
+                    </nz-list-item>
+                </nz-list>
+                <button nz-button nzType="primary" class="add-user-permission-btn"
+                    (click)="onAddUserPermissionClicked()">
+                    <i nz-icon nzType="plus" nzTheme="outline"></i> Add user permission
+                </button>
             </nz-collapse-panel>
         </nz-collapse>
+    </ng-container>
+</nz-modal>
+
+<nz-modal [(nzVisible)]="isAddUserPermissionModalVisible" nzTitle="Add user permission" [nzFooter]="null"
+    (nzOnCancel)="onAddUserPermissionModalCancel()">
+    <ng-container *nzModalContent>
+        <nz-tree [nzData]="addUserPermissionModalPermissionTreeRootList" [nzTreeTemplate]="permissionTreeTemplate"
+            (nzClick)="onAddUserPermissionModalUserPermissionListItemClicked($event)">
+        </nz-tree>
+
+        <ng-template #permissionTreeTemplate let-node let-origin="origin">
+            <span class="permission-tree-node">
+                <span *ngIf="!node.isLeaf">
+                    <i nz-icon [nzType]="node.isExpanded ? 'folder-open' : 'folder'"></i>
+                    <span class="permission-tree-node-title" nz-typography>{{ node.title }}</span>
+                </span>
+                <span *ngIf="node.isLeaf">
+                    <i nz-icon nzType="user"></i>
+                    <strong nz-typography>
+                        {{ node.title }}
+                    </strong><br />
+                    <span nz-typography>
+                        {{ origin.userPermission.description }}
+                    </span>
+                </span>
+            </span>
+        </ng-template>
     </ng-container>
 </nz-modal>
