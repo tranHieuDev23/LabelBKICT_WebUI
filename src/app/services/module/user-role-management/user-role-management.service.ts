@@ -16,6 +16,24 @@ export class UserRoleManagementService {
     private readonly usersDataAccessService: UsersService
   ) {}
 
+  public isValidDisplayName(
+    permissionName: string
+  ): { [k: string]: boolean } | null {
+    if (permissionName.length > 256) {
+      return { error: true, maxLength: true };
+    }
+    return null;
+  }
+
+  public isValidDescription(
+    description: string
+  ): { [k: string]: boolean } | null {
+    if (description.length > 256) {
+      return { error: true, maxLength: true };
+    }
+    return null;
+  }
+
   public async createUserRole(
     displayName: string,
     description: string

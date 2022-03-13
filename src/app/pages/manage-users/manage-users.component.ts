@@ -103,7 +103,7 @@ export class ManageUsersComponent implements OnInit {
         passwordConfirm: ['', [Validators.required]],
       },
       {
-        validator: [ConfirmedValidator('password', 'passwordConfirm')],
+        validators: [ConfirmedValidator('password', 'passwordConfirm')],
       }
     );
     this.createNewUserModalFormGroup.reset({

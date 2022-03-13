@@ -39,7 +39,8 @@
 </div>
 
 <nz-modal [(nzVisible)]="isCreateNewUserModalVisible" nzTitle="Create a new user"
-    (nzOnCancel)="onCreateNewUserModalCancel()" (nzOnOk)="onCreateNewUserModalOk()">
+    (nzOnCancel)="onCreateNewUserModalCancel()" [nzOkDisabled]="createNewUserModalFormGroup.invalid"
+    (nzOnOk)="onCreateNewUserModalOk()">
     <ng-container *nzModalContent>
         <form nz-form [formGroup]="createNewUserModalFormGroup">
             <nz-form-item>

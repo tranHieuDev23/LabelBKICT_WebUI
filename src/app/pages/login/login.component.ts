@@ -47,7 +47,7 @@ export class LoginComponent {
         passwordConfirm: ['', [Validators.required]],
       },
       {
-        validator: [ConfirmedValidator('password', 'passwordConfirm')],
+        validators: [ConfirmedValidator('password', 'passwordConfirm')],
       }
     );
     this.registerForm.reset({

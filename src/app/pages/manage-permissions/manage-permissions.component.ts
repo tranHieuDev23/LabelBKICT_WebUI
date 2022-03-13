@@ -19,10 +19,11 @@ import {
   UnauthorizedError,
 } from 'src/app/services/dataaccess/api/errors';
 import { Router } from '@angular/router';
+import {
+  PermissionTreeNode,
+  PermissionTreeService,
+} from 'src/app/services/utils/permission-tree/permission-tree.service';
 
-export interface PermissionTreeNode extends NzTreeNodeOptions {
-  userPermission?: UserPermission;
-}
 @Component({
   selector: 'app-manage-permissions',
   templateUrl: './manage-permissions.component.html',
@@ -42,6 +43,7 @@ export class ManagePermissionsComponent implements OnInit {
   constructor(
     private readonly userPermissionManagementService: UserPermissionManagementService,
     private readonly notificationService: NzNotificationService,
+    private readonly permissionTreeService: PermissionTreeService,
     private readonly router: Router,
     formBuilder: FormBuilder
   ) {
@@ -114,71 +116,9 @@ export class ManagePermissionsComponent implements OnInit {
         }
         return;
       }
-      this.loadPermissionTree();
+      this.permissionTreeRootList =
+        this.permissionTreeService.getPermissionTree(this.userPermissionList);
     })().then();
-  }
-
-  private async loadPermissionTree(): Promise<void> {
-    this.permissionTreeRootList = [];
-
-    let currentPath: string[] = [];
-    let currentPathNodeList: PermissionTreeNode[] = [];
-
-    for (const userPermission of this.userPermissionList) {
-      const { permissionName } = userPermission;
-      const newPath = permissionName.split('.');
-
-      const commonPrefixLength = this.getCommonPrefixLength(
-        currentPath,
-        newPath
-      );
-
-      const newPathNodeList = currentPathNodeList.slice(0, commonPrefixLength);
-      for (let i = commonPrefixLength; i < newPath.length; i++) {
-        const pathString = newPath[i];
-        const isLeaf = i === newPath.length - 1;
-        if (i === 0) {
-          const newNode: PermissionTreeNode = {
-            key: pathString,
-            title: pathString,
-            children: [],
-            isLeaf,
-            selectable: false,
-            expanded: true,
-          };
-          if (isLeaf) newNode.userPermission = userPermission;
-          this.permissionTreeRootList.push(newNode);
-          newPathNodeList.push(newNode);
-          continue;
-        }
-
-        const lastNode = newPathNodeList[i - 1];
-        const newNode: PermissionTreeNode = {
-          key: `${lastNode.key}.${pathString}`,
-          title: pathString,
-          children: [],
-          isLeaf,
-          selectable: false,
-          expanded: true,
-        };
-        if (isLeaf) newNode.userPermission = userPermission;
-        lastNode.children?.push(newNode);
-        newPathNodeList.push(newNode);
-      }
-
-      currentPath = newPath;
-      currentPathNodeList = newPathNodeList;
-    }
-  }
-
-  private getCommonPrefixLength(pathA: string[], pathB: string[]): number {
-    const minLength = Math.min(pathA.length, pathB.length);
-    for (let i = 0; i < minLength; i++) {
-      if (pathA[i] !== pathB[i]) {
-        return i;
-      }
-    }
-    return minLength;
   }
 
   public async onCreateNewUserPermissionClicked(): Promise<void> {
@@ -238,7 +178,9 @@ export class ManagePermissionsComponent implements OnInit {
     this.userPermissionList = [...this.userPermissionList, userPermission].sort(
       (a, b) => a.permissionName.localeCompare(b.permissionName)
     );
-    this.loadPermissionTree();
+    this.permissionTreeRootList = this.permissionTreeService.getPermissionTree(
+      this.userPermissionList
+    );
     this.isCreateNewUserPermissionModalVisible = false;
   }
 
@@ -283,7 +225,9 @@ export class ManagePermissionsComponent implements OnInit {
     this.userPermissionList = this.userPermissionList.filter(
       (userPermission) => userPermission.id !== userPermission.id
     );
-    this.loadPermissionTree();
+    this.permissionTreeRootList = this.permissionTreeService.getPermissionTree(
+      this.userPermissionList
+    );
   }
 
   public async onUpdateUserPermissionClicked(
@@ -356,7 +300,9 @@ export class ManagePermissionsComponent implements OnInit {
       ),
       userPermission,
     ].sort((a, b) => a.permissionName.localeCompare(b.permissionName));
-    this.loadPermissionTree();
+    this.permissionTreeRootList = this.permissionTreeService.getPermissionTree(
+      this.userPermissionList
+    );
     this.isUpdateUserPermissionModalVisible = false;
   }
 }
