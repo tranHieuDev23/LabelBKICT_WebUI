@@ -50,8 +50,34 @@ export class WelcomeComponent implements OnInit {
   private updateMenuItemList(sessionUserInfo: SessionUserInfo): void {
     this.menuItemList = [];
 
-    // User management
-    if (this.isUserManagementMenuItemAvailable()) {
+    // Image settings
+    if (this.isImageSettingsMenuItemAvailable()) {
+      const submenuItemList: WelcomeSubmenuItem[] = [];
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'image_types.manage'
+        )
+      ) {
+        submenuItemList.push(
+          new WelcomeSubmenuItem('Manage image types', '/manage-image-types')
+        );
+      }
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'image_tags.manage'
+        )
+      ) {
+        submenuItemList.push(
+          new WelcomeSubmenuItem('Manage image tags', '/manage-image-tags')
+        );
+      }
+      this.menuItemList.push(
+        new WelcomeMenuItem('Image settings', 'picture', submenuItemList)
+      );
+    }
+
+    // User settings
+    if (this.isUserSettingsMenuItemAvailable()) {
       const submenuItemList: WelcomeSubmenuItem[] = [];
       if (
         this.sessionManagementService.checkSessionUserHasPermission(
@@ -84,12 +110,23 @@ export class WelcomeComponent implements OnInit {
         );
       }
       this.menuItemList.push(
-        new WelcomeMenuItem('User management', 'user', submenuItemList)
+        new WelcomeMenuItem('User settings', 'user', submenuItemList)
       );
     }
   }
 
-  private isUserManagementMenuItemAvailable(): boolean {
+  private isImageSettingsMenuItemAvailable(): boolean {
+    return (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'image_types.manage'
+      ) ||
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'image_tags.manage'
+      )
+    );
+  }
+
+  private isUserSettingsMenuItemAvailable(): boolean {
     return (
       this.sessionManagementService.checkSessionUserHasPermission(
         'users.manage'

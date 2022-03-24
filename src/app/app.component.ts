@@ -85,6 +85,28 @@ export class AppComponent {
         )
       );
     }
+    if (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'image_types.manage'
+      )
+    ) {
+      settingsSubmenuList.push(
+        new AppSubmenuItem(
+          'Manage image types',
+          '/manage-image-types',
+          () => {}
+        )
+      );
+    }
+    if (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'image_tags.manage'
+      )
+    ) {
+      settingsSubmenuList.push(
+        new AppSubmenuItem('Manage image tags', '/manage-image-tags', () => {})
+      );
+    }
     settingsSubmenuList.push(
       new AppSubmenuItem('Log out', '/logout', async () => {
         await this.onLogOutClicked();

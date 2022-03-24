@@ -40,6 +40,22 @@ const routes: Routes = [
       ),
     canActivate: [UserLoggedInGuard],
   },
+  {
+    path: 'manage-image-types',
+    loadChildren: () =>
+      import('./pages/manage-image-types/manage-image-types.module').then(
+        (m) => m.ManageImageTypesModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
+  {
+    path: 'manage-image-tags',
+    loadChildren: () =>
+      import('./pages/manage-image-tags/manage-image-tags.module').then(
+        (m) => m.ManageImageTagsModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
   { path: '**', pathMatch: 'full', redirectTo: '/welcome' },
 ];
 

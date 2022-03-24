@@ -49,6 +49,14 @@ class UserLoggedInGuard implements CanActivate {
         return this.sessionManagementService.checkSessionUserHasPermission(
           'user_permissions.manage'
         );
+      case 'manage-image-types':
+        return this.sessionManagementService.checkSessionUserHasPermission(
+          'image_types.manage'
+        );
+      case 'manage-image-tags':
+        return this.sessionManagementService.checkSessionUserHasPermission(
+          'image_tags.manage'
+        );
       default:
         return true;
     }
