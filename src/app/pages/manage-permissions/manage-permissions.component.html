@@ -24,7 +24,7 @@
                 <a nz-typography (click)="onUpdateUserPermissionClicked(origin.userPermission)">
                     <i nz-icon nzType="edit"></i>
                 </a>
-                <a nz-typography nzType="danger">
+                <a nz-typography nzType="danger" (click)="onDeleteUserPermissionClicked(origin.userPermission)">
                     <i nz-icon nzType="delete"></i>
                 </a> <br />
                 <span class="permission-tree-node-description" nz-typography>

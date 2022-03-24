@@ -20,6 +20,7 @@ import {
   PermissionTreeNode,
   PermissionTreeService,
 } from 'src/app/services/utils/permission-tree/permission-tree.service';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 @Component({
   selector: 'app-manage-permissions',
@@ -42,6 +43,7 @@ export class ManagePermissionsComponent implements OnInit {
     private readonly notificationService: NzNotificationService,
     private readonly permissionTreeService: PermissionTreeService,
     private readonly router: Router,
+    private readonly modalService: NzModalService,
     formBuilder: FormBuilder
   ) {
     this.createNewUserPermissionModalFormGroup = formBuilder.group({
@@ -184,47 +186,53 @@ export class ManagePermissionsComponent implements OnInit {
   public async onDeleteUserPermissionClicked(
     userPermission: UserPermission
   ): Promise<void> {
-    try {
-      await this.userPermissionManagementService.deleteUserPermission(
-        userPermission.id
-      );
-    } catch (error) {
-      if (error instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to create new user permission',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (error instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to create new user permission',
-          "User doesn't have the required permission"
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (error instanceof UserPermissionNotFoundError) {
-        this.notificationService.error(
-          'Failed to create new user permission',
-          'Cannot find user permission'
-        );
-      } else {
-        this.notificationService.error(
-          'Failed to create new user permission',
-          'Unknown error'
-        );
-      }
-      return;
-    }
+    this.modalService.warning({
+      nzTitle: 'Delete user permission',
+      nzContent: 'Are you sure? This action <b>CANNOT</b> be undone.',
+      nzCancelText: 'Cancel',
+      nzOnOk: async () => {
+        try {
+          await this.userPermissionManagementService.deleteUserPermission(
+            userPermission.id
+          );
+        } catch (error) {
+          if (error instanceof UnauthenticatedError) {
+            this.notificationService.error(
+              'Failed to delete new user permission',
+              'User is not logged in'
+            );
+            this.router.navigateByUrl('/login');
+          } else if (error instanceof UnauthorizedError) {
+            this.notificationService.error(
+              'Failed to delete new user permission',
+              "User doesn't have the required permission"
+            );
+            this.router.navigateByUrl('/welcome');
+          } else if (error instanceof UserPermissionNotFoundError) {
+            this.notificationService.error(
+              'Failed to delete new user permission',
+              'Cannot find user permission'
+            );
+          } else {
+            this.notificationService.error(
+              'Failed to delete new user permission',
+              'Unknown error'
+            );
+          }
+          return;
+        }
 
-    this.notificationService.success(
-      'Successfully deleted user permission',
-      ''
-    );
-    this.userPermissionList = this.userPermissionList.filter(
-      (userPermission) => userPermission.id !== userPermission.id
-    );
-    this.permissionTreeRootList = this.permissionTreeService.getPermissionTree(
-      this.userPermissionList
-    );
+        this.notificationService.success(
+          'Successfully deleted user permission',
+          ''
+        );
+        this.userPermissionList = this.userPermissionList.filter(
+          (userPermissionItem) => userPermissionItem.id !== userPermission.id
+        );
+        this.permissionTreeRootList =
+          this.permissionTreeService.getPermissionTree(this.userPermissionList);
+      },
+    });
   }
 
   public async onUpdateUserPermissionClicked(
