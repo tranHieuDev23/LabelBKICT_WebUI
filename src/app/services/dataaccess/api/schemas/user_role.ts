@@ -7,9 +7,9 @@ export class UserRole {
 
   public static fromJSON(userRoleJSON: any): UserRole {
     return new UserRole(
-      userRoleJSON?.id || 0,
-      userRoleJSON?.display_name || '',
-      userRoleJSON?.description || ''
+      userRoleJSON.id || 0,
+      userRoleJSON.display_name || '',
+      userRoleJSON.description || ''
     );
   }
 }

@@ -7,9 +7,9 @@ export class User {
 
   public static fromJSON(userJSON: any): User {
     return new User(
-      userJSON?.id || 0,
-      userJSON?.username || '',
-      userJSON?.display_name || ''
+      userJSON.id || 0,
+      userJSON.username || '',
+      userJSON.display_name || ''
     );
   }
 }

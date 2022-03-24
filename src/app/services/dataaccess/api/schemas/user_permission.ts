@@ -7,9 +7,9 @@ export class UserPermission {
 
   public static fromJSON(userPermissionJSON: any): UserPermission {
     return new UserPermission(
-      userPermissionJSON?.id || 0,
-      userPermissionJSON?.permission_name || '',
-      userPermissionJSON?.description || ''
+      userPermissionJSON.id || 0,
+      userPermissionJSON.permission_name || '',
+      userPermissionJSON.description || ''
     );
   }
 }
