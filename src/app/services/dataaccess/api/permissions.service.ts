@@ -14,11 +14,18 @@ export class InvalidUserPermissionInformationError extends Error {
   }
 }
 
+export class UserPermissionNameTakenError extends Error {
+  constructor() {
+    super('User permission name is taken');
+  }
+}
+
 export class UserPermissionNotFoundError extends Error {
   constructor() {
     super('Cannot find user permission');
   }
 }
+
 @Injectable({
   providedIn: 'root',
 })
@@ -46,6 +53,8 @@ export class PermissionsService {
           throw new UnauthenticatedError();
         case HttpStatusCode.Forbidden:
           throw new UnauthorizedError();
+        case HttpStatusCode.Conflict:
+          throw new UserPermissionNameTakenError();
         default:
           throw new UnknownAPIError(e);
       }
@@ -95,6 +104,8 @@ export class PermissionsService {
           throw new UnauthorizedError();
         case HttpStatusCode.NotFound:
           throw new UserPermissionNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserPermissionNameTakenError();
         default:
           throw new UnknownAPIError(e);
       }

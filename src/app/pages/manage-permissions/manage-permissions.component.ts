@@ -5,6 +5,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
   UserPermission,
+  UserPermissionNameTakenError,
   UserPermissionNotFoundError,
 } from 'src/app/services/dataaccess/api';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
@@ -161,6 +162,11 @@ export class ManagePermissionsComponent implements OnInit {
           "User doesn't have the required permission"
         );
         this.router.navigateByUrl('/welcome');
+      } else if (error instanceof UserPermissionNameTakenError) {
+        this.notificationService.error(
+          'Failed to update user permission',
+          'User permission name is taken'
+        );
       } else {
         this.notificationService.error(
           'Failed to create new user permission',
@@ -284,6 +290,11 @@ export class ManagePermissionsComponent implements OnInit {
         this.notificationService.error(
           'Failed to update user permission',
           'Cannot find user permission'
+        );
+      } else if (error instanceof UserPermissionNameTakenError) {
+        this.notificationService.error(
+          'Failed to update user permission',
+          'User permission name is taken'
         );
       } else {
         this.notificationService.error(
