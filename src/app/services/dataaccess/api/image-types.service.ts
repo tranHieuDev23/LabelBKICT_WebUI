@@ -81,7 +81,7 @@ export class ImageTypesService {
       );
       let regionLabelList: RegionLabel[][] | undefined = undefined;
       if (withRegionLabel) {
-        regionLabelList = response.data.regionLabelList.map(
+        regionLabelList = response.data.region_label_list.map(
           (regionLabelSublist: any[]) =>
             regionLabelSublist.map(RegionLabel.fromJSON)
         );
