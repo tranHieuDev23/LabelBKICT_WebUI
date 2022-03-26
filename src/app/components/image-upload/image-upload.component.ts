@@ -96,6 +96,11 @@ export class ImageUploadComponent {
     this.isUploading = true;
 
     const imageFileList = this.nzFileList.filter((file) => !file.status);
+    for (const imageFile of imageFileList) {
+      imageFile.status = 'uploading';
+    }
+    this.nzFileList = [...this.nzFileList];
+
     const imageTypeID =
       this.imageTypeForUploadedImage === null
         ? null
@@ -111,23 +116,26 @@ export class ImageUploadComponent {
         imageTagIDList,
         this.descriptionFileForUploadedImage
       )
-      .subscribe((message) => this.handleUploadImageBatchMessage(message));
+      .subscribe((message) =>
+        this.handleUploadImageBatchMessage(imageFileList, message)
+      );
   }
 
   private handleUploadImageBatchMessage(
+    imageFileList: NzUploadFile[],
     message: UploadImageBatchMessage
   ): void {
     switch (message.type) {
       case UploadImageBatchMessageType.UPLOAD_SUCCESS:
         const successIndex: number = message.data;
-        const successFile = this.nzFileList[successIndex];
+        const successFile = imageFileList[successIndex];
         successFile.status = 'success';
         this.nzFileList = [...this.nzFileList];
         this.uploadSuccess.emit(successFile);
         break;
       case UploadImageBatchMessageType.UPLOAD_FAILURE:
         const failureIndex: number = message.data;
-        const failureFile = this.nzFileList[failureIndex];
+        const failureFile = imageFileList[failureIndex];
         failureFile.status = 'error';
         this.nzFileList = [...this.nzFileList];
         this.uploadFailure.emit(failureFile);
