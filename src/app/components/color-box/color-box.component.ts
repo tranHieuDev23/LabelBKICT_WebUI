@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ColorEvent } from 'ngx-color';
 
 @Component({
@@ -6,15 +6,13 @@ import { ColorEvent } from 'ngx-color';
   templateUrl: './color-box.component.html',
   styleUrls: ['./color-box.component.scss'],
 })
-export class ColorBoxComponent implements OnInit {
+export class ColorBoxComponent {
   @Input() public color = '#fffff';
   @Output() public colorChanged = new EventEmitter<string>();
 
   public showPicker = false;
 
   constructor() {}
-
-  ngOnInit(): void {}
 
   public togglePicker(): void {
     this.showPicker = !this.showPicker;
