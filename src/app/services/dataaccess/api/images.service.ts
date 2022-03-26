@@ -1,12 +1,67 @@
+import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Axios } from 'axios';
+import axios, { Axios } from 'axios';
 import { Observable } from 'rxjs';
+import {
+  UnauthenticatedError,
+  UnauthorizedError,
+  UnknownAPIError,
+} from './errors';
 import {
   uploadImageBatch,
   UploadImageBatchMessage,
   UploadImageBatchMessageType,
   UploadImageInput,
 } from './images.helper';
+import { Image, ImageStatus, ImageTag, Region } from './schemas';
+
+export class ImageNotFoundError extends Error {
+  constructor() {
+    super('Cannot find image');
+  }
+}
+
+export class InvalidImageInformationError extends Error {
+  constructor() {
+    super('Invalid image information');
+  }
+}
+
+export class InvalidImageStatusError extends Error {
+  constructor() {
+    super('Invalid image status');
+  }
+}
+
+export class ImageOrImageTypeNotFoundError extends Error {
+  constructor() {
+    super('Cannot find image or image type');
+  }
+}
+
+export class ImageOrImageTagNotFoundError extends Error {
+  constructor() {
+    super('Cannot find image or image tag');
+  }
+}
+
+export class ImageCannotBeAssignedWithImageTagError extends Error {
+  constructor() {
+    super('Image tag cannot be assigned to image');
+  }
+}
+
+export class ImageAlreadyHasImageTagError extends Error {
+  constructor() {
+    super('Image already has image tag');
+  }
+}
+
+export class ImageDoesNotHaveImageTagError extends Error {
+  constructor() {
+    super('Image does not have image tag');
+  }
+}
 
 @Injectable({
   providedIn: 'root',
@@ -34,5 +89,224 @@ export class ImagesService {
         uploadImageBatch(inputList).subscribe(subscriber);
       }
     });
+  }
+
+  public async getImage(id: number): Promise<{
+    image: Image;
+    imageTagList: ImageTag[];
+    regionList: Region[];
+  }> {
+    try {
+      const response = await this.axios.get(`/api/images/${id}`);
+      const image = Image.fromJSON(response.data.image);
+      const imageTagList = response.data.image_tag_list.map(ImageTag.fromJSON);
+      const regionList = response.data.region_list.map(Region.fromJSON);
+      return { image, imageTagList, regionList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async updateImageMetadata(
+    id: number,
+    description: string | undefined
+  ): Promise<Image> {
+    try {
+      const response = await this.axios.patch(`/api/images/${id}`, {
+        description,
+      });
+      const image = Image.fromJSON(response.data.image);
+      return image;
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidImageInformationError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async deleteImage(id: number): Promise<void> {
+    try {
+      await this.axios.delete(`/api/images/${id}`);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getImageRegionSnapshotList(
+    id: number,
+    status: ImageStatus
+  ): Promise<Region[]> {
+    try {
+      const response = await this.axios.get(
+        `/api/images/${id}/region-snapshots`,
+        { params: { at_status: status } }
+      );
+      const regionList = response.data.region_list.map(Region.fromJSON);
+      return regionList;
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidImageStatusError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async updateImageImageType(
+    id: number,
+    imageTypeID: number
+  ): Promise<Image> {
+    try {
+      const response = await this.axios.patch(`/api/images/${id}/image-type`, {
+        image_type_id: imageTypeID,
+      });
+      const image = Image.fromJSON(response.data.image);
+      return image;
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidImageInformationError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageOrImageTypeNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async updateImageStatus(
+    id: number,
+    imageTypeID: number
+  ): Promise<Image> {
+    try {
+      const response = await this.axios.patch(`/api/images/${id}/status`, {
+        image_type_id: imageTypeID,
+      });
+      const image = Image.fromJSON(response.data.image);
+      return image;
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidImageStatusError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async addImageTagToImage(
+    id: number,
+    imageTagID: number
+  ): Promise<void> {
+    try {
+      await this.axios.post(`/api/images/${id}/tags`, {
+        image_tag_id: imageTagID,
+      });
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new ImageCannotBeAssignedWithImageTagError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageOrImageTagNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new ImageAlreadyHasImageTagError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async removeImageTagFromImage(
+    id: number,
+    imageTagID: number
+  ): Promise<void> {
+    try {
+      await this.axios.delete(`/api/images/${id}/tags/${imageTagID}`);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageOrImageTagNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new ImageDoesNotHaveImageTagError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
   }
 }
