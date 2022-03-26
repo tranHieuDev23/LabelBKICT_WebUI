@@ -56,6 +56,46 @@ const routes: Routes = [
       ),
     canActivate: [UserLoggedInGuard],
   },
+  {
+    path: 'upload-images',
+    loadChildren: () =>
+      import('./pages/upload-images/upload-images.module').then(
+        (m) => m.UploadImagesModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
+  {
+    path: 'my-images',
+    loadChildren: () =>
+      import('./pages/my-images/my-images.module').then(
+        (m) => m.MyImagesModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
+  {
+    path: 'all-images',
+    loadChildren: () =>
+      import('./pages/all-images/all-images.module').then(
+        (m) => m.AllImagesModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
+  {
+    path: 'verify-images',
+    loadChildren: () =>
+      import('./pages/verify-images/verify-images.module').then(
+        (m) => m.VerifyImagesModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
+  {
+    path: 'export-images',
+    loadChildren: () =>
+      import('./pages/export-images/export-images.module').then(
+        (m) => m.ExportImagesModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
   { path: '**', pathMatch: 'full', redirectTo: '/welcome' },
 ];
 

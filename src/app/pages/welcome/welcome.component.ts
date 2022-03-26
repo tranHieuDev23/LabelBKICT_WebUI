@@ -50,6 +50,57 @@ export class WelcomeComponent implements OnInit {
   private updateMenuItemList(sessionUserInfo: SessionUserInfo): void {
     this.menuItemList = [];
 
+    // Label images
+    if (this.isLabelImagesMenuItemAvailable()) {
+      const submenuItemList: WelcomeSubmenuItem[] = [];
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'images.upload'
+        )
+      ) {
+        submenuItemList.push(
+          new WelcomeSubmenuItem('Upload images', '/upload-images')
+        );
+      }
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'images.manage.self'
+        )
+      ) {
+        submenuItemList.push(new WelcomeSubmenuItem('My images', '/my-images'));
+      }
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'images.manage.all'
+        )
+      ) {
+        submenuItemList.push(
+          new WelcomeSubmenuItem('All images', '/all-images')
+        );
+      }
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'images.verify'
+        )
+      ) {
+        submenuItemList.push(
+          new WelcomeSubmenuItem('Verify images', '/verify-images')
+        );
+      }
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'images.export'
+        )
+      ) {
+        submenuItemList.push(
+          new WelcomeSubmenuItem('Export images', '/export-images')
+        );
+      }
+      this.menuItemList.push(
+        new WelcomeMenuItem('Label images', 'edit', submenuItemList)
+      );
+    }
+
     // Image settings
     if (this.isImageSettingsMenuItemAvailable()) {
       const submenuItemList: WelcomeSubmenuItem[] = [];
@@ -113,6 +164,26 @@ export class WelcomeComponent implements OnInit {
         new WelcomeMenuItem('User settings', 'user', submenuItemList)
       );
     }
+  }
+
+  private isLabelImagesMenuItemAvailable(): boolean {
+    return (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'images.upload'
+      ) ||
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'images.manage.self'
+      ) ||
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'images.manage.all'
+      ) ||
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'images.verify'
+      ) ||
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'images.export'
+      )
+    );
   }
 
   private isImageSettingsMenuItemAvailable(): boolean {

@@ -47,7 +47,55 @@ export class AppComponent {
     }
 
     // Label menu
-    this.menuItemList.push(new AppMenuItem('Label data', 'edit', []));
+    const labelSubmenuList: AppSubmenuItem[] = [];
+    if (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'images.upload'
+      )
+    ) {
+      labelSubmenuList.push(
+        new AppSubmenuItem('Upload images', '/upload-images', () => {})
+      );
+    }
+    if (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'images.manage.self'
+      )
+    ) {
+      labelSubmenuList.push(
+        new AppSubmenuItem('My images', '/my-images', () => {})
+      );
+    }
+    if (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'images.manage.all'
+      )
+    ) {
+      labelSubmenuList.push(
+        new AppSubmenuItem('All images', '/all-images', () => {})
+      );
+    }
+    if (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'images.verify'
+      )
+    ) {
+      labelSubmenuList.push(
+        new AppSubmenuItem('Verify images', '/verify-images', () => {})
+      );
+    }
+    if (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'images.export'
+      )
+    ) {
+      labelSubmenuList.push(
+        new AppSubmenuItem('Export images', '/export-images', () => {})
+      );
+    }
+    this.menuItemList.push(
+      new AppMenuItem('Label data', 'edit', labelSubmenuList)
+    );
 
     // Settings menu
     const settingsSubmenuList: AppSubmenuItem[] = [];
