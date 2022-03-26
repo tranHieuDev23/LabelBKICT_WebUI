@@ -1,0 +1,140 @@
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { NzUploadFile } from 'ng-zorro-antd/upload';
+import {
+  ImageTag,
+  ImageTagGroup,
+  ImageType,
+  UploadImageBatchMessage,
+  UploadImageBatchMessageType,
+} from 'src/app/services/dataaccess/api';
+import { ImageManagementService } from 'src/app/services/module/image-management';
+
+@Component({
+  selector: 'app-image-upload',
+  templateUrl: './image-upload.component.html',
+  styleUrls: ['./image-upload.component.scss'],
+})
+export class ImageUploadComponent {
+  @Input() public isMultipleUpload = false;
+  @Input() public isDirectoryUpload = false;
+  @Input() public fileSizeLimit = 0;
+  @Input() public description = '';
+  @Input() public hint = '';
+
+  @Input() public allImageTypeList: ImageType[] = [];
+  @Input() public allImageTagGroupList: ImageTagGroup[] = [];
+  @Input() public allImageTagList: ImageTag[][] = [];
+
+  public nzFileList: NzUploadFile[] = [];
+
+  public onBeforeUpload = (newFile: NzUploadFile): boolean => {
+    this.nzFileList = this.nzFileList.concat(newFile);
+    return false;
+  };
+
+  public onRemove = (removedFile: NzUploadFile): boolean => {
+    this.nzFileList = this.nzFileList.filter(
+      (file) => file.uid !== removedFile.uid
+    );
+    return true;
+  };
+
+  public imageTypeForUploadedImage: ImageType | null = null;
+  public shouldUsePredictiveModel = false;
+  public imageTagListForUploadedImage: ImageTag[] = [];
+  public descriptionFileForUploadedImage: File | null = null;
+
+  public isUploading = false;
+
+  @Output() public uploadSuccess = new EventEmitter<NzUploadFile>();
+  @Output() public uploadFailure = new EventEmitter<NzUploadFile>();
+
+  constructor(
+    private readonly imageManagementService: ImageManagementService
+  ) {}
+
+  public async onImageTypeForUploadedImageChanged(value: ImageType | null) {}
+
+  public isShouldUsePredictiveModelToggleEnabled(): boolean {
+    if (this.isUploading || this.imageTypeForUploadedImage === null) {
+      return false;
+    }
+    return this.imageTypeForUploadedImage.hasPredictiveModel;
+  }
+
+  public onImageTagForUploadedImageAdded(imageTag: ImageTag): void {
+    this.imageTagListForUploadedImage = [
+      ...this.imageTagListForUploadedImage,
+      imageTag,
+    ];
+  }
+
+  public onImageTagForUploadedImageDeleted(imageTag: ImageTag): void {
+    this.imageTagListForUploadedImage = [
+      ...this.imageTagListForUploadedImage,
+      imageTag,
+    ];
+  }
+
+  public onDescriptionFileForUploadedImageSelected(event: Event): void {
+    const targetElement = event.currentTarget as HTMLInputElement;
+    if (targetElement === null || targetElement.files === null) {
+      return;
+    }
+    const fileList = targetElement.files;
+    if (fileList.length === 0) {
+      this.descriptionFileForUploadedImage = null;
+    } else {
+      this.descriptionFileForUploadedImage = fileList.item(0);
+    }
+  }
+
+  public async onUploadClicked(): Promise<void> {
+    if (this.isUploading) {
+      return;
+    }
+    this.isUploading = true;
+
+    const imageFileList = this.nzFileList.filter((file) => !file.status);
+    const imageTypeID =
+      this.imageTypeForUploadedImage === null
+        ? null
+        : this.imageTypeForUploadedImage.id;
+    const imageTagIDList = this.imageTagListForUploadedImage.map(
+      (imageTag) => imageTag.id
+    );
+
+    this.imageManagementService
+      .createImageBatch(
+        imageFileList,
+        imageTypeID,
+        imageTagIDList,
+        this.descriptionFileForUploadedImage
+      )
+      .subscribe((message) => this.handleUploadImageBatchMessage(message));
+  }
+
+  private handleUploadImageBatchMessage(
+    message: UploadImageBatchMessage
+  ): void {
+    switch (message.type) {
+      case UploadImageBatchMessageType.UPLOAD_SUCCESS:
+        const successIndex: number = message.data;
+        const successFile = this.nzFileList[successIndex];
+        successFile.status = 'success';
+        this.nzFileList = [...this.nzFileList];
+        this.uploadSuccess.emit(successFile);
+        break;
+      case UploadImageBatchMessageType.UPLOAD_FAILURE:
+        const failureIndex: number = message.data;
+        const failureFile = this.nzFileList[failureIndex];
+        failureFile.status = 'error';
+        this.nzFileList = [...this.nzFileList];
+        this.uploadFailure.emit(failureFile);
+        break;
+      case UploadImageBatchMessageType.UPLOAD_COMPLETE:
+        this.isUploading = false;
+        break;
+    }
+  }
+}

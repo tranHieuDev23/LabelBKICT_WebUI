@@ -21,7 +21,7 @@ export class ImageManagementService {
   ) {}
 
   public createImageBatch(
-    imageFileList: File[],
+    imageFileList: any[],
     imageTypeID: number | null,
     imageTagIDList: number[],
     descriptionFile: File | null
