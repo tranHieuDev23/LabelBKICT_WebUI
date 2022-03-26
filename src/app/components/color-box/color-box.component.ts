@@ -7,7 +7,7 @@ import { ColorEvent } from 'ngx-color';
   styleUrls: ['./color-box.component.scss'],
 })
 export class ColorBoxComponent {
-  @Input() public color = '#fffff';
+  @Input() public color = '#FFFFFF';
   @Output() public colorChanged = new EventEmitter<string>();
 
   public showPicker = false;
@@ -26,6 +26,6 @@ export class ColorBoxComponent {
   }
 
   public onSubmitColorInput(): void {
-    this.colorChanged.emit(this.color);
+    this.colorChanged.emit(this.color.toUpperCase());
   }
 }
