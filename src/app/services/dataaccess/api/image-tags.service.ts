@@ -28,7 +28,7 @@ export class InvalidImageTagInformationError extends Error {
 
 export class ImageTagNotFoundError extends Error {
   constructor() {
-    super('Cannot find tag label');
+    super('Cannot find image tag');
   }
 }
 

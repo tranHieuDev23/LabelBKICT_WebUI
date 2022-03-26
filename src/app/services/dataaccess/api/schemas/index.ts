@@ -8,3 +8,5 @@ export * from './image_tag';
 export * from './image';
 export * from './image_list_filter_options';
 export * from './region';
+export * from './polygon';
+export * from './region_operator_log';
