@@ -23,9 +23,11 @@
     "ng-zorro-antd": "^13.1.1",
     "ngx-color": "^7.3.3",
     "p-limit": "^4.0.0",
+    "papaparse": "^5.3.2",
     "randomcolor": "^0.6.2",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",
+    "xlsx": "^0.18.5",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
@@ -39,6 +41,7 @@
     "@angular/compiler-cli": "~13.1.0",
     "@types/jasmine": "~3.10.0",
     "@types/node": "^12.11.1",
+    "@types/papaparse": "^5.3.2",
     "@types/randomcolor": "^0.5.6",
     "@typescript-eslint/eslint-plugin": "5.11.0",
     "@typescript-eslint/parser": "5.11.0",
