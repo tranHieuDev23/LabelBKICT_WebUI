@@ -2,4 +2,75 @@
     <h1 nz-typography>
         Manage image tags
     </h1>
+
+    <nz-collapse>
+        <ng-template ngFor let-imageTagGroup [ngForOf]="imageTagGroupList" let-i="index">
+            <ng-template #imageTagGroupHeader>
+                <app-editable-text [text]="imageTagGroup.displayName" (click)="$event.stopPropagation()"
+                    (textEdited)="onImageTagGroupDisplayNameEdited(i, $event)">
+                </app-editable-text>
+            </ng-template>
+            <nz-collapse-panel [nzHeader]="imageTagGroupHeader" [(nzActive)]="isImageTagGroupCollapsePanelOpen[i]">
+                <h3 nz-typography>Valid image tags of this group</h3>
+
+                <nz-list nzItemLayout="horizontal" nzBordered="true">
+                    <nz-list-empty
+                        *ngIf="imageTagList[i].length === 0 && !isImageTagGroupCollapsePanelAddingImageTagVisible[i]"
+                        nzNoResult="No image tag value">
+                    </nz-list-empty>
+
+                    <nz-list-item *ngFor="let imageTag of imageTagList[i]; index as j">
+                        <app-editable-text [text]="imageTag.displayName"
+                            (textEdited)="onImageTagGroupImageTagDisplayNameEdited(i, j, $event)">
+                        </app-editable-text>
+                        <ul nz-list-item-actions class="item-type-item-image-tag-item-actions">
+                            <nz-list-item-action>
+                                <button nz-button nzDanger (click)="onImageTagGroupImageTagDeleteClicked(i, j)">
+                                    <i nz-icon nzType="delete" nzTheme="outline"></i>
+                                </button>
+                            </nz-list-item-action>
+                        </ul>
+                    </nz-list-item>
+
+                    <nz-list-item *ngIf="isImageTagGroupCollapsePanelAddingImageTagVisible[i]">
+                        <app-editable-text [text]="imageTagGroupCollapsePanelAddingImageTagDisplayName[i]"
+                            [isEditing]="isImageTagGroupCollapsePanelAddingImageTagVisible[i]"
+                            (editingEnd)="onImageTagGroupNewImageTagDisplayNameEditingEnd(i)"
+                            (textEdited)="onImageTagGroupNewImageTagDisplayNameEdited(i, $event)">
+                        </app-editable-text>
+                    </nz-list-item>
+                </nz-list>
+
+                <label nz-checkbox class="image-tag-group-item-is-single-value-checkbox"
+                    [(ngModel)]="imageTagGroup.isSingleValue"
+                    (ngModelChange)="onImageTagGroupIsSingleValueChanged(i, $event)">
+                    Is single value?
+                </label>
+
+                <div class="image-tag-group-item-actions">
+                    <button nz-button (click)="onNewImageTagValueClicked(i)">
+                        <i nz-icon nzType="plus" nzTheme="outline"></i> New image tag value
+                    </button>
+                    <button nz-button nzDanger (click)="onDeleteImageTagGroupClicked(i)">
+                        <i nz-icon nzType="delete" nzTheme="outline"></i> Delete image tag group
+                    </button>
+                </div>
+            </nz-collapse-panel>
+        </ng-template>
+
+        <ng-template #newImageTagGroupHeader>
+            <app-editable-text [text]="newImageTagGroupDisplayName" [isEditing]="isNewImageTagGroupPanelVisible"
+                (click)="$event.stopPropagation()" (editingEnd)="onNewImageTagGroupDisplayNameEditingEnd()"
+                (textEdited)="onNewImageTagGroupDisplayNameEdited($event)">
+            </app-editable-text>
+        </ng-template>
+        <nz-collapse-panel *ngIf="isNewImageTagGroupPanelVisible" [nzHeader]="newImageTagGroupHeader"
+            nzShowArrow="false" nzDisabled="true">
+        </nz-collapse-panel>
+    </nz-collapse>
+
+    <button nz-button class="add-image-tag-group-button" [disabled]="isNewImageTagGroupPanelVisible"
+        (click)="onNewImageTagGroupClicked()">
+        <i nz-icon nzType="plus" nzTheme="outline"></i> New image tag group
+    </button>
 </div>

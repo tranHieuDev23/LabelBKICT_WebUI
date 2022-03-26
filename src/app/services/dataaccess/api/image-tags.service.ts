@@ -99,7 +99,7 @@ export class ImageTagsService {
         },
       });
 
-      const imageTagGroupList = response.data.image_type_list.map(
+      const imageTagGroupList = response.data.image_tag_group_list.map(
         ImageTagGroup.fromJSON
       );
 
@@ -185,16 +185,12 @@ export class ImageTagsService {
 
   public async addImageTagToImageTagGroup(
     imageTagGroupID: number,
-    displayName: string,
-    color: string
+    displayName: string
   ): Promise<ImageTag> {
     try {
       const response = await this.axios.post(
         `/api/image-tag-groups/${imageTagGroupID}/tags`,
-        {
-          display_name: displayName,
-          color: color,
-        }
+        { display_name: displayName }
       );
       return ImageTag.fromJSON(response.data);
     } catch (e) {
@@ -219,16 +215,12 @@ export class ImageTagsService {
   public async updateImageTagOfImageTagGroup(
     imageTagGroupID: number,
     ImageTagID: number,
-    displayName: string,
-    color: string
+    displayName: string
   ): Promise<ImageTag> {
     try {
       const response = await this.axios.patch(
         `/api/image-tag-groups/${imageTagGroupID}/tags/${ImageTagID}`,
-        {
-          display_name: displayName,
-          color: color,
-        }
+        { display_name: displayName }
       );
       return ImageTag.fromJSON(response.data);
     } catch (e) {
