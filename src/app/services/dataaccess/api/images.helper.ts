@@ -26,6 +26,8 @@ export async function uploadImage(input: UploadImageInput): Promise<void> {
   formData.append('image_file', input.file);
   if (input.imageTypeID !== null) {
     formData.append('image_type_id', `${input.imageTypeID}`);
+  } else {
+    formData.append('image_type_id', '');
   }
   formData.append('description', input.description);
   formData.append('image_tag_id_list', input.imageTagIDList.join(','));

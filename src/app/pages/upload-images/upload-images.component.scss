@@ -1,0 +1,42 @@
+@media (max-width: 767px) {
+  .image-upload-files {
+    margin-bottom: 8px;
+  }
+}
+
+.notification {
+  &-icon {
+    position: absolute;
+    margin-left: 4px;
+    font-size: 24px;
+    line-height: 24px;
+
+    &-success {
+      color: #52c41a;
+    }
+
+    &-failure {
+      color: #f5222d;
+    }
+  }
+
+  &-title {
+    margin-left: 48px;
+    font-size: 16px;
+    padding-right: 24px;
+    display: inline-block;
+    color: rgba(0, 0, 0, 0.85);
+    line-height: 24px;
+  }
+
+  &-image {
+    margin-top: 8px;
+    margin-left: 48px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}

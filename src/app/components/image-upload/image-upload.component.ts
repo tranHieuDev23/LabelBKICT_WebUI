@@ -62,18 +62,18 @@ export class ImageUploadComponent {
     return this.imageTypeForUploadedImage.hasPredictiveModel;
   }
 
-  public onImageTagForUploadedImageAdded(imageTag: ImageTag): void {
+  public onImageTagForUploadedImageAdded(addedImageTag: ImageTag): void {
     this.imageTagListForUploadedImage = [
       ...this.imageTagListForUploadedImage,
-      imageTag,
+      addedImageTag,
     ];
   }
 
-  public onImageTagForUploadedImageDeleted(imageTag: ImageTag): void {
-    this.imageTagListForUploadedImage = [
-      ...this.imageTagListForUploadedImage,
-      imageTag,
-    ];
+  public onImageTagForUploadedImageDeleted(deletedImageTag: ImageTag): void {
+    this.imageTagListForUploadedImage =
+      this.imageTagListForUploadedImage.filter(
+        (imageTag) => imageTag.id !== deletedImageTag.id
+      );
   }
 
   public onDescriptionFileForUploadedImageSelected(event: Event): void {

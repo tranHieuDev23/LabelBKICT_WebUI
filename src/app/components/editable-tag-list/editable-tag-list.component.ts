@@ -7,9 +7,6 @@ import { ImageTag, ImageTagGroup } from 'src/app/services/dataaccess/api';
   styleUrls: ['./editable-tag-list.component.scss'],
 })
 export class EditableTagListComponent {
-  @Input() public allImageTagGroupList: ImageTagGroup[] = [];
-  @Input() public allImageTagList: ImageTag[][] = [];
-
   private _editable = true;
 
   @Input() public set editable(v: boolean) {
@@ -21,7 +18,27 @@ export class EditableTagListComponent {
     return this._editable;
   }
 
-  public allowedImageTagGroupIndexList: number[] = [];
+  private _allImageTagGroupList: ImageTagGroup[] = [];
+
+  @Input() public set allImageTagGroupList(v: ImageTagGroup[]) {
+    this._allImageTagGroupList = v;
+    this.updateAllowedImageTagGroupIndexList();
+  }
+
+  public get allImageTagGroupList(): ImageTagGroup[] {
+    return this._allImageTagGroupList;
+  }
+
+  private _allImageTagList: ImageTag[][] = [];
+
+  @Input() public set allImageTagList(v: ImageTag[][]) {
+    this._allImageTagList = v;
+    this.updateAllowedImageTagGroupIndexList();
+  }
+
+  public get allImageTagList(): ImageTag[][] {
+    return this._allImageTagList;
+  }
 
   private _imageTagList: ImageTag[] = [];
   private imageTagIdSet: Set<number> = new Set<number>();
@@ -35,6 +52,8 @@ export class EditableTagListComponent {
   public get imageTagList(): ImageTag[] {
     return this._imageTagList;
   }
+
+  public allowedImageTagGroupIndexList: number[] = [];
 
   public isAddImageTagSelectVisible = false;
   public selectedImageTag: ImageTag | null = null;
@@ -87,7 +106,7 @@ export class EditableTagListComponent {
   private updateAllowedImageTagGroupIndexList(): void {
     this.allowedImageTagGroupIndexList = [];
     this.allImageTagGroupList.forEach((_, index) => {
-      for (const imageTag of this.allImageTagList[index]) {
+      for (const imageTag of this.allImageTagList[index] || []) {
         if (this.isImageTagInImageTagList(imageTag)) {
           return;
         }

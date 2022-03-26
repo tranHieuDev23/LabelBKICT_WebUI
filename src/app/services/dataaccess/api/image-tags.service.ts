@@ -111,7 +111,7 @@ export class ImageTagsService {
       }
 
       let imageTypeList: ImageType[][] | undefined = undefined;
-      if (withImageTag) {
+      if (withImageType) {
         imageTypeList = response.data.image_type_list.map(
           (ImageTagSublist: any[]) => ImageTagSublist.map(ImageType.fromJSON)
         );
