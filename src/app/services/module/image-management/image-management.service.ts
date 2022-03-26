@@ -9,20 +9,60 @@ import {
   UploadImageBatchMessage,
   UploadImageInput,
 } from '../../dataaccess/api';
+import { DescriptionFileService } from './description-file.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ImageManagementService {
-  constructor(private readonly imagesService: ImagesService) {}
+  constructor(
+    private readonly imagesService: ImagesService,
+    private readonly descriptionFileService: DescriptionFileService
+  ) {}
 
   public createImageBatch(
-    inputList: UploadImageInput[]
+    imageFileList: File[],
+    imageTypeID: number | null,
+    imageTagIDList: number[],
+    descriptionFile: File | null
   ): Observable<UploadImageBatchMessage> {
-    for (const input of inputList) {
-      input.description = input.description.trim();
+    return new Observable<UploadImageBatchMessage>((subscriber) => {
+      this.getFilenameToDescriptionMap(descriptionFile).then(
+        (filenameToDescriptionMap) => {
+          const uploadImageInputList = [];
+          for (const imageFile of imageFileList) {
+            const description =
+              filenameToDescriptionMap.get(imageFile.name) || '';
+            uploadImageInputList.push(
+              new UploadImageInput(
+                imageFile,
+                imageTypeID,
+                imageTagIDList,
+                description
+              )
+            );
+          }
+          this.imagesService
+            .createImageBatch(uploadImageInputList)
+            .subscribe(subscriber);
+        }
+      );
+    });
+  }
+
+  private async getFilenameToDescriptionMap(
+    descriptionFile: File | null
+  ): Promise<Map<string, string>> {
+    const filenameToDescriptionMap = new Map<string, string>();
+    if (descriptionFile === null) {
+      return filenameToDescriptionMap;
     }
-    return this.imagesService.createImageBatch(inputList);
+    const filenameToDescriptionList =
+      await this.descriptionFileService.parseDescriptionFile(descriptionFile);
+    for (const item of filenameToDescriptionList) {
+      filenameToDescriptionMap.set(item.filename, item.description);
+    }
+    return filenameToDescriptionMap;
   }
 
   public async getImage(id: number): Promise<{
