@@ -229,11 +229,11 @@ export class ImagesService {
 
   public async updateImageStatus(
     id: number,
-    imageTypeID: number
+    status: ImageStatus
   ): Promise<Image> {
     try {
       const response = await this.axios.patch(`/api/images/${id}/status`, {
-        image_type_id: imageTypeID,
+        image_type_id: status,
       });
       const image = Image.fromJSON(response.data.image);
       return image;

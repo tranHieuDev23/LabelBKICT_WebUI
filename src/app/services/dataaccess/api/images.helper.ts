@@ -4,10 +4,10 @@ import { Observable } from 'rxjs';
 
 export class UploadImageInput {
   constructor(
-    public readonly file: any,
-    public readonly imageTypeID: number | null,
-    public readonly imageTagIDList: number[],
-    public readonly description: string
+    public file: any,
+    public imageTypeID: number | null,
+    public imageTagIDList: number[],
+    public description: string
   ) {}
 }
 
@@ -18,10 +18,7 @@ export enum UploadImageBatchMessageType {
 }
 
 export class UploadImageBatchMessage {
-  constructor(
-    public readonly type: UploadImageBatchMessageType,
-    public readonly data: any
-  ) {}
+  constructor(public type: UploadImageBatchMessageType, public data: any) {}
 }
 
 export async function uploadImage(input: UploadImageInput): Promise<void> {
