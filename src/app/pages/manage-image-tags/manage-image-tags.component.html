@@ -11,6 +11,32 @@
                 </app-editable-text>
             </ng-template>
             <nz-collapse-panel [nzHeader]="imageTagGroupHeader" [(nzActive)]="isImageTagGroupCollapsePanelOpen[i]">
+                <h3 nz-typography>Allowed image types</h3>
+                <p nz-typography>
+                    Editing this list will not affect images that are already assigned with this tag group's tags.
+                </p>
+
+                <nz-list nzItemLayout="horizontal" nzBordered="true">
+                    <nz-list-empty *ngIf="imageTypeList[i].length === 0" nzNoResult="No image type allowed">
+                    </nz-list-empty>
+
+                    <nz-list-item *ngFor="let imageType of imageTypeList[i]; index as j">
+                        <span nz-typography>{{ imageType.displayName }}</span>
+                        <ul nz-list-item-actions class="item-type-item-image-tag-item-actions">
+                            <nz-list-item-action>
+                                <button nz-button nzDanger (click)="onImageTagGroupImageTypeDeleteClicked(i, j)">
+                                    <i nz-icon nzType="delete" nzTheme="outline"></i>
+                                </button>
+                            </nz-list-item-action>
+                        </ul>
+                    </nz-list-item>
+                </nz-list>
+
+                <button nz-button class="add-image-type-to-image-tag-group-button"
+                    (click)="onImageTagGroupAddImageTypeClicked(i)">
+                    <i nz-icon nzType="plus" nzTheme="outline"></i> Add image type
+                </button>
+
                 <h3 nz-typography>Valid image tags of this group</h3>
 
                 <nz-list nzItemLayout="horizontal" nzBordered="true">
@@ -74,3 +100,15 @@
         <i nz-icon nzType="plus" nzTheme="outline"></i> New image tag group
     </button>
 </div>
+
+<nz-modal [(nzVisible)]="isAddImageTypeModalVisible" nzTitle="Add image type" [nzFooter]="null"
+    (nzOnCancel)="onAddImageTypeModalCancel()">
+    <ng-container *nzModalContent>
+        <nz-list nzBordered="true" [nzDataSource]="addImageTypeModalImageTypeList">
+            <nz-list-item *ngFor="let imageType of addImageTypeModalImageTypeList"
+                class="add-image-type-modal-list-item" (click)="onAddImageTypeModalImageTypeClicked(imageType)">
+                {{ imageType.displayName }}
+            </nz-list-item>
+        </nz-list>
+    </ng-container>
+</nz-modal>

@@ -1,3 +1,8 @@
+.add-image-type-to-image-tag-group-button {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
 .image-tag-group-item-image-tag-item-actions {
   margin-top: 4px;
   margin-bottom: 4px;
@@ -18,4 +23,13 @@
 
 .add-image-tag-group-button {
   margin-top: 8px;
+}
+
+.add-image-type-modal-list-item {
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
 }

@@ -161,7 +161,6 @@ export class ManageImageTypesComponent implements OnInit {
           'Failed to update region label',
           'Cannot find region label'
         );
-        this.router.navigateByUrl('/login');
       } else {
         this.notificationService.error(
           'Failed to update region label',
@@ -213,7 +212,6 @@ export class ManageImageTypesComponent implements OnInit {
           'Failed to update region label',
           'Cannot find region label'
         );
-        this.router.navigateByUrl('/login');
       } else {
         this.notificationService.error(
           'Failed to update region label',
@@ -265,7 +263,6 @@ export class ManageImageTypesComponent implements OnInit {
               'Failed to delete region label',
               'Cannot find region label'
             );
-            this.router.navigateByUrl('/login');
           } else {
             this.notificationService.error(
               'Failed to delete region label',
@@ -325,7 +322,6 @@ export class ManageImageTypesComponent implements OnInit {
           'Failed to create region label',
           'Cannot find image type'
         );
-        this.router.navigateByUrl('/login');
       } else {
         this.notificationService.error(
           'Failed to create region label',
@@ -421,7 +417,6 @@ export class ManageImageTypesComponent implements OnInit {
               'Failed to delete image type',
               'Cannot find image type'
             );
-            this.router.navigateByUrl('/login');
           } else {
             this.notificationService.error(
               'Failed to delete image type',
