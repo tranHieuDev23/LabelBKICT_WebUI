@@ -16,6 +16,7 @@ import {
   User,
 } from 'src/app/services/dataaccess/api';
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
+import { DateToTimeService } from 'src/app/services/utils/date-to-time/date-to-time.service';
 import { DelayedCallbackService } from 'src/app/services/utils/delayed-callback/delayed-callback.service';
 
 export class ImageFilterOptionsSelectorConfig {
@@ -101,6 +102,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     private readonly imageTagsService: ImageTagsService,
     private readonly notificationService: NzNotificationService,
     private readonly delayedCallbackService: DelayedCallbackService,
+    private readonly dateToTimeService: DateToTimeService,
     private readonly router: Router
   ) {}
 
@@ -225,8 +227,10 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
       this.filterOptions.uploadTimeStart = 0;
       this.filterOptions.uploadTimeEnd = 0;
     } else {
-      this.filterOptions.uploadTimeStart = range[0].getTime();
-      this.filterOptions.uploadTimeEnd = range[1].getTime();
+      this.filterOptions.uploadTimeStart =
+        this.dateToTimeService.getUnixTimestampFromDate(range[0]);
+      this.filterOptions.uploadTimeEnd =
+        this.dateToTimeService.getUnixTimestampFromDate(range[1]);
     }
     this.onFilterOptionsUpdated();
   }
@@ -236,8 +240,10 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
       this.filterOptions.publishTimeStart = 0;
       this.filterOptions.publishTimeEnd = 0;
     } else {
-      this.filterOptions.publishTimeStart = range[0].getTime();
-      this.filterOptions.publishTimeEnd = range[1].getTime();
+      this.filterOptions.publishTimeStart =
+        this.dateToTimeService.getUnixTimestampFromDate(range[0]);
+      this.filterOptions.publishTimeEnd =
+        this.dateToTimeService.getUnixTimestampFromDate(range[1]);
     }
     this.onFilterOptionsUpdated();
   }
@@ -247,8 +253,10 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
       this.filterOptions.verifyTimeStart = 0;
       this.filterOptions.verifyTimeEnd = 0;
     } else {
-      this.filterOptions.verifyTimeStart = range[0].getTime();
-      this.filterOptions.verifyTimeEnd = range[1].getTime();
+      this.filterOptions.verifyTimeStart =
+        this.dateToTimeService.getUnixTimestampFromDate(range[0]);
+      this.filterOptions.verifyTimeEnd =
+        this.dateToTimeService.getUnixTimestampFromDate(range[1]);
     }
     this.onFilterOptionsUpdated();
   }
