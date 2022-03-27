@@ -28,6 +28,9 @@
             [nzServerSearch]="true" nzPlaceHolder="Filter uploader" [(ngModel)]="selectedUploadedByUserList"
             class="filter-options-select" (nzOnSearch)="onUploadedByUserSearch($event)"
             (ngModelChange)="onSelectedUploadedByUserListUpdated($event)">
+            <nz-option *ngIf="uploadedByUserOptionList.length === 0" nzDisabled nzCustomContent>
+                Search by username or display name...
+            </nz-option>
             <nz-option *ngFor="let user of uploadedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
             </nz-option>
         </nz-select>
@@ -39,6 +42,9 @@
             [nzServerSearch]="true" nzPlaceHolder="Filter publisher" [(ngModel)]="selectedPublishedByUserList"
             class="filter-options-select" (nzOnSearch)="onPublishedByUserSearch($event)"
             (ngModelChange)="onSelectedPublishedByUserListUpdated($event)">
+            <nz-option *ngIf="publishedByUserOptionList.length === 0" nzDisabled nzCustomContent>
+                Search by username or display name...
+            </nz-option>
             <nz-option *ngFor="let user of publishedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
             </nz-option>
         </nz-select>
@@ -50,6 +56,9 @@
             [nzServerSearch]="true" nzPlaceHolder="Filter verifier" [(ngModel)]="selectedUploadedByUserList"
             class="filter-options-select" (nzOnSearch)="onVerifiedByUserSearch($event)"
             (ngModelChange)="onSelectedVerifiedByUserListUpdated($event)">
+            <nz-option *ngIf="verifiedByUserOptionList.length === 0" nzDisabled nzCustomContent>
+                Search by username or display name...
+            </nz-option>
             <nz-option *ngFor="let user of verifiedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
             </nz-option>
         </nz-select>
@@ -110,7 +119,7 @@
 
     <nz-col *ngIf="selectorConfig.canFilterOriginalFilename" nzSpan="24" [nzMd]="12" [nzLg]="8">
         <span nz-typography>Filter original filename</span> <br />
-        <input nz-input placeholder="Original Filename" [(ngModel)]="filterOptions.originalFilenameQuery"
+        <input nz-input placeholder="Original filename" [(ngModel)]="filterOptions.originalFilenameQuery"
             (keyup)="onOriginalFileNameInputChanged()" />
     </nz-col>
 
