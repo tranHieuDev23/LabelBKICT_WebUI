@@ -4,7 +4,7 @@
         <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple"
             nzPlaceHolder="Filter image type" [(ngModel)]="filterOptions.imageTypeIDList" class="filter-options-select"
             (ngModelChange)="onFilterOptionsUpdated()">
-            <nz-option nzLabel="No type" [nzValue]="null">
+            <nz-option nzLabel="No type" [nzValue]="0">
             </nz-option>
             <nz-option *ngFor="let imageType of imageTypeList" [nzLabel]="imageType.displayName"
                 [nzValue]="imageType.id">

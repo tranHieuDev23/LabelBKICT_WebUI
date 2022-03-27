@@ -1,7 +1,7 @@
 import { ImageStatus } from './image';
 
 export class ImageListFilterOptions {
-  public imageTypeIDList: (number | null)[] = [];
+  public imageTypeIDList: number[] = [];
   public imageTagIDList: number[] = [];
   public regionLabelIDList: number[] = [];
   public uploadedByUserIDList: number[] = [];
