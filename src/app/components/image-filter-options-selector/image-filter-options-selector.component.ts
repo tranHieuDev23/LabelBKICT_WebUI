@@ -88,10 +88,6 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   public imageTagGroupList: ImageTagGroup[] = [];
   public imageTagList: ImageTag[][] = [];
 
-  public selectedUploadedByUserList: User[] = [];
-  public selectedPublishedByUserList: User[] = [];
-  public selectedVerifiedByUserList: User[] = [];
-
   public selectedUploadTimeRange: Date[] = [];
   public selectedPublishTimeRange: Date[] = [];
   public selectedVerifyTimeRange: Date[] = [];
@@ -186,11 +182,6 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     );
   }
 
-  public onSelectedUploadedByUserListUpdated(userList: User[]): void {
-    this.filterOptions.uploadedByUserIDList = userList.map((user) => user.id);
-    this.onFilterOptionsUpdated();
-  }
-
   public onPublishedByUserSearch(query: string): void {
     this.delayedCallbackService.scheduleDelayedCallback(
       PUBLISHED_BY_USER_SEARCH_CALLBACK_ID,
@@ -201,12 +192,6 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     );
   }
 
-  public onSelectedPublishedByUserListUpdated(userList: User[]): void {
-    console.log(userList);
-    this.filterOptions.publishedByUserIDList = userList.map((user) => user.id);
-    this.onFilterOptionsUpdated();
-  }
-
   public onVerifiedByUserSearch(query: string): void {
     this.delayedCallbackService.scheduleDelayedCallback(
       VERIFIED_BY_USER_SEARCH_CALLBACK_ID,
@@ -215,11 +200,6 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
       },
       VERIFIED_BY_USER_SEARCH_CALLBACK_DELAY
     );
-  }
-
-  public onSelectedVerifiedByUserListUpdated(userList: User[]): void {
-    this.filterOptions.verifiedByUserIDList = userList.map((user) => user.id);
-    this.onFilterOptionsUpdated();
   }
 
   public onSelectedUploadTimeRangeUpdated(range: Date[]): void {

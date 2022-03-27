@@ -25,13 +25,13 @@
     <nz-col *ngIf="selectorConfig.canFilterUploadedByUser" nzSpan="24" [nzMd]="12" [nzLg]="8">
         <span nz-typography>Filter uploader</span> <br />
         <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple"
-            [nzServerSearch]="true" nzPlaceHolder="Filter uploader" [(ngModel)]="selectedUploadedByUserList"
+            [nzServerSearch]="true" nzPlaceHolder="Filter uploader" [(ngModel)]="filterOptions.uploadedByUserIDList"
             class="filter-options-select" (nzOnSearch)="onUploadedByUserSearch($event)"
-            (ngModelChange)="onSelectedUploadedByUserListUpdated($event)">
+            (ngModelChange)="onFilterOptionsUpdated()">
             <nz-option *ngIf="uploadedByUserOptionList.length === 0" nzDisabled nzCustomContent>
                 Search by username or display name...
             </nz-option>
-            <nz-option *ngFor="let user of uploadedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
+            <nz-option *ngFor="let user of uploadedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user.id">
             </nz-option>
         </nz-select>
     </nz-col>
@@ -39,13 +39,13 @@
     <nz-col *ngIf="selectorConfig.canFilterPublishedByUser" nzSpan="24" [nzMd]="12" [nzLg]="8">
         <span nz-typography>Filter publisher</span> <br />
         <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple"
-            [nzServerSearch]="true" nzPlaceHolder="Filter publisher" [(ngModel)]="selectedPublishedByUserList"
+            [nzServerSearch]="true" nzPlaceHolder="Filter publisher" [(ngModel)]="filterOptions.publishedByUserIDList"
             class="filter-options-select" (nzOnSearch)="onPublishedByUserSearch($event)"
-            (ngModelChange)="onSelectedPublishedByUserListUpdated($event)">
+            (ngModelChange)="onFilterOptionsUpdated()">
             <nz-option *ngIf="publishedByUserOptionList.length === 0" nzDisabled nzCustomContent>
                 Search by username or display name...
             </nz-option>
-            <nz-option *ngFor="let user of publishedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
+            <nz-option *ngFor="let user of publishedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user.id">
             </nz-option>
         </nz-select>
     </nz-col>
@@ -53,13 +53,13 @@
     <nz-col *ngIf="selectorConfig.canFilterVerifiedByUser" nzSpan="24" [nzMd]="12" [nzLg]="8">
         <span nz-typography>Filter verifier</span> <br />
         <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple"
-            [nzServerSearch]="true" nzPlaceHolder="Filter verifier" [(ngModel)]="selectedUploadedByUserList"
+            [nzServerSearch]="true" nzPlaceHolder="Filter verifier" [(ngModel)]="filterOptions.verifiedByUserIDList"
             class="filter-options-select" (nzOnSearch)="onVerifiedByUserSearch($event)"
-            (ngModelChange)="onSelectedVerifiedByUserListUpdated($event)">
+            (ngModelChange)="onFilterOptionsUpdated()">
             <nz-option *ngIf="verifiedByUserOptionList.length === 0" nzDisabled nzCustomContent>
                 Search by username or display name...
             </nz-option>
-            <nz-option *ngFor="let user of verifiedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
+            <nz-option *ngFor="let user of verifiedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user.id">
             </nz-option>
         </nz-select>
     </nz-col>
