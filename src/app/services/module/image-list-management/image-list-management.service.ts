@@ -48,7 +48,7 @@ export class ImageListManagementService {
     );
   }
 
-  public async getUserManageableImageUserList(
+  public async searchUserManageableImageUserList(
     query: string,
     limit: number
   ): Promise<User[]> {
@@ -78,7 +78,7 @@ export class ImageListManagementService {
     );
   }
 
-  public async getUserVerifiableImageUserList(
+  public async searchUserVerifiableImageUserList(
     query: string,
     limit: number
   ): Promise<User[]> {
@@ -108,7 +108,7 @@ export class ImageListManagementService {
     );
   }
 
-  public async getUserExportableImageUserList(
+  public async searchUserExportableImageUserList(
     query: string,
     limit: number
   ): Promise<User[]> {

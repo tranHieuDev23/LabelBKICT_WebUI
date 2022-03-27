@@ -222,8 +222,9 @@ export class ImageListService {
             must_match_all_image_tags: filterOptions.mustMatchAllImageTags
               ? 1
               : 0,
-            must_match_all_region_labels:
-              filterOptions.mustMatchAllRegionLabels,
+            must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
+              ? 1
+              : 0,
           },
           paramsSerializer: (params) => {
             return qs.stringify(params, { arrayFormat: 'repeat' });
@@ -319,8 +320,9 @@ export class ImageListService {
             must_match_all_image_tags: filterOptions.mustMatchAllImageTags
               ? 1
               : 0,
-            must_match_all_region_labels:
-              filterOptions.mustMatchAllRegionLabels,
+            must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
+              ? 1
+              : 0,
           },
         }
       );
@@ -413,8 +415,9 @@ export class ImageListService {
             must_match_all_image_tags: filterOptions.mustMatchAllImageTags
               ? 1
               : 0,
-            must_match_all_region_labels:
-              filterOptions.mustMatchAllRegionLabels,
+            must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
+              ? 1
+              : 0,
           },
           paramsSerializer: (params) => {
             return qs.stringify(params, { arrayFormat: 'repeat' });
