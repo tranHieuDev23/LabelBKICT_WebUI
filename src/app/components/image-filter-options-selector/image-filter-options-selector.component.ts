@@ -32,9 +32,17 @@ export class ImageFilterOptionsSelectorConfig {
   public canFilterOriginalFilename = true;
 }
 
+const UPLOAD_BY_USER_SEARCH_CALLBACK_ID = 'UPLOAD_BY_USER_SEARCH_CALLBACK_ID';
+const UPLOAD_BY_USER_SEARCH_CALLBACK_DELAY = 1000;
+const PUBLISHED_BY_USER_SEARCH_CALLBACK_ID =
+  'PUBLISHED_BY_USER_SEARCH_CALLBACK_ID';
+const PUBLISHED_BY_USER_SEARCH_CALLBACK_DELAY = 1000;
+const VERIFIED_BY_USER_SEARCH_CALLBACK_ID =
+  'VERIFIED_BY_USER_SEARCH_CALLBACK_ID';
+const VERIFIED_BY_USER_SEARCH_CALLBACK_DELAY = 1000;
 const ORIGINAL_FILE_NAME_INPUT_CALLBACK_ID =
   'ORIGINAL_FILE_NAME_INPUT_CALLBACK_ID';
-const ORIGINAL_FILE_NAME_INPUT_DELAY = 1000;
+const ORIGINAL_FILE_NAME_INPUT_CALLBACK_DELAY = 1000;
 
 @Component({
   selector: 'app-image-filter-options-selector',
@@ -86,8 +94,6 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   public selectedUploadTimeRange: Date[] = [];
   public selectedPublishTimeRange: Date[] = [];
   public selectedVerifyTimeRange: Date[] = [];
-
-  private originalFileNameQueryUpdateCount: number = 0;
 
   constructor(
     private readonly imageStatusService: ImageStatusService,
@@ -169,7 +175,13 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   }
 
   public onUploadedByUserSearch(query: string): void {
-    this.uploadedByUserSearch.emit(query);
+    this.delayedCallbackService.scheduleDelayedCallback(
+      UPLOAD_BY_USER_SEARCH_CALLBACK_ID,
+      () => {
+        this.uploadedByUserSearch.emit(query);
+      },
+      UPLOAD_BY_USER_SEARCH_CALLBACK_DELAY
+    );
   }
 
   public onSelectedUploadedByUserListUpdated(userList: User[]): void {
@@ -178,7 +190,13 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   }
 
   public onPublishedByUserSearch(query: string): void {
-    this.publishedByUserSearch.emit(query);
+    this.delayedCallbackService.scheduleDelayedCallback(
+      UPLOAD_BY_USER_SEARCH_CALLBACK_ID,
+      () => {
+        this.publishedByUserSearch.emit(query);
+      },
+      UPLOAD_BY_USER_SEARCH_CALLBACK_DELAY
+    );
   }
 
   public onSelectedPublishedByUserListUpdated(userList: User[]): void {
@@ -187,7 +205,13 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   }
 
   public onVerifiedByUserSearch(query: string): void {
-    this.verifiedByUserSearch.emit(query);
+    this.delayedCallbackService.scheduleDelayedCallback(
+      UPLOAD_BY_USER_SEARCH_CALLBACK_ID,
+      () => {
+        this.verifiedByUserSearch.emit(query);
+      },
+      UPLOAD_BY_USER_SEARCH_CALLBACK_DELAY
+    );
   }
 
   public onSelectedVerifiedByUserListUpdated(userList: User[]): void {
@@ -234,7 +258,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
       () => {
         this.filterOptionsUpdated.emit(this.filterOptions);
       },
-      ORIGINAL_FILE_NAME_INPUT_DELAY
+      ORIGINAL_FILE_NAME_INPUT_CALLBACK_DELAY
     );
   }
 
