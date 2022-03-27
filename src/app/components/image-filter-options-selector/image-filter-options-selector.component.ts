@@ -16,6 +16,7 @@ import {
   User,
 } from 'src/app/services/dataaccess/api';
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
+import { DelayedCallbackService } from 'src/app/services/utils/delayed-callback/delayed-callback.service';
 
 export class ImageFilterOptionsSelectorConfig {
   public canFilterImageType = true;
@@ -31,6 +32,8 @@ export class ImageFilterOptionsSelectorConfig {
   public canFilterOriginalFilename = true;
 }
 
+const ORIGINAL_FILE_NAME_INPUT_CALLBACK_ID =
+  'ORIGINAL_FILE_NAME_INPUT_CALLBACK_ID';
 const ORIGINAL_FILE_NAME_INPUT_DELAY = 1000;
 
 @Component({
@@ -91,6 +94,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     private readonly imageTypesService: ImageTypesService,
     private readonly imageTagsService: ImageTagsService,
     private readonly notificationService: NzNotificationService,
+    private readonly delayedCallbackService: DelayedCallbackService,
     private readonly router: Router
   ) {}
 
@@ -225,13 +229,13 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   }
 
   public onOriginalFileNameInputChanged(): void {
-    this.originalFileNameQueryUpdateCount++;
-    setTimeout(() => {
-      this.originalFileNameQueryUpdateCount--;
-      if (this.originalFileNameQueryUpdateCount === 0) {
+    this.delayedCallbackService.scheduleDelayedCallback(
+      ORIGINAL_FILE_NAME_INPUT_CALLBACK_ID,
+      () => {
         this.filterOptionsUpdated.emit(this.filterOptions);
-      }
-    }, ORIGINAL_FILE_NAME_INPUT_DELAY);
+      },
+      ORIGINAL_FILE_NAME_INPUT_DELAY
+    );
   }
 
   public onSelectedImageListSortOptionChanged(
