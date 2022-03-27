@@ -1,0 +1,18 @@
+dts-select-container {
+  padding: 1rem;
+  border: 2px dashed #7ddafc;
+  border-radius: 5px;
+}
+
+nz-card {
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 16px;
+  width: 240px;
+}
+
+.thumbnail-image {
+  width: 240px;
+  height: 135px;
+  object-fit: cover;
+}

@@ -18,6 +18,7 @@ import { Axios } from 'axios';
 import { getAxiosInstance } from './services/dataaccess/api/axios';
 import { UserLoggedInGuard } from './services/utils/route-guards/logged-in-guard';
 import { UserLoggedOutGuard } from './services/utils/route-guards/logged-out-guard';
+import { DragToSelectModule } from 'ngx-drag-to-select';
 
 registerLocaleData(en);
 
@@ -34,6 +35,7 @@ registerLocaleData(en);
     NzMenuModule,
     NzBackTopModule,
     EmptyStringOnMobileModule,
+    DragToSelectModule.forRoot(),
   ],
   providers: [
     UserLoggedInGuard,
