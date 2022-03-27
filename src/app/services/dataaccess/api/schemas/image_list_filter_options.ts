@@ -1,7 +1,7 @@
 import { ImageStatus } from './image';
 
 export class ImageListFilterOptions {
-  public imageTypeIDList: number[] = [];
+  public imageTypeIDList: (number | null)[] = [];
   public imageTagIDList: number[] = [];
   public regionLabelIDList: number[] = [];
   public uploadedByUserIDList: number[] = [];
@@ -13,7 +13,7 @@ export class ImageListFilterOptions {
   public publishTimeEnd = 0;
   public verifyTimeStart = 0;
   public verifyTimeEnd = 0;
-  public originalFileNameQuery = '';
+  public originalFilenameQuery = '';
   public imageStatusList: ImageStatus[] = [];
   public mustMatchAllImageTags = false;
   public mustMatchAllRegionLabels = false;
