@@ -28,7 +28,7 @@
             [nzServerSearch]="true" nzPlaceHolder="Filter uploader" [(ngModel)]="selectedUploadedByUserList"
             class="filter-options-select" (nzOnSearch)="onUploadedByUserSearch($event)"
             (ngModelChange)="onSelectedUploadedByUserListUpdated($event)">
-            <nz-option *ngFor="let user of uploadedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user.id">
+            <nz-option *ngFor="let user of uploadedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
             </nz-option>
         </nz-select>
     </nz-col>
@@ -39,7 +39,7 @@
             [nzServerSearch]="true" nzPlaceHolder="Filter publisher" [(ngModel)]="selectedPublishedByUserList"
             class="filter-options-select" (nzOnSearch)="onPublishedByUserSearch($event)"
             (ngModelChange)="onSelectedPublishedByUserListUpdated($event)">
-            <nz-option *ngFor="let user of publishedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user.id">
+            <nz-option *ngFor="let user of publishedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
             </nz-option>
         </nz-select>
     </nz-col>
@@ -50,7 +50,7 @@
             [nzServerSearch]="true" nzPlaceHolder="Filter verifier" [(ngModel)]="selectedUploadedByUserList"
             class="filter-options-select" (nzOnSearch)="onVerifiedByUserSearch($event)"
             (ngModelChange)="onSelectedVerifiedByUserListUpdated($event)">
-            <nz-option *ngFor="let user of verifiedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user.id">
+            <nz-option *ngFor="let user of verifiedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
             </nz-option>
         </nz-select>
     </nz-col>

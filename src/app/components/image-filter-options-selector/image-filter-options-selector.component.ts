@@ -191,26 +191,27 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
 
   public onPublishedByUserSearch(query: string): void {
     this.delayedCallbackService.scheduleDelayedCallback(
-      UPLOAD_BY_USER_SEARCH_CALLBACK_ID,
+      PUBLISHED_BY_USER_SEARCH_CALLBACK_ID,
       () => {
         this.publishedByUserSearch.emit(query);
       },
-      UPLOAD_BY_USER_SEARCH_CALLBACK_DELAY
+      PUBLISHED_BY_USER_SEARCH_CALLBACK_DELAY
     );
   }
 
   public onSelectedPublishedByUserListUpdated(userList: User[]): void {
+    console.log(userList);
     this.filterOptions.publishedByUserIDList = userList.map((user) => user.id);
     this.onFilterOptionsUpdated();
   }
 
   public onVerifiedByUserSearch(query: string): void {
     this.delayedCallbackService.scheduleDelayedCallback(
-      UPLOAD_BY_USER_SEARCH_CALLBACK_ID,
+      VERIFIED_BY_USER_SEARCH_CALLBACK_ID,
       () => {
         this.verifiedByUserSearch.emit(query);
       },
-      UPLOAD_BY_USER_SEARCH_CALLBACK_DELAY
+      VERIFIED_BY_USER_SEARCH_CALLBACK_DELAY
     );
   }
 

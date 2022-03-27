@@ -1,6 +1,7 @@
 import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
+import qs from 'qs';
 import {
   UnauthenticatedError,
   UnauthorizedError,
@@ -128,6 +129,9 @@ export class ImageListService {
             ? 1
             : 0,
         },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
+        },
       });
 
       const totalImageCount = +response.data.total_image_count;
@@ -220,6 +224,9 @@ export class ImageListService {
               : 0,
             must_match_all_region_labels:
               filterOptions.mustMatchAllRegionLabels,
+          },
+          paramsSerializer: (params) => {
+            return qs.stringify(params, { arrayFormat: 'repeat' });
           },
         }
       );
@@ -408,6 +415,9 @@ export class ImageListService {
               : 0,
             must_match_all_region_labels:
               filterOptions.mustMatchAllRegionLabels,
+          },
+          paramsSerializer: (params) => {
+            return qs.stringify(params, { arrayFormat: 'repeat' });
           },
         }
       );
