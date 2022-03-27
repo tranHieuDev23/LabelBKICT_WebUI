@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { ImageFilterOptionsSelectorConfig } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
+import {
+  ImageFilterOptionsSelectorConfig,
+  ImageListFilterOptionsWithMetadata,
+} from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
 import {
   Image,
-  ImageListFilterOptions,
   ImageListSortOption,
   ImageTag,
   InvalidImageListFilterOptionsError,
@@ -12,7 +14,10 @@ import {
   UnauthorizedError,
   User,
 } from 'src/app/services/dataaccess/api';
-import { ImageListManagementService } from 'src/app/services/module/image-list-management';
+import {
+  FilterOptionsService,
+  ImageListManagementService,
+} from 'src/app/services/module/image-list-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
@@ -30,7 +35,7 @@ const MAX_SEARCH_USER_RESULT = 10;
 export class MyImagesComponent implements OnInit {
   public pageIndex: number = DEFAULT_PAGE_INDEX;
   public pageSize: number = DEFAULT_PAGE_SIZE;
-  public imageListFilterOptions: ImageListFilterOptions =
+  public filterOptions: ImageListFilterOptionsWithMetadata =
     this.getDefaultImageListFilterOptions();
   public imageListSortOption = DEFAULT_SORT_OPTION;
 
@@ -47,13 +52,14 @@ export class MyImagesComponent implements OnInit {
   public imageListFilterOptionsSelectorConfig =
     new ImageFilterOptionsSelectorConfig();
 
-  private getDefaultImageListFilterOptions(): ImageListFilterOptions {
-    const filterOptions = new ImageListFilterOptions();
+  private getDefaultImageListFilterOptions(): ImageListFilterOptionsWithMetadata {
+    const filterOptions = new ImageListFilterOptionsWithMetadata();
     return filterOptions;
   }
 
   constructor(
     private readonly imageListManagementService: ImageListManagementService,
+    private readonly filterOptionsService: FilterOptionsService,
     private readonly userManagementService: UserManagementService,
     private readonly paginationService: PaginationService,
     private readonly jsonCompressService: JSONCompressService,
@@ -92,11 +98,11 @@ export class MyImagesComponent implements OnInit {
       this.imageListSortOption = DEFAULT_SORT_OPTION;
     }
     if (queryParams['filter'] !== undefined) {
-      this.imageListFilterOptions = this.jsonCompressService.decompress(
+      this.filterOptions = this.jsonCompressService.decompress(
         queryParams['filter']
       );
     } else {
-      this.imageListFilterOptions = this.getDefaultImageListFilterOptions();
+      this.filterOptions = this.getDefaultImageListFilterOptions();
     }
   }
 
@@ -106,13 +112,17 @@ export class MyImagesComponent implements OnInit {
       this.pageIndex,
       this.pageSize
     );
+    const filterOptions =
+      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
+        this.filterOptions
+      );
     try {
       const { totalImageCount, imageList, imageTagList } =
         await this.imageListManagementService.getUserImageList(
           offset,
           this.pageSize,
           this.imageListSortOption,
-          this.imageListFilterOptions
+          filterOptions
         );
       this.totalImageCount = totalImageCount;
       this.imageList = imageList;
@@ -176,7 +186,7 @@ export class MyImagesComponent implements OnInit {
   }
 
   public onImageListFilterOptionsUpdated(
-    filterOptions: ImageListFilterOptions
+    filterOptions: ImageListFilterOptionsWithMetadata
   ): void {
     this.navigateToPage(
       this.pageIndex,
@@ -191,7 +201,7 @@ export class MyImagesComponent implements OnInit {
       this.pageIndex,
       this.pageSize,
       sortOption,
-      this.imageListFilterOptions
+      this.filterOptions
     );
   }
 
@@ -200,7 +210,7 @@ export class MyImagesComponent implements OnInit {
       newPageIndex,
       this.pageSize,
       this.imageListSortOption,
-      this.imageListFilterOptions
+      this.filterOptions
     );
   }
 
@@ -209,7 +219,7 @@ export class MyImagesComponent implements OnInit {
       this.pageIndex,
       newPageSize,
       this.imageListSortOption,
-      this.imageListFilterOptions
+      this.filterOptions
     );
   }
 
@@ -217,7 +227,7 @@ export class MyImagesComponent implements OnInit {
     pageIndex: number,
     pageSize: number,
     sortOption: ImageListSortOption,
-    filterOptions: ImageListFilterOptions
+    filterOptions: ImageListFilterOptionsWithMetadata
   ) {
     const queryParams: any = {};
     if (pageIndex !== DEFAULT_PAGE_INDEX) {

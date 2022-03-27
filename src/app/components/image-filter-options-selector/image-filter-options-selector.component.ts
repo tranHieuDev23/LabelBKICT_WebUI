@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
-  ImageListFilterOptions,
   ImageListSortOption,
   ImageStatus,
   ImageTag,
@@ -18,6 +17,25 @@ import {
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
 import { DateToTimeService } from 'src/app/services/utils/date-to-time/date-to-time.service';
 import { DelayedCallbackService } from 'src/app/services/utils/delayed-callback/delayed-callback.service';
+
+export class ImageListFilterOptionsWithMetadata {
+  public imageTypeList: (ImageType | null)[] = [];
+  public imageTagList: ImageTag[] = [];
+  public regionLabelList: RegionLabel[] = [];
+  public uploadedByUserList: User[] = [];
+  public publishedByUserList: User[] = [];
+  public verifiedByUserList: User[] = [];
+  public uploadTimeStart = 0;
+  public uploadTimeEnd = 0;
+  public publishTimeStart = 0;
+  public publishTimeEnd = 0;
+  public verifyTimeStart = 0;
+  public verifyTimeEnd = 0;
+  public originalFilenameQuery = '';
+  public imageStatusList: ImageStatus[] = [];
+  public mustMatchAllImageTags = false;
+  public mustMatchAllRegionLabels = false;
+}
 
 export class ImageFilterOptionsSelectorConfig {
   public canFilterImageType = true;
@@ -51,9 +69,9 @@ const ORIGINAL_FILE_NAME_INPUT_CALLBACK_DELAY = 1000;
   styleUrls: ['./image-filter-options-selector.component.scss'],
 })
 export class ImageFilterOptionsSelectorComponent implements OnInit {
-  private _filterOptions = new ImageListFilterOptions();
+  private _filterOptions = new ImageListFilterOptionsWithMetadata();
 
-  @Input() public set filterOptions(v: ImageListFilterOptions) {
+  @Input() public set filterOptions(v: ImageListFilterOptionsWithMetadata) {
     this._filterOptions = v;
     this.selectedUploadTimeRange = this.getTimeRange(
       v.uploadTimeStart,
@@ -76,7 +94,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     return [];
   }
 
-  public get filterOptions(): ImageListFilterOptions {
+  public get filterOptions(): ImageListFilterOptionsWithMetadata {
     return this._filterOptions;
   }
 
@@ -91,7 +109,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   @Output() public publishedByUserSearch = new EventEmitter<string>();
   @Output() public verifiedByUserSearch = new EventEmitter<string>();
   @Output() public filterOptionsUpdated =
-    new EventEmitter<ImageListFilterOptions>();
+    new EventEmitter<ImageListFilterOptionsWithMetadata>();
   @Output() public sortOptionUpdated = new EventEmitter<ImageListSortOption>();
 
   public imageStatusList: ImageStatus[] = [
@@ -119,6 +137,10 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   public selectedUploadTimeRange: Date[] = [];
   public selectedPublishTimeRange: Date[] = [];
   public selectedVerifyTimeRange: Date[] = [];
+
+  public sameIDCompareFunc = (o1: any, o2: any) => {
+    return o1?.id === o2?.id;
+  };
 
   constructor(
     private readonly imageStatusService: ImageStatusService,
@@ -196,7 +218,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   }
 
   public resetFilterOptions(): void {
-    this._filterOptions = new ImageListFilterOptions();
+    this._filterOptions = new ImageListFilterOptionsWithMetadata();
     this.onFilterOptionsUpdated();
   }
 
