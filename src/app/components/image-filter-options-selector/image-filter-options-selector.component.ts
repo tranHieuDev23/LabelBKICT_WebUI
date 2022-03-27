@@ -51,7 +51,35 @@ const ORIGINAL_FILE_NAME_INPUT_CALLBACK_DELAY = 1000;
   styleUrls: ['./image-filter-options-selector.component.scss'],
 })
 export class ImageFilterOptionsSelectorComponent implements OnInit {
-  @Input() public filterOptions = new ImageListFilterOptions();
+  private _filterOptions = new ImageListFilterOptions();
+
+  @Input() public set filterOptions(v: ImageListFilterOptions) {
+    this._filterOptions = v;
+    this.selectedUploadTimeRange = this.getTimeRange(
+      v.uploadTimeStart,
+      v.uploadTimeEnd
+    );
+    this.selectedPublishTimeRange = this.getTimeRange(
+      v.publishTimeStart,
+      v.publishTimeEnd
+    );
+    this.selectedVerifyTimeRange = this.getTimeRange(
+      v.verifyTimeStart,
+      v.verifyTimeEnd
+    );
+  }
+
+  private getTimeRange(startTime: number, endTime: number): Date[] {
+    if (startTime !== 0 || endTime !== 0) {
+      return [new Date(startTime), new Date(endTime)];
+    }
+    return [];
+  }
+
+  public get filterOptions(): ImageListFilterOptions {
+    return this._filterOptions;
+  }
+
   @Input() public sortOption = ImageListSortOption.UPLOAD_TIME_DESCENDING;
   @Input() public selectorConfig = new ImageFilterOptionsSelectorConfig();
 
@@ -164,11 +192,11 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   }
 
   public onFilterOptionsUpdated(): void {
-    this.filterOptionsUpdated.emit(this.filterOptions);
+    this.filterOptionsUpdated.emit(this._filterOptions);
   }
 
   public resetFilterOptions(): void {
-    this.filterOptions = new ImageListFilterOptions();
+    this._filterOptions = new ImageListFilterOptions();
     this.onFilterOptionsUpdated();
   }
 
@@ -204,12 +232,12 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
 
   public onSelectedUploadTimeRangeUpdated(range: Date[]): void {
     if (range.length === 0) {
-      this.filterOptions.uploadTimeStart = 0;
-      this.filterOptions.uploadTimeEnd = 0;
+      this._filterOptions.uploadTimeStart = 0;
+      this._filterOptions.uploadTimeEnd = 0;
     } else {
-      this.filterOptions.uploadTimeStart =
+      this._filterOptions.uploadTimeStart =
         this.dateToTimeService.getUnixTimestampFromDate(range[0]);
-      this.filterOptions.uploadTimeEnd =
+      this._filterOptions.uploadTimeEnd =
         this.dateToTimeService.getUnixTimestampFromDate(range[1]);
     }
     this.onFilterOptionsUpdated();
@@ -217,12 +245,12 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
 
   public onSelectedPublishTimeRangeUpdated(range: Date[]): void {
     if (range.length === 0) {
-      this.filterOptions.publishTimeStart = 0;
-      this.filterOptions.publishTimeEnd = 0;
+      this._filterOptions.publishTimeStart = 0;
+      this._filterOptions.publishTimeEnd = 0;
     } else {
-      this.filterOptions.publishTimeStart =
+      this._filterOptions.publishTimeStart =
         this.dateToTimeService.getUnixTimestampFromDate(range[0]);
-      this.filterOptions.publishTimeEnd =
+      this._filterOptions.publishTimeEnd =
         this.dateToTimeService.getUnixTimestampFromDate(range[1]);
     }
     this.onFilterOptionsUpdated();
@@ -230,12 +258,12 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
 
   public onSelectedVerifyTimeRangeUpdated(range: Date[]): void {
     if (range.length === 0) {
-      this.filterOptions.verifyTimeStart = 0;
-      this.filterOptions.verifyTimeEnd = 0;
+      this._filterOptions.verifyTimeStart = 0;
+      this._filterOptions.verifyTimeEnd = 0;
     } else {
-      this.filterOptions.verifyTimeStart =
+      this._filterOptions.verifyTimeStart =
         this.dateToTimeService.getUnixTimestampFromDate(range[0]);
-      this.filterOptions.verifyTimeEnd =
+      this._filterOptions.verifyTimeEnd =
         this.dateToTimeService.getUnixTimestampFromDate(range[1]);
     }
     this.onFilterOptionsUpdated();
@@ -245,7 +273,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     this.delayedCallbackService.scheduleDelayedCallback(
       ORIGINAL_FILE_NAME_INPUT_CALLBACK_ID,
       () => {
-        this.filterOptionsUpdated.emit(this.filterOptions);
+        this.onFilterOptionsUpdated();
       },
       ORIGINAL_FILE_NAME_INPUT_CALLBACK_DELAY
     );
