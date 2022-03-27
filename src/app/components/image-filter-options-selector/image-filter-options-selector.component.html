@@ -125,13 +125,13 @@
     </nz-col>
 </nz-row>
 
-<label nz-checkbox class="and-mode-checkbox" [(ngModel)]="filterOptions.mustMatchAllImageTags"
-    (ngModelChange)="onFilterOptionsUpdated()">
+<label *ngIf="selectorConfig.canFilterImageTag" nz-checkbox class="and-mode-checkbox"
+    [(ngModel)]="filterOptions.mustMatchAllImageTags" (ngModelChange)="onFilterOptionsUpdated()">
     Image must have all selected tags
 </label><br>
 
-<label nz-checkbox class="and-mode-checkbox" [(ngModel)]="filterOptions.mustMatchAllRegionLabels"
-    (ngModelChange)="onFilterOptionsUpdated()">
+<label *ngIf="selectorConfig.canFilterRegionLabel" nz-checkbox class="and-mode-checkbox"
+    [(ngModel)]="filterOptions.mustMatchAllRegionLabels" (ngModelChange)="onFilterOptionsUpdated()">
     Image must have all selected region labels
 </label><br>
 
