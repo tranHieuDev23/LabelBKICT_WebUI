@@ -59,6 +59,12 @@ export class UserDoesNotHaveUserRoleError extends Error {
   }
 }
 
+export class UserSearchArgumentsError extends Error {
+  constructor() {
+    super('Invalid user search arguments');
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -134,6 +140,28 @@ export class UsersService {
           throw new UnauthenticatedError();
         case HttpStatusCode.Forbidden:
           throw new UnauthorizedError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async searchUserList(query: string, limit: number): Promise<User[]> {
+    try {
+      const response = await this.axios.get('/api/users/search', {
+        params: { query: query, limit: limit },
+      });
+      const userList = response.data.user_list.map(User.fromJSON);
+      return userList;
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new UserSearchArgumentsError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
         default:
           throw new UnknownAPIError(e);
       }

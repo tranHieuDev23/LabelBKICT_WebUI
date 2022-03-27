@@ -68,6 +68,10 @@ export class UserManagementService {
     );
   }
 
+  public async searchUserList(query: string, limit: number): Promise<User[]> {
+    return await this.userDataAccessService.searchUserList(query.trim(), limit);
+  }
+
   public async updateUser(
     id: number,
     username: string | undefined,
