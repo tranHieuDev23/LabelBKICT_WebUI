@@ -116,7 +116,7 @@
 
     <nz-col nzSpan="24" [nzMd]="12" [nzLg]="8">
         <span nz-typography>Sort by</span> <br />
-        <nz-select class="filter-options-select" [(ngModel)]="selectedSortOption"
+        <nz-select class="filter-options-select" [(ngModel)]="sortOption"
             (ngModelChange)="onSelectedImageListSortOptionChanged($event)">
             <nz-option *ngFor="let sortOption of imageListSortOptionList"
                 [nzLabel]="getImageListSortOptionString(sortOption)" [nzValue]="sortOption">

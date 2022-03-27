@@ -121,8 +121,12 @@ export class ImageListService {
           filter_verify_time_end: filterOptions.verifyTimeEnd,
           original_file_name_query: filterOptions.originalFilenameQuery,
           filter_image_statuses: filterOptions.imageStatusList,
-          must_match_all_image_tags: filterOptions.mustMatchAllImageTags,
-          must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels,
+          must_match_all_image_tags: filterOptions.mustMatchAllImageTags
+            ? 1
+            : 0,
+          must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
+            ? 1
+            : 0,
         },
       });
 
@@ -211,7 +215,9 @@ export class ImageListService {
             filter_verify_time_end: filterOptions.verifyTimeEnd,
             original_file_name_query: filterOptions.originalFilenameQuery,
             filter_image_statuses: filterOptions.imageStatusList,
-            must_match_all_image_tags: filterOptions.mustMatchAllImageTags,
+            must_match_all_image_tags: filterOptions.mustMatchAllImageTags
+              ? 1
+              : 0,
             must_match_all_region_labels:
               filterOptions.mustMatchAllRegionLabels,
           },
@@ -303,7 +309,9 @@ export class ImageListService {
             filter_verify_time_end: filterOptions.verifyTimeEnd,
             original_file_name_query: filterOptions.originalFilenameQuery,
             filter_image_statuses: filterOptions.imageStatusList,
-            must_match_all_image_tags: filterOptions.mustMatchAllImageTags,
+            must_match_all_image_tags: filterOptions.mustMatchAllImageTags
+              ? 1
+              : 0,
             must_match_all_region_labels:
               filterOptions.mustMatchAllRegionLabels,
           },
@@ -395,7 +403,9 @@ export class ImageListService {
             filter_verify_time_end: filterOptions.verifyTimeEnd,
             original_file_name_query: filterOptions.originalFilenameQuery,
             filter_image_statuses: filterOptions.imageStatusList,
-            must_match_all_image_tags: filterOptions.mustMatchAllImageTags,
+            must_match_all_image_tags: filterOptions.mustMatchAllImageTags
+              ? 1
+              : 0,
             must_match_all_region_labels:
               filterOptions.mustMatchAllRegionLabels,
           },

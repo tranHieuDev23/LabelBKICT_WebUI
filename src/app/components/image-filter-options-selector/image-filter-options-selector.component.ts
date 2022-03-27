@@ -40,6 +40,7 @@ const ORIGINAL_FILE_NAME_INPUT_DELAY = 1000;
 })
 export class ImageFilterOptionsSelectorComponent implements OnInit {
   @Input() public filterOptions = new ImageListFilterOptions();
+  @Input() public sortOption = ImageListSortOption.UPLOAD_TIME_DESCENDING;
   @Input() public selectorConfig = new ImageFilterOptionsSelectorConfig();
 
   @Input() public uploadedByUserOptionList: User[] = [];
@@ -82,9 +83,6 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   public selectedUploadTimeRange: Date[] = [];
   public selectedPublishTimeRange: Date[] = [];
   public selectedVerifyTimeRange: Date[] = [];
-
-  public selectedSortOption: ImageListSortOption =
-    ImageListSortOption.UPLOAD_TIME_DESCENDING;
 
   private originalFileNameQueryUpdateCount: number = 0;
 
