@@ -8,8 +8,7 @@
             <p nz-typography>Upload file(s)</p>
             <app-image-upload [isMultipleUpload]="true" [fileSizeLimit]="5120"
                 description="Click or drag file(s) to this area to upload" hint="Only image files are accepted."
-                [allImageTypeList]="allImageTypeList" [allImageTagGroupList]="allImageTagGroupList"
-                [allImageTagList]="allImageTagList" (uploadSuccess)="onUploadSuccess($event)"
+                [allImageTypeList]="allImageTypeList" (uploadSuccess)="onUploadSuccess($event)"
                 (uploadFailure)="onUploadFailure($event)">
             </app-image-upload>
         </div>
@@ -18,8 +17,7 @@
             <app-image-upload [isDirectoryUpload]="true" [fileSizeLimit]="1048576"
                 description="Click or drag a folder to this area to upload"
                 hint="Every files in the folder will be uploaded, only image files are accepted."
-                [allImageTypeList]="allImageTypeList" [allImageTagGroupList]="allImageTagGroupList"
-                [allImageTagList]="allImageTagList" (uploadSuccess)="onUploadSuccess($event)"
+                [allImageTypeList]="allImageTypeList" (uploadSuccess)="onUploadSuccess($event)"
                 (uploadFailure)="onUploadFailure($event)">
             </app-image-upload>
         </div>

@@ -26,9 +26,9 @@
 
 <div class="image-tag-list">
     Image tags for the uploaded images:
-    <app-editable-tag-list [allImageTagGroupList]="allImageTagGroupList" [allImageTagList]="allImageTagList"
-        [editable]="!isUploading" [imageTagList]="imageTagListForUploadedImage"
-        (imageTagAdded)="onImageTagForUploadedImageAdded($event)"
+    <app-editable-tag-list [allImageTagGroupList]="allowedImageTagGroupListForImageType"
+        [allImageTagList]="allowedImageTagListForImageType" [editable]="!isUploading"
+        [imageTagList]="imageTagListForUploadedImage" (imageTagAdded)="onImageTagForUploadedImageAdded($event)"
         (imageTagDeleted)="onImageTagForUploadedImageDeleted($event)">
     </app-editable-tag-list>
 </div>

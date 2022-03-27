@@ -32,8 +32,6 @@ export class UploadImagesComponent implements OnInit {
   public failureBriefNotificationTemplate: TemplateRef<{}> | undefined;
 
   public allImageTypeList: ImageType[] = [];
-  public allImageTagGroupList: ImageTagGroup[] = [];
-  public allImageTagList: ImageTag[][] = [];
 
   public successCount = 0;
   public failureCount = 0;
@@ -46,7 +44,6 @@ export class UploadImagesComponent implements OnInit {
 
   constructor(
     private readonly imageTypesService: ImageTypesService,
-    private readonly imageTagsService: ImageTagsService,
     private readonly notificationService: NzNotificationService,
     private readonly router: Router
   ) {}
@@ -58,11 +55,6 @@ export class UploadImagesComponent implements OnInit {
           false
         );
         this.allImageTypeList = imageTypeList;
-
-        const { imageTagGroupList, imageTagList } =
-          await this.imageTagsService.getImageTagGroupList(true, false);
-        this.allImageTagGroupList = imageTagGroupList;
-        this.allImageTagList = imageTagList || [];
       } catch (e) {
         if (e instanceof UnauthenticatedError) {
           this.notificationService.error(

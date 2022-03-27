@@ -1,9 +1,15 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Router } from '@angular/router';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { NzUploadFile } from 'ng-zorro-antd/upload';
 import {
   ImageTag,
   ImageTagGroup,
+  ImageTagsService,
   ImageType,
+  ImageTypesService,
+  UnauthenticatedError,
+  UnauthorizedError,
   UploadImageBatchMessage,
   UploadImageBatchMessageType,
 } from 'src/app/services/dataaccess/api';
@@ -22,8 +28,9 @@ export class ImageUploadComponent {
   @Input() public hint = '';
 
   @Input() public allImageTypeList: ImageType[] = [];
-  @Input() public allImageTagGroupList: ImageTagGroup[] = [];
-  @Input() public allImageTagList: ImageTag[][] = [];
+
+  public allowedImageTagGroupListForImageType: ImageTagGroup[] = [];
+  public allowedImageTagListForImageType: ImageTag[][] = [];
 
   public nzFileList: NzUploadFile[] = [];
 
@@ -50,10 +57,50 @@ export class ImageUploadComponent {
   @Output() public uploadFailure = new EventEmitter<NzUploadFile>();
 
   constructor(
-    private readonly imageManagementService: ImageManagementService
+    private readonly imageTypesService: ImageTypesService,
+    private readonly imageManagementService: ImageManagementService,
+    private readonly notificationService: NzNotificationService,
+    private readonly router: Router
   ) {}
 
-  public async onImageTypeForUploadedImageChanged(value: ImageType | null) {}
+  public async onImageTypeForUploadedImageChanged(imageType: ImageType | null) {
+    this.imageTagListForUploadedImage = [];
+
+    if (imageType === null) {
+      this.allowedImageTagGroupListForImageType = [];
+      this.allowedImageTagListForImageType = [];
+      return;
+    }
+
+    try {
+      const { imageTagGroupList, imageTagList } =
+        await this.imageTypesService.getImageTagGroupListOfImageType(
+          imageType.id
+        );
+      this.allowedImageTagGroupListForImageType = imageTagGroupList;
+      this.allowedImageTagListForImageType = imageTagList;
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to get allowed image tag list for image type',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to get allowed image tag list for image type',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else {
+        this.notificationService.error(
+          'Failed to get allowed image tag list for image type',
+          'Unknown error'
+        );
+        this.router.navigateByUrl('/welcome');
+      }
+    }
+  }
 
   public isShouldUsePredictiveModelToggleEnabled(): boolean {
     if (this.isUploading || this.imageTypeForUploadedImage === null) {

@@ -6,7 +6,7 @@ import {
   UnauthorizedError,
   UnknownAPIError,
 } from './errors';
-import { ImageType, RegionLabel } from './schemas';
+import { ImageTag, ImageTagGroup, ImageType, RegionLabel } from './schemas';
 
 export class InvalidImageTypeInformationError extends Error {
   constructor() {
@@ -239,6 +239,36 @@ export class ImageTypesService {
           throw new UnauthorizedError();
         case HttpStatusCode.NotFound:
           throw new RegionLabelNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getImageTagGroupListOfImageType(imageTypeID: number): Promise<{
+    imageTagGroupList: ImageTagGroup[];
+    imageTagList: ImageTag[][];
+  }> {
+    try {
+      const response = await this.axios.get(
+        `/api/image-types/${imageTypeID}/image-tag-groups`
+      );
+      const imageTagGroupList = response.data.image_tag_group_list.map(
+        ImageTagGroup.fromJSON
+      );
+      const imageTagList: ImageTag[][] = response.data.image_tag_list.map(
+        (ImageTagSublist: any[]) => ImageTagSublist.map(ImageTag.fromJSON)
+      );
+      return { imageTagGroupList, imageTagList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
         default:
           throw new UnknownAPIError(e);
       }
