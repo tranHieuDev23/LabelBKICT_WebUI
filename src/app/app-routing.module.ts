@@ -81,6 +81,14 @@ const routes: Routes = [
     canActivate: [UserLoggedInGuard],
   },
   {
+    path: 'manage-image',
+    loadChildren: () =>
+      import('./pages/manage-image/manage-image.module').then(
+        (m) => m.ManageImageModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
+  {
     path: 'verify-images',
     loadChildren: () =>
       import('./pages/verify-images/verify-images.module').then(
