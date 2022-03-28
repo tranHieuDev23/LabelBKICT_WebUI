@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
-import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
-  ImageListFilterOptionsWithMetadata,
-  ImageFilterOptionsSelectorConfig,
-} from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
+  NzContextMenuService,
+  NzDropdownMenuComponent,
+} from 'ng-zorro-antd/dropdown';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { ImageListFilterOptionsWithMetadata } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
 import {
   ImageListSortOption,
   User,
@@ -13,6 +15,10 @@ import {
   InvalidImageListFilterOptionsError,
   UnauthenticatedError,
   UnauthorizedError,
+  ImageType,
+  OneOrMoreImagesNotFoundError,
+  TooManyImagesError,
+  ImageTypesService,
 } from 'src/app/services/dataaccess/api';
 import {
   ImageListManagementService,
@@ -33,6 +39,10 @@ const MAX_SEARCH_USER_RESULT = 10;
   styleUrls: ['./all-images.component.scss'],
 })
 export class AllImagesComponent implements OnInit {
+  @ViewChild('contextMenu') public contextMenu:
+    | NzDropdownMenuComponent
+    | undefined;
+
   public pageIndex: number = DEFAULT_PAGE_INDEX;
   public pageSize: number = DEFAULT_PAGE_SIZE;
   public filterOptions: ImageListFilterOptionsWithMetadata =
@@ -55,15 +65,22 @@ export class AllImagesComponent implements OnInit {
     return filterOptions;
   }
 
+  public imageTypeList: ImageType[] = [];
+
+  private selectedImageList: Image[] = [];
+
   constructor(
     private readonly imageListManagementService: ImageListManagementService,
     private readonly filterOptionsService: FilterOptionsService,
     private readonly userManagementService: UserManagementService,
+    private readonly imageTypesService: ImageTypesService,
     private readonly paginationService: PaginationService,
     private readonly jsonCompressService: JSONCompressService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
-    private readonly notificationService: NzNotificationService
+    private readonly notificationService: NzNotificationService,
+    private readonly contextMenuService: NzContextMenuService,
+    private readonly modalService: NzModalService
   ) {}
 
   ngOnInit(): void {
@@ -250,5 +267,140 @@ export class AllImagesComponent implements OnInit {
     }
     queryParams['filter'] = this.jsonCompressService.compress(filterOptions);
     this.router.navigate(['/all-images'], { queryParams });
+  }
+
+  public onImageGridImageListSelected(imageList: Image[]): void {
+    this.selectedImageList = imageList;
+  }
+
+  public onImageGridContextMenu(event: MouseEvent): boolean {
+    console.log(this.selectedImageList);
+    if (this.selectedImageList.length === 0) {
+      return false;
+    }
+    (async () => {
+      if (this.imageTypeList.length === 0) {
+        try {
+          const { imageTypeList } =
+            await this.imageTypesService.getImageTypeList(false);
+          this.imageTypeList = imageTypeList;
+        } catch (e) {
+          if (e instanceof UnauthenticatedError) {
+            this.notificationService.error(
+              'Failed to get image type list',
+              'User is not logged in'
+            );
+            this.router.navigateByUrl('/login');
+          } else if (e instanceof UnauthorizedError) {
+            this.notificationService.error(
+              'Failed to get image type list',
+              "User doesn't have the required permission"
+            );
+            this.router.navigateByUrl('/welcome');
+          } else {
+            this.notificationService.error(
+              'Failed to get image type list',
+              'Unknown error'
+            );
+            return;
+          }
+        }
+      }
+
+      if (this.contextMenu) {
+        this.contextMenuService.create(event, this.contextMenu);
+      }
+    })().then();
+    return false;
+  }
+
+  public onSetImageTypeOfSelectedImagesClicked(imageType: ImageType): void {
+    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    this.modalService.create({
+      nzTitle: 'Change image type of image(s)',
+      nzContent:
+        'Are you sure? This will also remove all image tags from these images, and ' +
+        'mark all region extracted from them as not labeled. This action is <b>IRREVERSIBLE</b>.',
+      nzOkDanger: true,
+      nzOnOk: async () => {
+        try {
+          await this.imageListManagementService.updateImageListImageType(
+            selectedImageIDList,
+            imageType.id
+          );
+          await this.getImageListFromPaginationInfo();
+          this.notificationService.success(
+            'Changed image type of image(s) successfully',
+            ''
+          );
+        } catch (e) {
+          if (e instanceof TooManyImagesError) {
+            this.notificationService.error(
+              'Failed to change image type of image(s)',
+              'Too many image selected'
+            );
+          } else if (e instanceof UnauthenticatedError) {
+            this.notificationService.error(
+              'Failed to change image type of image(s)',
+              'User is not logged in'
+            );
+            this.router.navigateByUrl('/login');
+          } else if (e instanceof UnauthorizedError) {
+            this.notificationService.error(
+              'Failed to change image type of image(s)',
+              'User does not have the required permission'
+            );
+          } else if (e instanceof OneOrMoreImagesNotFoundError) {
+            this.notificationService.error(
+              'Failed to change image type of image(s)',
+              'One or more image cannot be found'
+            );
+          }
+        }
+      },
+    });
+  }
+
+  public onDeleteSelectedImagesClicked(): void {
+    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    this.modalService.create({
+      nzTitle: 'Delete image(s)',
+      nzContent:
+        'Are you sure? This will also delete all region extracted from them. ' +
+        'This action is <b>IRREVERSIBLE</b>.',
+      nzOkDanger: true,
+      nzOnOk: async () => {
+        try {
+          await this.imageListManagementService.deleteImageList(
+            selectedImageIDList
+          );
+          await this.getImageListFromPaginationInfo();
+          this.notificationService.success('Delete image(s) successfully', '');
+        } catch (e) {
+          if (e instanceof TooManyImagesError) {
+            this.notificationService.error(
+              'Failed to delete image(s)',
+              'Too many image selected'
+            );
+          } else if (e instanceof UnauthenticatedError) {
+            this.notificationService.error(
+              'Failed to delete image(s)',
+              'User is not logged in'
+            );
+            this.router.navigateByUrl('/login');
+          } else if (e instanceof UnauthorizedError) {
+            this.notificationService.error(
+              'Failed to delete image(s)',
+              'User does not have the required permission'
+            );
+          } else if (e instanceof OneOrMoreImagesNotFoundError) {
+            this.notificationService.error(
+              'Failed to delete image(s)',
+              'One or more image cannot be found'
+            );
+          }
+        }
+      },
+    });
   }
 }
