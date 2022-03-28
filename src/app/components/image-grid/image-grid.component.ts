@@ -52,6 +52,7 @@ export class ImageGridComponent {
       this.selectContainer?.selectItems(
         (image: Image) => image.id === selectedImage.id
       );
+      this.onImageListSelected();
     }
   }
 }
