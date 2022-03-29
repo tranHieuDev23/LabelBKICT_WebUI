@@ -1,14 +1,17 @@
+import { GeometryService } from '../geometry/geometry.service';
 import { RegionSelectorGeometryService } from '../geometry/region-selector-geometry.service';
 import { CanvasGraphicService } from '../graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic.service';
 import { RegionSelectorContent } from '../region-selector-content';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
+import { DrawState } from './region-selector-draw-state';
 import { RegionSelectorState } from './region-selector-state';
 
 export class DefaultState implements RegionSelectorState {
   constructor(
     private readonly content: RegionSelectorContent,
     private readonly snapshotService: RegionSelectorSnapshotService,
+    private readonly geometryService: GeometryService,
     private readonly regionSelectorGeometryService: RegionSelectorGeometryService,
     private readonly regionSelectorGraphicService: RegionSelectorGraphicService,
     private readonly canvasGraphicService: CanvasGraphicService
@@ -22,27 +25,37 @@ export class DefaultState implements RegionSelectorState {
     canvas: HTMLCanvasElement,
     event: MouseEvent | TouchEvent
   ): RegionSelectorState {
-    return new DefaultState(
-      this.content,
+    const cursorMousePosition =
+      this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+    const cursorImagePosition =
+      this.regionSelectorGeometryService.mouseToImagePosition(
+        canvas,
+        this.content,
+        cursorMousePosition
+      );
+
+    const newContent = {
+      ...this.content,
+    };
+    newContent.cursorImagePosition = cursorImagePosition;
+
+    return new DrawState(
+      newContent,
+      true,
+      null,
       this.snapshotService,
       this.regionSelectorGeometryService,
+      this.geometryService,
       this.regionSelectorGraphicService,
       this.canvasGraphicService
     );
   }
 
-  public onMouseMove(
-    canvas: HTMLCanvasElement,
-    event: MouseEvent | TouchEvent,
-    isLeftMouseDown: boolean
-  ): RegionSelectorState {
+  public onMouseMove(): RegionSelectorState {
     return this;
   }
 
-  public onLeftMouseUp(
-    canvas: HTMLCanvasElement,
-    event: MouseEvent | TouchEvent
-  ): RegionSelectorState {
+  public onLeftMouseUp(): RegionSelectorState {
     return this;
   }
 

@@ -74,6 +74,27 @@ export class GeometryService {
     return results;
   }
 
+  public getOpenNeighborVertexID(
+    polygon: Polygon,
+    vertexID: number,
+    openThreshold: number
+  ): { vertexID: number; isOpenVertexPrevious: boolean } | null {
+    const vertex = polygon.vertices[vertexID];
+    const prevIndex =
+      vertexID === 0 ? polygon.vertices.length - 1 : vertexID - 1;
+    const prevVertex = polygon.vertices[prevIndex];
+    if (this.getDistance(vertex, prevVertex) > openThreshold) {
+      return { vertexID: prevIndex, isOpenVertexPrevious: true };
+    }
+    const nextIndex =
+      vertexID === polygon.vertices.length - 1 ? 0 : vertexID + 1;
+    const nextVertex = polygon.vertices[nextIndex];
+    if (this.getDistance(vertex, nextVertex) > openThreshold) {
+      return { vertexID: nextIndex, isOpenVertexPrevious: false };
+    }
+    return null;
+  }
+
   public densifyPolygon(
     polygon: Polygon,
     maxVerticesDistance: number

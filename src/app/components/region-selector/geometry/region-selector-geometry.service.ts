@@ -26,12 +26,11 @@ export class RegionSelectorGeometryService {
 
   public mouseToCanvasPosition(
     canvas: HTMLCanvasElement,
-    clientX: number,
-    clientY: number
+    mousePos: Coordinate
   ): Coordinate {
     const rect = canvas.getBoundingClientRect();
-    const x = (clientX - rect.left) / canvas.offsetWidth;
-    const y = (clientY - rect.top) / canvas.offsetHeight;
+    const x = (mousePos.x - rect.left) / canvas.offsetWidth;
+    const y = (mousePos.y - rect.top) / canvas.offsetHeight;
     return { x, y };
   }
 
@@ -53,14 +52,13 @@ export class RegionSelectorGeometryService {
 
   public mouseToImagePosition(
     canvas: HTMLCanvasElement,
-    clientX: number,
-    clientY: number,
-    content: RegionSelectorContent
+    content: RegionSelectorContent,
+    mousePos: Coordinate
   ): Coordinate {
     return this.canvasToImagePosition(
       canvas,
       content,
-      this.mouseToCanvasPosition(canvas, clientX, clientY)
+      this.mouseToCanvasPosition(canvas, mousePos)
     );
   }
 
@@ -90,13 +88,22 @@ export class RegionSelectorGeometryService {
 
   public imageToMousePosition(
     canvas: HTMLCanvasElement,
-    imagePos: Coordinate,
-    content: RegionSelectorContent
+    content: RegionSelectorContent,
+    imagePos: Coordinate
   ): Coordinate {
     return this.canvasToMousePosition(
       canvas,
       this.imageToCanvasPosition(canvas, content, imagePos)
     );
+  }
+
+  public getMousePositionFromMouseEvent(
+    event: MouseEvent | TouchEvent
+  ): Coordinate {
+    if (event instanceof MouseEvent) {
+      return { x: event.clientX, y: event.clientY };
+    }
+    return { x: event.touches[0].clientX, y: event.touches[0].clientY };
   }
 
   private getImageActualZoom(
