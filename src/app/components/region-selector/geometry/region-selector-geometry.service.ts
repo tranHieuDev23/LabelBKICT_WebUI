@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Coordinate, Rectangle } from '../models';
+import { Coordinate, Polygon, Rectangle } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 
 @Injectable({
@@ -95,6 +95,18 @@ export class RegionSelectorGeometryService {
       canvas,
       this.imageToCanvasPosition(canvas, content, imagePos)
     );
+  }
+
+  public imageToCanvasPolygon(
+    canvas: HTMLCanvasElement,
+    content: RegionSelectorContent,
+    polygon: Polygon
+  ): Polygon {
+    return {
+      vertices: polygon.vertices.map((vertex) =>
+        this.imageToCanvasPosition(canvas, content, vertex)
+      ),
+    };
   }
 
   public getMousePositionFromMouseEvent(

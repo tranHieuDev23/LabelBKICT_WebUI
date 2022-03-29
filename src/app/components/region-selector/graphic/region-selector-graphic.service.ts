@@ -43,15 +43,12 @@ export class RegionSelectorGraphicService {
     const region = content.regionList[regionIndex];
     const regionLabelColor = region.label?.color || DEFAULT_REGION_LABEL_COLOR;
 
-    const borderCanvasPolygon = {
-      vertices: region.border.vertices.map((vertex) =>
-        this.regionSelectorGeometryService.imageToCanvasPosition(
-          canvas,
-          content,
-          vertex
-        )
-      ),
-    };
+    const borderCanvasPolygon =
+      this.regionSelectorGeometryService.imageToCanvasPolygon(
+        canvas,
+        content,
+        region.border
+      );
     this.canvasGraphicService.drawPolygon({
       canvasWidth: canvasWidth,
       canvasHeight: canvasHeight,
@@ -61,15 +58,12 @@ export class RegionSelectorGraphicService {
     });
 
     for (const hole of region.holes) {
-      const holeCanvasPolygon = {
-        vertices: hole.vertices.map((vertex) =>
-          this.regionSelectorGeometryService.imageToCanvasPosition(
-            canvas,
-            content,
-            vertex
-          )
-        ),
-      };
+      const holeCanvasPolygon =
+        this.regionSelectorGeometryService.imageToCanvasPolygon(
+          canvas,
+          content,
+          hole
+        );
       this.canvasGraphicService.drawPolygon({
         canvasWidth: canvasWidth,
         canvasHeight: canvasHeight,
