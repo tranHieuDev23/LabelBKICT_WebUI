@@ -3,9 +3,13 @@ import { Coordinate, Polygon } from './models';
 
 export interface RegionSelectorContent {
   image: CanvasImageSource | null;
-  regionList: Region[];
-  drawnPolygonList: Polygon[];
   imageOrigin: Coordinate;
   zoom: number;
-  isDrawnRegionListVisible: boolean;
+
+  regionList: Region[];
+  isRegionListVisible: boolean;
+
+  drawnPolygonList: Polygon[];
+
+  cursorImagePosition: Coordinate;
 }

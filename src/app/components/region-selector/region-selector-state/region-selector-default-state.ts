@@ -80,7 +80,8 @@ export class DefaultState implements RegionSelectorState {
       imageDrawRegion.dw,
       imageDrawRegion.dh
     );
-    if (this.content.isDrawnRegionListVisible) {
+
+    if (this.content.isRegionListVisible) {
       this.regionSelectorGraphicService.drawRegionList(
         canvas,
         ctx,
