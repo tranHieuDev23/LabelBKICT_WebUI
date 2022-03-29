@@ -15,5 +15,5 @@ export interface RegionSelectorState {
     canvas: HTMLCanvasElement,
     event: MouseEvent | TouchEvent
   ): RegionSelectorState;
-  onDraw(canvas: HTMLCanvasElement): CanvasRenderingContext2D;
+  onDraw(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null;
 }

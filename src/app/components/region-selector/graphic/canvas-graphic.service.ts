@@ -50,6 +50,12 @@ export interface DrawTextBoxArguments {
   boxColor: string;
 }
 
+export interface ClearCanvasArguments {
+  canvasWidth: number;
+  canvasHeight: number;
+  ctx: CanvasRenderingContext2D;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -164,5 +170,9 @@ export class CanvasGraphicService {
     const newCanvasHeight = canvas.offsetHeight;
     canvas.width = newCanvasWidth;
     canvas.height = newCanvasHeight;
+  }
+
+  public clearCanvas(args: ClearCanvasArguments): void {
+    args.ctx.clearRect(0, 0, args.canvasWidth, args.canvasHeight);
   }
 }
