@@ -1,0 +1,270 @@
+import { Injectable } from '@angular/core';
+import {
+  Point as TurfPoint,
+  Polygon as TurfPolygon,
+  MultiPolygon as TurfMultiPolygon,
+  point as toTurfPoint,
+  polygon as toTurfPolygon,
+  multiPolygon as toTurfMultiPolygon,
+  cleanCoords,
+  union,
+  intersect,
+  kinks,
+  distance,
+  unkinkPolygon,
+  area,
+  booleanPointInPolygon,
+} from '@turf/turf';
+import { Rectangle } from '../models';
+
+export interface Coordinate {
+  x: number;
+  y: number;
+}
+
+export interface Polygon {
+  vertices: Coordinate[];
+}
+
+const KINK_VERTICES_DISTANCE_LOWER_BOUND = 1e-3;
+
+@Injectable({
+  providedIn: 'root',
+})
+export class GeometryService {
+  public getPolygonBoundingBox(polygon: Polygon): Rectangle {
+    const { vertices } = polygon;
+    const minX: number = Math.min(...vertices.map((item) => item.x));
+    const maxX: number = Math.max(...vertices.map((item) => item.x));
+    const minY: number = Math.min(...vertices.map((item) => item.y));
+    const maxY: number = Math.max(...vertices.map((item) => item.y));
+    return {
+      dx: minX,
+      dy: minY,
+      dw: maxX - minX,
+      dh: maxY - minY,
+    };
+  }
+
+  public getDistance(from: Coordinate, to: Coordinate): number {
+    return Math.sqrt(
+      (from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y)
+    );
+  }
+
+  public getInBetweenPointList(
+    from: Coordinate,
+    to: Coordinate,
+    maxPointDistance: number
+  ): Coordinate[] {
+    const fromToDistance = this.getDistance(from, to);
+    if (fromToDistance <= maxPointDistance) {
+      return [];
+    }
+    const numPointToInsert = Math.floor(fromToDistance / maxPointDistance);
+    const deltaX = (to.x - from.x) / (numPointToInsert + 1);
+    const deltaY = (to.y - from.y) / (numPointToInsert + 1);
+    const results: Coordinate[] = [];
+    for (let i = 1; i <= numPointToInsert; i++) {
+      results.push({
+        x: from.x + i * deltaX,
+        y: from.y + i * deltaY,
+      });
+    }
+    return results;
+  }
+
+  public densifyPolygon(
+    polygon: Polygon,
+    maxVerticesDistance: number
+  ): Polygon {
+    const resultVertices: Coordinate[] = [];
+    let lastVertex = polygon.vertices[polygon.vertices.length - 1];
+    for (const vertex of polygon.vertices) {
+      resultVertices.push(
+        ...this.getInBetweenPointList(lastVertex, vertex, maxVerticesDistance),
+        vertex
+      );
+      lastVertex = vertex;
+    }
+    return {
+      vertices: resultVertices,
+    };
+  }
+
+  public normalizePolygon(polygon: Polygon): Polygon {
+    const turfPolygon = this.convertPolygonToTurfPolygon(polygon);
+    const reducedPolygon = cleanCoords(turfPolygon);
+    const fixedPolygon = this.fixSelfIntersectedTurfPolygon(reducedPolygon);
+    return this.convertTurfPolygonToPolygon(fixedPolygon);
+  }
+
+  public isPointInPolygon(point: Coordinate, polygon: Polygon): boolean {
+    if (polygon.vertices.length < 3) {
+      return false;
+    }
+    const turfPoint = this.convertCoordinateToTurfPoint(point);
+    const turfPolygon = this.convertPolygonToTurfPolygon(polygon);
+    return booleanPointInPolygon(turfPoint, turfPolygon);
+  }
+
+  public normalizeRegionWithHoles(
+    border: Polygon,
+    holes: Polygon[]
+  ): {
+    border: Polygon;
+    holes: Polygon[];
+  } {
+    let turfBorder = this.convertPolygonToTurfPolygon(border);
+    let turfHoles = holes.map((hole) => this.convertPolygonToTurfPolygon(hole));
+
+    // Remove redundant vertices
+    turfBorder = cleanCoords(turfBorder);
+    turfHoles = turfHoles.map((hole) => cleanCoords(hole));
+
+    // Fix self-intersection
+    turfBorder = this.fixSelfIntersectedTurfPolygon(turfBorder);
+    turfHoles = turfHoles.map((hole) =>
+      this.fixSelfIntersectedTurfPolygon(hole)
+    );
+
+    // Join all common area between holes
+    if (turfHoles.length > 1) {
+      let joinedTurfHoles = [turfHoles[0]];
+      for (let i = 1; i < turfHoles.length; i++) {
+        joinedTurfHoles = this.calculateUnionOfTurfPolygonListAndTurfPolygon(
+          joinedTurfHoles,
+          turfHoles[i]
+        );
+      }
+      turfHoles = joinedTurfHoles;
+    }
+
+    // Take only the intersect between the holes and the border
+    if (turfHoles.length > 0) {
+      turfHoles = this.calculateIntersectionOfTurfPolygonListAndTurfPolygon(
+        turfHoles,
+        turfBorder
+      );
+    }
+
+    return {
+      border: this.convertTurfPolygonToPolygon(turfBorder),
+      holes: turfHoles.map((hole) => this.convertTurfPolygonToPolygon(hole)),
+    };
+  }
+
+  private fixSelfIntersectedTurfPolygon(polygon: TurfPolygon): TurfPolygon {
+    const kinkPointList = kinks(polygon).features.map((point) => {
+      return point.geometry.coordinates;
+    });
+
+    /**
+     * HACK: unkinkPolygon() will cause error if there is an intersection that lies directly on a vertex.
+     * To prevent that, we will just remove these vertices.
+     */
+
+    const verticesFarFromKinkList = polygon.coordinates[0].filter((vertex) => {
+      return kinkPointList.every((kinkPoint) => {
+        distance(vertex, kinkPoint) >= KINK_VERTICES_DISTANCE_LOWER_BOUND;
+      });
+    });
+
+    const unKinkedPolygonList = unkinkPolygon(
+      toTurfPolygon([verticesFarFromKinkList])
+    );
+
+    // Only keep the polygon with the maximum area
+    let maxArea = -1;
+    let maxAreaIndex = -1;
+    unKinkedPolygonList.features.forEach((polygon, index) => {
+      const itemArea = area(polygon);
+      if (itemArea > maxArea) {
+        maxArea = itemArea;
+        maxAreaIndex = index;
+      }
+    });
+
+    return unKinkedPolygonList.features[maxAreaIndex].geometry;
+  }
+
+  private calculateUnionOfTurfPolygonListAndTurfPolygon(
+    polygonList: TurfPolygon[],
+    polygon: TurfPolygon
+  ): TurfPolygon[] {
+    const turfMultiPolygon =
+      this.convertTuftPolygonListToTurfMultiPolygon(polygonList);
+    const unionTurfPolygon = union(turfMultiPolygon, polygon);
+    if (unionTurfPolygon === null) {
+      return [];
+    }
+    if (unionTurfPolygon.geometry.type === 'Polygon') {
+      return [unionTurfPolygon.geometry];
+    } else {
+      return this.convertTurfMultiPolygonToTurfPolygonList(
+        unionTurfPolygon.geometry
+      );
+    }
+  }
+
+  private calculateIntersectionOfTurfPolygonListAndTurfPolygon(
+    polygonList: TurfPolygon[],
+    polygon: TurfPolygon
+  ): TurfPolygon[] {
+    const turfMultiPolygon =
+      this.convertTuftPolygonListToTurfMultiPolygon(polygonList);
+    const unionTurfPolygon = intersect(turfMultiPolygon, polygon);
+    if (unionTurfPolygon === null) {
+      return [];
+    }
+    if (unionTurfPolygon.geometry.type === 'Polygon') {
+      return [unionTurfPolygon.geometry];
+    } else {
+      return this.convertTurfMultiPolygonToTurfPolygonList(
+        unionTurfPolygon.geometry
+      );
+    }
+  }
+
+  private convertCoordinateToTurfPoint(coordinate: Coordinate): TurfPoint {
+    return toTurfPoint([coordinate.x, coordinate.y]).geometry;
+  }
+
+  private convertPolygonToTurfPolygon(polygon: Polygon): TurfPolygon {
+    const vertices = polygon.vertices || [];
+    const coordinateList: number[][] = [];
+    for (const vertex of vertices) {
+      coordinateList.push([vertex.x, vertex.y]);
+    }
+    coordinateList.push([vertices[0].x, vertices[0].y]);
+    return toTurfPolygon([coordinateList]).geometry;
+  }
+
+  private convertTurfPolygonToPolygon(polygon: TurfPolygon): Polygon {
+    return {
+      vertices: polygon.coordinates[0].map((position) => {
+        return { x: position[0], y: position[1] };
+      }),
+    };
+  }
+
+  private convertTuftPolygonListToTurfMultiPolygon(
+    polygonList: TurfPolygon[]
+  ): TurfMultiPolygon {
+    const coordinateList = [];
+    for (const item of polygonList) {
+      coordinateList.push(item.coordinates);
+    }
+    return toTurfMultiPolygon(coordinateList).geometry;
+  }
+
+  private convertTurfMultiPolygonToTurfPolygonList(
+    multiPolygon: TurfMultiPolygon
+  ): TurfPolygon[] {
+    const polygonList: TurfPolygon[] = [];
+    for (const coordinateList of multiPolygon.coordinates) {
+      polygonList.push(toTurfPolygon(coordinateList).geometry);
+    }
+    return polygonList;
+  }
+}
