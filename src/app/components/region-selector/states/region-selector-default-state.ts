@@ -9,17 +9,13 @@ import { RegionSelectorState } from './region-selector-state';
 
 export class DefaultState implements RegionSelectorState {
   constructor(
-    private readonly content: RegionSelectorContent,
+    public readonly content: RegionSelectorContent,
     private readonly snapshotService: RegionSelectorSnapshotService,
     private readonly geometryService: GeometryService,
     private readonly regionSelectorGeometryService: RegionSelectorGeometryService,
     private readonly regionSelectorGraphicService: RegionSelectorGraphicService,
     private readonly canvasGraphicService: CanvasGraphicService
   ) {}
-
-  public getContent(): RegionSelectorContent {
-    return this.content;
-  }
 
   public onLeftMouseDown(
     canvas: HTMLCanvasElement,

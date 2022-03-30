@@ -1,7 +1,7 @@
 import { RegionSelectorContent } from '../region-selector-content';
 
 export interface RegionSelectorState {
-  getContent(): RegionSelectorContent;
+  content: RegionSelectorContent;
   onLeftMouseDown(
     canvas: HTMLCanvasElement,
     event: MouseEvent | TouchEvent

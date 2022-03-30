@@ -6,15 +6,11 @@ import { RegionSelectorState } from './region-selector-state';
 
 export class SelectedState implements RegionSelectorState {
   constructor(
-    private content: RegionSelectorContent,
+    public readonly content: RegionSelectorContent,
     private readonly regionSelectorGeometryService: RegionSelectorGeometryService,
     private readonly regionSelectorGraphicService: RegionSelectorGraphicService,
     private readonly canvasGraphicService: CanvasGraphicService
   ) {}
-
-  public getContent(): RegionSelectorContent {
-    return this.content;
-  }
 
   public onLeftMouseDown(): RegionSelectorState {
     return this;

@@ -24,8 +24,8 @@ const DRAWN_POLYGON_COLOR_LIST = [
 
 export class DrawState implements RegionSelectorState {
   constructor(
-    private content: RegionSelectorContent,
-    private isAddingVertex: boolean,
+    public readonly content: RegionSelectorContent,
+    public isAddingVertex: boolean,
     private polygonIDToAddNewVertex: number | null,
     private readonly snapshotService: RegionSelectorSnapshotService,
     private readonly regionSelectorGeometryService: RegionSelectorGeometryService,
@@ -33,10 +33,6 @@ export class DrawState implements RegionSelectorState {
     private readonly regionSelectorGraphicService: RegionSelectorGraphicService,
     private readonly canvasGraphicService: CanvasGraphicService
   ) {}
-
-  public getContent(): RegionSelectorContent {
-    return this.content;
-  }
 
   public onLeftMouseDown(
     canvas: HTMLCanvasElement,

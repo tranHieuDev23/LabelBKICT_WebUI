@@ -1,5 +1,9 @@
+import { Injectable } from '@angular/core';
 import { RegionSelectorEditorSnapshot } from './region-selector-editor-snapshot';
 
+@Injectable({
+  providedIn: 'root',
+})
 export class RegionSelectorSnapshotService {
   private snapshotList: RegionSelectorEditorSnapshot[] = [];
   private currentSnapshotID: number = -1;
