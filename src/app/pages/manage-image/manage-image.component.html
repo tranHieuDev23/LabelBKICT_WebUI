@@ -1,1 +1,12 @@
-<p>manage-image works!</p>
+<div nz-row>
+    <div nz-col class="region-selector-col" [nzSpan]="24" [nzMd]="16" [nzXl]="18">
+        <app-region-selector *ngIf="image" [imageSrc]="image.originalImageURL" [regionList]="regionList">
+        </app-region-selector>
+    </div>
+    <div nz-col class="sidebar-col" [nzSpan]="24" [nzMd]="8" [nzXl]="6">
+        <nz-skeleton *ngIf="!image"></nz-skeleton>
+        <div *ngIf="image">
+            <h1 nz-typography>Manage image</h1>
+        </div>
+    </div>
+</div>

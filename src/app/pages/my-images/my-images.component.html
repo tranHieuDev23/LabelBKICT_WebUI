@@ -17,7 +17,7 @@
 
     <app-image-grid emptyText="No image" [imageList]="imageList" [imageTagList]="imageTagList"
         [loading]="isLoadingImageList" (contextmenu)="onImageGridContextMenu($event)"
-        (imageListSelected)="onImageGridImageListSelected($event)">
+        (imageListSelected)="onImageGridImageListSelected($event)" (imageDbClicked)="onImageDbClicked($event)">
     </app-image-grid>
 
     <div *ngIf="!isLoadingImageList" class="pagination">

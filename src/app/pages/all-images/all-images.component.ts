@@ -403,4 +403,17 @@ export class AllImagesComponent implements OnInit {
       },
     });
   }
+
+  public onImageDbClicked(imageIndex: number): void {
+    const image = this.imageList[imageIndex];
+    const filterOptions =
+      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
+        this.filterOptions
+      );
+    this.router.navigate([`/manage-image/${image.id}`], {
+      queryParams: {
+        filter: this.jsonCompressService.compress(filterOptions),
+      },
+    });
+  }
 }

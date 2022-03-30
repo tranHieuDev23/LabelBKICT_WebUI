@@ -27,6 +27,7 @@ import {
   FilterOptionsService,
   ImageListManagementService,
 } from 'src/app/services/module/image-list-management';
+import { SessionManagementService } from 'src/app/services/module/session-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
@@ -78,6 +79,7 @@ export class MyImagesComponent implements OnInit {
     private readonly imageListManagementService: ImageListManagementService,
     private readonly filterOptionsService: FilterOptionsService,
     private readonly userManagementService: UserManagementService,
+    private readonly sessionManagementService: SessionManagementService,
     private readonly imageTypesService: ImageTypesService,
     private readonly paginationService: PaginationService,
     private readonly jsonCompressService: JSONCompressService,
@@ -394,6 +396,31 @@ export class MyImagesComponent implements OnInit {
             );
           }
         }
+      },
+    });
+  }
+
+  public async onImageDbClicked(imageIndex: number): Promise<void> {
+    const authUserInfo =
+      await this.sessionManagementService.getUserFromSession();
+    if (authUserInfo === null) {
+      this.notificationService.error(
+        'Failed to load image',
+        'User is not logged in'
+      );
+      this.router.navigateByUrl('/login');
+      return;
+    }
+
+    const image = this.imageList[imageIndex];
+    const filterOptions =
+      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
+        this.filterOptions
+      );
+    filterOptions.uploadedByUserIDList = [authUserInfo.user.id];
+    this.router.navigate([`/manage-image/${image.id}`], {
+      queryParams: {
+        filter: this.jsonCompressService.compress(filterOptions),
       },
     });
   }
