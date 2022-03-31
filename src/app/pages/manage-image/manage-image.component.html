@@ -63,6 +63,23 @@
                     </ul>
                 </nz-collapse-panel>
             </nz-collapse>
+
+            <div *ngIf="editable" class="action-buttons">
+                <button *ngIf="!isImageExcluded() && !isImagePublished()" nz-button nzType="primary"
+                    (click)="onExcludeImageClicked()">
+                    <i nz-icon nzType="minus-circle"></i> Exclude from labeling
+                </button>
+                <button *ngIf="isImageExcluded()" nz-button nzType="primary" (click)="onIncludeImageClicked()">
+                    <i nz-icon nzType="plus-circle"></i> Include for labeling
+                </button>
+                <button *ngIf="!isImageExcluded()" nz-button nzType="primary" [disabled]="!isImagePublishable()"
+                    (click)="onPublishImageClicked()">
+                    <i nz-icon nzType="check-circle"></i> Publish
+                </button>
+                <button nz-button>
+                    <i nz-icon nzType="setting"></i> Settings
+                </button>
+            </div>
         </div>
     </div>
 </div>
