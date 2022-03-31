@@ -39,6 +39,7 @@ export class DefaultState implements RegionSelectorState {
       newContent,
       true,
       null,
+      null,
       this.snapshotService,
       this.regionSelectorGeometryService,
       this.geometryService,

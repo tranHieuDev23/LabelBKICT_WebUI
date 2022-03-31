@@ -26,6 +26,7 @@ export class DrawState implements RegionSelectorState {
   constructor(
     public readonly content: RegionSelectorContent,
     public isAddingVertex: boolean,
+    public regionIDToEdit: number | null,
     private polygonIDToAddNewVertex: number | null,
     private readonly snapshotService: RegionSelectorSnapshotService,
     private readonly regionSelectorGeometryService: RegionSelectorGeometryService,
@@ -66,6 +67,7 @@ export class DrawState implements RegionSelectorState {
     return new DrawState(
       this.content,
       false,
+      this.regionIDToEdit,
       null,
       this.snapshotService,
       this.regionSelectorGeometryService,
@@ -96,6 +98,7 @@ export class DrawState implements RegionSelectorState {
       return new DrawState(
         newContent,
         this.isAddingVertex,
+        this.regionIDToEdit,
         this.polygonIDToAddNewVertex,
         this.snapshotService,
         this.regionSelectorGeometryService,
@@ -174,6 +177,7 @@ export class DrawState implements RegionSelectorState {
     return new DrawState(
       newContent,
       false,
+      this.regionIDToEdit,
       null,
       this.snapshotService,
       this.regionSelectorGeometryService,
@@ -226,6 +230,7 @@ export class DrawState implements RegionSelectorState {
         return new DrawState(
           newContent,
           true,
+          this.regionIDToEdit,
           null,
           this.snapshotService,
           this.regionSelectorGeometryService,
@@ -242,6 +247,7 @@ export class DrawState implements RegionSelectorState {
     return new DrawState(
       this.content,
       true,
+      this.regionIDToEdit,
       null,
       this.snapshotService,
       this.regionSelectorGeometryService,
@@ -285,6 +291,7 @@ export class DrawState implements RegionSelectorState {
     return new DrawState(
       newContent,
       false,
+      this.regionIDToEdit,
       null,
       this.snapshotService,
       this.regionSelectorGeometryService,
@@ -310,6 +317,7 @@ export class DrawState implements RegionSelectorState {
       return new DrawState(
         newContent,
         true,
+        this.regionIDToEdit,
         polygonIDToAddNewVertex,
         this.snapshotService,
         this.regionSelectorGeometryService,
@@ -351,6 +359,7 @@ export class DrawState implements RegionSelectorState {
     return new DrawState(
       newContent,
       true,
+      this.regionIDToEdit,
       polygonID,
       this.snapshotService,
       this.regionSelectorGeometryService,
@@ -410,6 +419,7 @@ export class DrawState implements RegionSelectorState {
         return new DrawState(
           newContent,
           true,
+          this.regionIDToEdit,
           null,
           this.snapshotService,
           this.regionSelectorGeometryService,
@@ -423,6 +433,7 @@ export class DrawState implements RegionSelectorState {
     return new DrawState(
       newContent,
       true,
+      this.regionIDToEdit,
       this.polygonIDToAddNewVertex,
       this.snapshotService,
       this.regionSelectorGeometryService,
@@ -468,11 +479,17 @@ export class DrawState implements RegionSelectorState {
     );
 
     if (this.content.isRegionListVisible) {
-      this.regionSelectorGraphicService.drawRegionList(
-        canvas,
-        ctx,
-        this.content
-      );
+      this.content.regionList.forEach((_, index) => {
+        if (index === this.regionIDToEdit) {
+          return;
+        }
+        this.regionSelectorGraphicService.drawRegion(
+          canvas,
+          ctx,
+          this.content,
+          index
+        );
+      });
     }
 
     this.drawDrawnPolygonList(canvas, canvasWidth, canvasHeight, ctx);

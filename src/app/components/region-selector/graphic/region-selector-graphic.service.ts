@@ -29,7 +29,7 @@ export class RegionSelectorGraphicService {
     }
   }
 
-  private drawRegion(
+  public drawRegion(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
     content: RegionSelectorContent,

@@ -357,6 +357,7 @@ export class RegionSelectorComponent {
       newContent,
       true,
       null,
+      null,
       this.snapshotService,
       this.regionSelectorGeometryService,
       this.geometryService,
@@ -389,6 +390,7 @@ export class RegionSelectorComponent {
     this.state = new DrawState(
       newContent,
       true,
+      regionID,
       null,
       this.snapshotService,
       this.regionSelectorGeometryService,
@@ -406,9 +408,11 @@ export class RegionSelectorComponent {
     ) {
       return;
     }
+    const drawState = this.state as DrawState;
     this.state = new DrawState(
-      this.state.content,
+      drawState.content,
       isDrawing,
+      drawState.regionIDToEdit,
       null,
       this.snapshotService,
       this.regionSelectorGeometryService,
