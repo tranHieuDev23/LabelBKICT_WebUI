@@ -103,6 +103,34 @@ export class ImageTypesService {
     }
   }
 
+  public async getImageType(id: number): Promise<{
+    imageType: ImageType;
+    regionLabelList: RegionLabel[];
+  }> {
+    try {
+      const response = await this.axios.get(`/api/image-types/${id}`);
+      const imageType = ImageType.fromJSON(response.data.image_type);
+      const regionLabelList = response.data.region_label_list.map(
+        RegionLabel.fromJSON
+      );
+      return { imageType, regionLabelList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageTypeNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
   public async updateImageType(
     id: number,
     displayName: string,

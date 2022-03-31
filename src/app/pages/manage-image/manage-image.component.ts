@@ -22,6 +22,7 @@ import {
   InvalidImageInformationError,
   InvalidImageStatusError,
   Region,
+  RegionLabel,
   UnauthenticatedError,
   UnauthorizedError,
 } from 'src/app/services/dataaccess/api';
@@ -46,6 +47,7 @@ export class ManageImageComponent implements OnInit {
   public image: Image | undefined;
   public imageTagList: ImageTag[] = [];
   public regionList: Region[] = [];
+  public regionLabelList: RegionLabel[] = [];
   public editable = true;
 
   private filterOptions: ImageListFilterOptions | undefined;
@@ -91,6 +93,11 @@ export class ManageImageComponent implements OnInit {
       this.regionList = regionList;
 
       if (image.imageType) {
+        const { regionLabelList } = await this.imageTypesService.getImageType(
+          image.imageType.id
+        );
+        this.regionLabelList = regionLabelList;
+
         const { imageTagGroupList, imageTagList } =
           await this.imageTypesService.getImageTagGroupListOfImageType(
             image.imageType.id
@@ -98,6 +105,7 @@ export class ManageImageComponent implements OnInit {
         this.allowedImageTagGroupListForImageType = imageTagGroupList;
         this.allowedImageTagListForImageType = imageTagList;
       } else {
+        this.regionLabelList = [];
         this.allowedImageTagGroupListForImageType = [];
         this.allowedImageTagListForImageType = [];
       }
