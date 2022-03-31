@@ -55,13 +55,10 @@ export class RegionSelectorComponent {
     image.onload = () => {
       this.state.content.image = image;
       this.centerImage();
-      // HACK: setTimeout() with 0 as the second parameter make the callback
-      // run asynchronously, at the first moment the main thread of execution
-      // is not busy. This allows the DOM to initialize the image properly
-      // and fixes incorrect centering.
+      // HACK: This allows the DOM to initialize the image properly and fixes incorrect centering.
       setTimeout(() => {
         this.centerImage();
-      }, 0);
+      }, 100);
     };
     image.src = v;
   }
