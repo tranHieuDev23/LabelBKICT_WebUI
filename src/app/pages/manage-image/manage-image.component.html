@@ -41,6 +41,28 @@
                 Published on {{ image.verifyTime | date:'short' }} by
                 <b>{{ image.verifiedByUser.displayName }}</b>
             </p>
+
+            <nz-collapse nzAccordion>
+                <nz-collapse-panel nzHeader="Description" nzActive="true">
+                    <app-editable-text #descriptionEditableText [text]="image.description" [editable]="editable"
+                        [placeholder]="editable? 'Add image description...' : 'No description'" [multiline]="true"
+                        (textEdited)="onImageDescriptionUpdated($event)">
+                    </app-editable-text>
+                </nz-collapse-panel>
+
+                <nz-collapse-panel nzHeader="Shortcuts">
+                    <ul>
+                        <li *ngIf="editable">Ctrl + Z/Ctrl + Shift + Z: Undo/Redo</li>
+                        <li *ngIf="editable">Ctrl + Enter: Finish drawing</li>
+                        <li *ngIf="editable">Escape: Clear selection</li>
+                        <li>Ctrl + Middle mouse scroll: Zoom</li>
+                        <li>Ctrl + Left mouse drag: Move image</li>
+                        <li>Ctrl + Shift + P: Publish image</li>
+                        <li>Left/right arrow: Next/previous image</li>
+                        <li>Right click: Menu</li>
+                    </ul>
+                </nz-collapse-panel>
+            </nz-collapse>
         </div>
     </div>
 </div>

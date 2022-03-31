@@ -18,6 +18,7 @@ import {
   ImageTag,
   ImageTagGroup,
   ImageTypesService,
+  InvalidImageInformationError,
   Region,
   UnauthenticatedError,
   UnauthorizedError,
@@ -43,6 +44,7 @@ export class ManageImageComponent implements OnInit {
   public image: Image | undefined;
   public imageTagList: ImageTag[] = [];
   public regionList: Region[] = [];
+  public editable = true;
 
   private filterOptions: ImageListFilterOptions | undefined;
 
@@ -253,6 +255,58 @@ export class ManageImageComponent implements OnInit {
     );
     this.imageTagList = this.imageTagList.filter(
       (imageTag) => imageTag.id !== deletedImageTag.id
+    );
+  }
+
+  public async onImageDescriptionUpdated(description: string): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+    try {
+      this.image = await this.imageManagementService.updateImageMetadata(
+        this.image.id,
+        description
+      );
+    } catch (e) {
+      if (e instanceof InvalidImageInformationError) {
+        this.notificationService.error(
+          'Failed to update image description',
+          'Invalid description'
+        );
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to update image description',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to update image description',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof ImageOrImageTagNotFoundError) {
+        this.notificationService.error(
+          'Failed to update image description',
+          'Image or image tag cannot be found'
+        );
+      } else if (e instanceof ImageDoesNotHaveImageTagError) {
+        this.notificationService.error(
+          'Failed to update image description',
+          'Image does not have image tag'
+        );
+      } else {
+        console.log(e);
+        this.notificationService.error(
+          'Failed to update image description',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+    this.notificationService.success(
+      'Updated image description successfully',
+      ''
     );
   }
 }
