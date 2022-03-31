@@ -22,8 +22,6 @@ export class EditableTagListComponent {
 
   @Input() public set allImageTagGroupList(v: ImageTagGroup[]) {
     this._allImageTagGroupList = v;
-    this.imageTagList = [];
-    this.allowedImageTagGroupIndexList = [];
     this.updateAllowedImageTagGroupIndexList();
   }
 
@@ -35,8 +33,6 @@ export class EditableTagListComponent {
 
   @Input() public set allImageTagList(v: ImageTag[][]) {
     this._allImageTagList = v;
-    this.imageTagList = [];
-    this.allowedImageTagGroupIndexList = [];
     this.updateAllowedImageTagGroupIndexList();
   }
 

@@ -8,14 +8,22 @@ import { Polygon } from 'src/app/components/region-selector/models';
 import { RegionSelectorComponent } from 'src/app/components/region-selector/region-selector.component';
 import {
   Image,
+  ImageAlreadyHasImageTagError,
+  ImageCannotBeAssignedWithImageTagError,
+  ImageDoesNotHaveImageTagError,
   ImageListFilterOptions,
   ImageNotFoundError,
+  ImageOrImageTagNotFoundError,
+  ImageStatus,
   ImageTag,
+  ImageTagGroup,
+  ImageTypesService,
   Region,
   UnauthenticatedError,
   UnauthorizedError,
 } from 'src/app/services/dataaccess/api';
 import { ImageManagementService } from 'src/app/services/module/image-management';
+import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 
@@ -40,9 +48,14 @@ export class ManageImageComponent implements OnInit {
 
   public selectedRegion: Polygon[] = [];
 
+  public allowedImageTagGroupListForImageType: ImageTagGroup[] = [];
+  public allowedImageTagListForImageType: ImageTag[][] = [];
+
   constructor(
     private readonly sessionManagementService: SessionManagementService,
     private readonly imageManagementService: ImageManagementService,
+    private readonly imageTypesService: ImageTypesService,
+    private readonly imageStatusService: ImageStatusService,
     private readonly route: ActivatedRoute,
     private readonly location: Location,
     private readonly router: Router,
@@ -71,6 +84,19 @@ export class ManageImageComponent implements OnInit {
       this.image = image;
       this.imageTagList = imageTagList;
       this.regionList = regionList;
+
+      if (image.imageType) {
+        const { imageTagGroupList, imageTagList } =
+          await this.imageTypesService.getImageTagGroupListOfImageType(
+            image.imageType.id
+          );
+        this.allowedImageTagGroupListForImageType = imageTagGroupList;
+        this.allowedImageTagListForImageType = imageTagList;
+      } else {
+        this.allowedImageTagGroupListForImageType = [];
+        this.allowedImageTagListForImageType = [];
+      }
+
       window.scrollTo(0, 0);
     } catch (e) {
       if (e instanceof UnauthenticatedError) {
@@ -115,5 +141,118 @@ export class ManageImageComponent implements OnInit {
     const filterOptions = new ImageListFilterOptions();
     filterOptions.uploadedByUserIDList = [sessionUserID];
     return filterOptions;
+  }
+
+  public getImageStatusColor(status: ImageStatus): string {
+    return this.imageStatusService.getImageStatusColor(status);
+  }
+
+  public getImageStatusString(status: ImageStatus): string {
+    return this.imageStatusService.getImageStatusString(status);
+  }
+
+  public async onImageTagForUploadedImageAdded(
+    addedImageTag: ImageTag
+  ): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+    try {
+      await this.imageManagementService.addImageTagToImage(
+        this.image.id,
+        addedImageTag.id
+      );
+    } catch (e) {
+      if (e instanceof ImageCannotBeAssignedWithImageTagError) {
+        this.notificationService.error(
+          'Failed to add image tag to image',
+          'This image tag is not allowed for this image type'
+        );
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to add image tag to image',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to add image tag to image',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof ImageOrImageTagNotFoundError) {
+        this.notificationService.error(
+          'Failed to add image tag to image',
+          'Image or image tag cannot be found'
+        );
+      } else if (e instanceof ImageAlreadyHasImageTagError) {
+        this.notificationService.error(
+          'Failed to add image tag to image',
+          'Image already has image tag'
+        );
+      } else {
+        this.notificationService.error(
+          'Failed to add image tag to image',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+    this.notificationService.success(
+      'Added image tag to image successfully',
+      ''
+    );
+    this.imageTagList = [...this.imageTagList, addedImageTag];
+  }
+
+  public async onImageTagForUploadedImageDeleted(
+    deletedImageTag: ImageTag
+  ): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+    try {
+      await this.imageManagementService.removeImageTagFromImage(
+        this.image.id,
+        deletedImageTag.id
+      );
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to remove image tag from image',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to remove image tag from image',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof ImageOrImageTagNotFoundError) {
+        this.notificationService.error(
+          'Failed to remove image tag from image',
+          'Image or image tag cannot be found'
+        );
+      } else if (e instanceof ImageDoesNotHaveImageTagError) {
+        this.notificationService.error(
+          'Failed to remove image tag from image',
+          'Image does not have image tag'
+        );
+      } else {
+        this.notificationService.error(
+          'Failed to remove image tag from image',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+    this.notificationService.success(
+      'Removed image tag from image successfully',
+      ''
+    );
+    this.imageTagList = this.imageTagList.filter(
+      (imageTag) => imageTag.id !== deletedImageTag.id
+    );
   }
 }

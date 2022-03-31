@@ -7,6 +7,23 @@
         <nz-skeleton *ngIf="!image"></nz-skeleton>
         <div *ngIf="image">
             <h1 nz-typography>Manage image</h1>
+
+            <p>
+                <nz-tag nzColor="magenta">
+                    {{ image.imageType?.displayName || 'No type' }}
+                </nz-tag>
+                <nz-tag [nzColor]="getImageStatusColor(image.status)">
+                    {{ getImageStatusString(image.status) }}
+                </nz-tag>
+            </p>
+
+            <p>
+                <app-editable-tag-list [allImageTagGroupList]="allowedImageTagGroupListForImageType"
+                    [allImageTagList]="allowedImageTagListForImageType" [editable]="true" [imageTagList]="imageTagList"
+                    (imageTagAdded)="onImageTagForUploadedImageAdded($event)"
+                    (imageTagDeleted)="onImageTagForUploadedImageDeleted($event)">
+                </app-editable-tag-list>
+            </p>
         </div>
     </div>
 </div>

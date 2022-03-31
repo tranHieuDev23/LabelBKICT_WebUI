@@ -69,6 +69,7 @@ export class ImageUploadComponent {
     if (imageType === null) {
       this.allowedImageTagGroupListForImageType = [];
       this.allowedImageTagListForImageType = [];
+      this.imageTagListForUploadedImage = [];
       return;
     }
 
@@ -79,6 +80,7 @@ export class ImageUploadComponent {
         );
       this.allowedImageTagGroupListForImageType = imageTagGroupList;
       this.allowedImageTagListForImageType = imageTagList;
+      this.imageTagListForUploadedImage = [];
     } catch (e) {
       if (e instanceof UnauthenticatedError) {
         this.notificationService.error(
