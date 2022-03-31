@@ -45,7 +45,7 @@ export class RegionsService {
         holes,
         region_label_id: regionLabelID,
       });
-      return Region.fromJSON(response.data);
+      return Region.fromJSON(response.data.region);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -101,7 +101,7 @@ export class RegionsService {
           holes,
         }
       );
-      return Region.fromJSON(response.data);
+      return Region.fromJSON(response.data.region);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -131,7 +131,7 @@ export class RegionsService {
         `/api/images/${imageID}/regions/${regionID}/label`,
         { region_label_id: regionLabelID }
       );
-      return Region.fromJSON(response.data);
+      return Region.fromJSON(response.data.region);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

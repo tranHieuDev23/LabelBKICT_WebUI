@@ -1,6 +1,7 @@
 <div nz-row>
     <div nz-col class="region-selector-col" [nzSpan]="24" [nzMd]="16" [nzXl]="18">
-        <app-region-selector *ngIf="image" [imageSrc]="image.originalImageURL" [regionList]="regionList">
+        <app-region-selector *ngIf="image" [imageSrc]="image.originalImageURL" [regionList]="regionList"
+            (regionSelected)="onRegionSelected($event)">
         </app-region-selector>
     </div>
     <div nz-col class="sidebar-col" [nzSpan]="24" [nzMd]="8" [nzXl]="6">
@@ -83,3 +84,15 @@
         </div>
     </div>
 </div>
+
+<nz-modal *ngIf="isLabelRegionModalVisible" nzTitle="Label region" [nzVisible]="isLabelRegionModalVisible"
+    [nzClosable]="false" nzCancelText="Close" (nzOnCancel)="onCloseLabelRegionModal()" [nzOkText]="null">
+    <div *nzModalContent>
+        <nz-list nzBordered>
+            <nz-list-item *ngFor="let regionLabel of regionLabelList" class="label-region-modal-item"
+                (click)="onLabelRegionModalItemClicked(regionLabel)">
+                <span nz-typography>{{ regionLabel.displayName }}</span>
+            </nz-list-item>
+        </nz-list>
+    </div>
+</nz-modal>
