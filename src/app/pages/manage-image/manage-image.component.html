@@ -1,7 +1,7 @@
 <div nz-row>
     <div nz-col class="region-selector-col" [nzSpan]="24" [nzMd]="16" [nzXl]="18">
         <app-region-selector *ngIf="image" [imageSrc]="image.originalImageURL" [regionList]="regionList"
-            (regionSelected)="onRegionSelected($event)">
+            (regionSelected)="onRegionSelected($event)" (regionDbClicked)="onRegionDbClicked($event)">
         </app-region-selector>
     </div>
     <div nz-col class="sidebar-col" [nzSpan]="24" [nzMd]="8" [nzXl]="6">
@@ -94,5 +94,24 @@
                 <span nz-typography>{{ regionLabel.displayName }}</span>
             </nz-list-item>
         </nz-list>
+    </div>
+</nz-modal>
+
+<nz-modal *ngIf="isRegionInformationModalVisible" nzTitle="Region information"
+    [nzVisible]="isRegionInformationModalVisible" [nzClosable]="false" nzCancelText="Close"
+    (nzOnCancel)="onRegionInformationModalClose()" [nzOkText]="null">
+    <div *nzModalContent>
+        <img class="modal-image" [src]="regionInformationModalImage" />
+        <p *ngIf="regionInformationModalRegion?.label" nz-typography>
+            Labeled by <b>{{ regionInformationModalRegion?.labeledByUser?.displayName }}</b> as <b>{{
+                regionInformationModalRegion?.label?.displayName }}</b>
+        </p>
+        <p *ngIf="!(regionInformationModalRegion?.label)" nz-typography>
+            Not yet labeled
+        </p>
+        <button *ngIf="editable" nz-button nzDanger nzType="primary"
+            (click)="onRegionInformationModalDeleteRegionClicked()" style="margin-top: 8px">
+            <i nz-icon nzType="delete"></i> Delete region
+        </button>
     </div>
 </nz-modal>

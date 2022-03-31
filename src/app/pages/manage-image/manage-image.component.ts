@@ -6,7 +6,10 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { EditableTextComponent } from 'src/app/components/editable-text/editable-text.component';
 import { Polygon } from 'src/app/components/region-selector/models';
-import { RegionSelectedEvent } from 'src/app/components/region-selector/region-selector-events';
+import {
+  RegionClickedEvent,
+  RegionSelectedEvent,
+} from 'src/app/components/region-selector/region-selector-events';
 import { RegionSelectorComponent } from 'src/app/components/region-selector/region-selector.component';
 import {
   Image,
@@ -26,11 +29,13 @@ import {
   Region,
   RegionLabel,
   RegionLabelCannotBeAssignedToImageError,
+  RegionNotFoundError,
   UnauthenticatedError,
   UnauthorizedError,
 } from 'src/app/services/dataaccess/api';
 import { ImageManagementService } from 'src/app/services/module/image-management';
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
+import { RegionImageService } from 'src/app/services/module/region-management/region-image.service';
 import { RegionManagementService } from 'src/app/services/module/region-management/region-management.service';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
@@ -60,6 +65,10 @@ export class ManageImageComponent implements OnInit {
 
   public isLabelRegionModalVisible = false;
 
+  public isRegionInformationModalVisible = false;
+  public regionInformationModalRegion: Region | null = null;
+  public regionInformationModalImage: string = '';
+
   public allowedImageTagGroupListForImageType: ImageTagGroup[] = [];
   public allowedImageTagListForImageType: ImageTag[][] = [];
 
@@ -69,6 +78,7 @@ export class ManageImageComponent implements OnInit {
     private readonly regionManagementService: RegionManagementService,
     private readonly imageTypesService: ImageTypesService,
     private readonly imageStatusService: ImageStatusService,
+    private readonly regionImageService: RegionImageService,
     private readonly route: ActivatedRoute,
     private readonly location: Location,
     private readonly router: Router,
@@ -576,5 +586,65 @@ export class ManageImageComponent implements OnInit {
         this.notificationService.error('Failed to add region', 'Unknown error');
       }
     }
+  }
+
+  public async onRegionDbClicked(event: RegionClickedEvent): Promise<void> {
+    if (!this.image || event.isDrawnPolygonClicked || event.regionID === null) {
+      return;
+    }
+    const region = this.regionList[event.regionID];
+    this.regionInformationModalImage =
+      await this.regionImageService.generateRegionImage(
+        this.image.originalImageURL,
+        region.border
+      );
+    this.regionInformationModalRegion = region;
+    this.isRegionInformationModalVisible = true;
+  }
+
+  public async onRegionInformationModalDeleteRegionClicked(): Promise<void> {
+    if (!this.image || !this.regionInformationModalRegion) {
+      return;
+    }
+    try {
+      await this.regionManagementService.deleteRegion(
+        this.image.id,
+        this.regionInformationModalRegion.id
+      );
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to delete region',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to delete region',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof RegionNotFoundError) {
+        this.notificationService.error(
+          'Failed to delete region',
+          'Region not found'
+        );
+      } else {
+        this.notificationService.error(
+          'Failed to delete region',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+    this.notificationService.success('Deleted region successfully', '');
+    this.regionList = this.regionList.filter(
+      (region) => region.id !== this.regionInformationModalRegion?.id
+    );
+    this.isRegionInformationModalVisible = false;
+  }
+
+  public onRegionInformationModalClose(): void {
+    this.isRegionInformationModalVisible = false;
   }
 }

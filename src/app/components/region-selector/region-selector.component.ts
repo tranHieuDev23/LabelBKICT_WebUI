@@ -65,6 +65,7 @@ export class RegionSelectorComponent {
 
   @Input() set regionList(v: Region[]) {
     this.state.content.regionList = v;
+    this.onDraw();
     this.mouseOverRegionID = null;
   }
 
