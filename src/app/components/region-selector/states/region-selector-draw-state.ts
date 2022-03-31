@@ -12,7 +12,7 @@ const VERTICES_MIN_DISTANCE = 1e-3;
 const VERTICES_MAX_DISTANCE = 1e-2;
 const VERTICES_AUTO_CONNECT_DISTANCE = VERTICES_MAX_DISTANCE;
 const MINIMUM_NEW_VERTICES_PER_DRAW = 10;
-const DELETE_VERTICES_CANVAS_DISTANCE = 10;
+const DELETE_VERTICES_MOUSE_DISTANCE = 10;
 const DRAWN_POLYGON_COLOR_LIST = [
   '#c41d7f',
   '#531dab',
@@ -116,6 +116,9 @@ export class DrawState implements RegionSelectorState {
     canvas: HTMLCanvasElement,
     event: MouseEvent | TouchEvent
   ): RegionSelectorState {
+    if (this.polygonIDToAddNewVertex === null) {
+      return this;
+    }
     const cursorMousePosition =
       this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
     const cursorImagePosition =
@@ -124,21 +127,20 @@ export class DrawState implements RegionSelectorState {
         this.content,
         cursorMousePosition
       );
-    return this.polygonIDToAddNewVertex === null
-      ? this.getDrawStateWithFirstVertex(cursorImagePosition)
-      : this.getDrawStateWithNewVertex(cursorImagePosition);
+    return this.getDrawStateWithNewVertex(cursorImagePosition);
   }
 
   public onMouseMoveDeletingVertex(
     canvas: HTMLCanvasElement,
     event: MouseEvent | TouchEvent
   ): RegionSelectorState {
-    const mousePosition =
+    const mousePos =
       this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
-    const mouseCanvasPos =
-      this.regionSelectorGeometryService.mouseToCanvasPosition(
+    const mouseImagePos =
+      this.regionSelectorGeometryService.mouseToImagePosition(
         canvas,
-        mousePosition
+        this.content,
+        mousePos
       );
 
     // Remove all vertices within cursor size
@@ -146,17 +148,15 @@ export class DrawState implements RegionSelectorState {
       (polygon) => {
         return {
           vertices: polygon.vertices.filter((vertex) => {
-            const vertexCanvasPos =
-              this.regionSelectorGeometryService.imageToCanvasPosition(
+            const vertexMousePos =
+              this.regionSelectorGeometryService.imageToMousePosition(
                 canvas,
                 this.content,
                 vertex
               );
             return (
-              this.geometryService.getDistance(
-                vertexCanvasPos,
-                mouseCanvasPos
-              ) > DELETE_VERTICES_CANVAS_DISTANCE
+              this.geometryService.getDistance(vertexMousePos, mousePos) >
+              DELETE_VERTICES_MOUSE_DISTANCE
             );
           }),
         };
@@ -169,6 +169,7 @@ export class DrawState implements RegionSelectorState {
     );
 
     const newContent = { ...this.content };
+    newContent.cursorImagePosition = mouseImagePos;
     newContent.drawnPolygonList = drawnPolygonListWithNoEmpty;
     return new DrawState(
       newContent,
@@ -325,7 +326,7 @@ export class DrawState implements RegionSelectorState {
     const inBetweenPointList = this.geometryService.getInBetweenPointList(
       vertexToConnect,
       cursorImagePosition,
-      VERTICES_MIN_DISTANCE
+      VERTICES_MAX_DISTANCE
     );
     if (isOpenVertexPrevious) {
       newContent.drawnPolygonList[polygonID] = {
@@ -383,7 +384,7 @@ export class DrawState implements RegionSelectorState {
     const inBetweenPointList = this.geometryService.getInBetweenPointList(
       vertexToConnect,
       cursorImagePosition,
-      VERTICES_MIN_DISTANCE
+      VERTICES_MAX_DISTANCE
     );
     newContent.drawnPolygonList = [...newContent.drawnPolygonList];
     newContent.drawnPolygonList[this.polygonIDToAddNewVertex] = {
@@ -393,6 +394,31 @@ export class DrawState implements RegionSelectorState {
         cursorImagePosition,
       ],
     };
+
+    const currentVerticesCount =
+      newContent.drawnPolygonList[this.polygonIDToAddNewVertex].vertices.length;
+    if (currentVerticesCount > MINIMUM_NEW_VERTICES_PER_DRAW) {
+      const openNeighborVertex =
+        newContent.drawnPolygonList[this.polygonIDToAddNewVertex].vertices[0];
+      if (
+        this.geometryService.getDistance(
+          openNeighborVertex,
+          cursorImagePosition
+        ) <= VERTICES_MAX_DISTANCE
+      ) {
+        // if cursor position is close enough to the next vertex, automatically connect to that vertex and stop drawing
+        return new DrawState(
+          newContent,
+          true,
+          null,
+          this.snapshotService,
+          this.regionSelectorGeometryService,
+          this.geometryService,
+          this.regionSelectorGraphicService,
+          this.canvasGraphicService
+        );
+      }
+    }
 
     return new DrawState(
       newContent,
@@ -544,7 +570,7 @@ export class DrawState implements RegionSelectorState {
       center: lastAddedVertexCanvasPos,
       lineColor: '#f5222d',
       fillColor: 'a8071a',
-      radius: DELETE_VERTICES_CANVAS_DISTANCE / 2,
+      radius: 5,
     });
   }
 
@@ -566,7 +592,7 @@ export class DrawState implements RegionSelectorState {
       ctx,
       center: cursorCanvasPos,
       lineColor: '#ccc',
-      radius: 5,
+      radius: DELETE_VERTICES_MOUSE_DISTANCE,
     });
   }
 

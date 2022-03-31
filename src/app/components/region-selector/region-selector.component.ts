@@ -408,7 +408,7 @@ export class RegionSelectorComponent {
     }
     this.state = new DrawState(
       this.state.content,
-      !isDrawing,
+      isDrawing,
       null,
       this.snapshotService,
       this.regionSelectorGeometryService,
@@ -453,7 +453,16 @@ export class RegionSelectorComponent {
   }
 
   public cancelDrawing(): void {
-    this.state = this.getDefaultRegionSelectorState();
+    const newContent = { ...this.state.content };
+    newContent.drawnPolygonList = [];
+    this.state = new DefaultState(
+      newContent,
+      this.snapshotService,
+      this.geometryService,
+      this.regionSelectorGeometryService,
+      this.regionSelectorGraphicService,
+      this.canvasGraphicService
+    );
     this.onDraw();
     this.snapshotService.clear();
   }

@@ -44,7 +44,7 @@ export class DefaultState implements RegionSelectorState {
       this.geometryService,
       this.regionSelectorGraphicService,
       this.canvasGraphicService
-    );
+    ).onLeftMouseDown(canvas, event);
   }
 
   public onMouseMove(): RegionSelectorState {

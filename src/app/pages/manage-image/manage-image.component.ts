@@ -322,7 +322,6 @@ export class ManageImageComponent implements OnInit {
           'Image cannot be found'
         );
       } else {
-        console.log(e);
         this.notificationService.error(
           'Failed to update image description',
           'Unknown error'
@@ -377,7 +376,6 @@ export class ManageImageComponent implements OnInit {
               'Image cannot be found'
             );
           } else {
-            console.log(e);
             this.notificationService.error(
               'Failed to exclude image',
               'Unknown error'
@@ -430,7 +428,6 @@ export class ManageImageComponent implements OnInit {
               'Image cannot be found'
             );
           } else {
-            console.log(e);
             this.notificationService.error(
               'Failed to include image',
               'Unknown error'
@@ -482,7 +479,6 @@ export class ManageImageComponent implements OnInit {
               'Image cannot be found'
             );
           } else {
-            console.log(e);
             this.notificationService.error(
               'Failed to publish image',
               'Unknown error'

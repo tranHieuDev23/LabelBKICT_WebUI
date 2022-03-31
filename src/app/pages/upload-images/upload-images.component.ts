@@ -69,7 +69,6 @@ export class UploadImagesComponent implements OnInit {
           );
           this.router.navigateByUrl('/welcome');
         } else {
-          console.log(e);
           this.notificationService.error(
             'Failed to load page',
             'Unknown error'

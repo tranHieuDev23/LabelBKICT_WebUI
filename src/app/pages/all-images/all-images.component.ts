@@ -274,7 +274,6 @@ export class AllImagesComponent implements OnInit {
   }
 
   public onImageGridContextMenu(event: MouseEvent): boolean {
-    console.log(this.selectedImageList);
     if (this.selectedImageList.length === 0) {
       return false;
     }
