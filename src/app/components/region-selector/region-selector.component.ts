@@ -74,7 +74,7 @@ export class RegionSelectorComponent {
   @Output() public regionSelected = new EventEmitter<RegionSelectedEvent>();
   @Output() public regionEdited = new EventEmitter<RegionEditedEvent>();
   @Output() public regionDbClicked = new EventEmitter<RegionClickedEvent>();
-  @Output() public regionRightClicked = new EventEmitter<RegionClickedEvent>();
+  @Output() public contextMenu = new EventEmitter<RegionClickedEvent>();
 
   private isMouseDown = false;
   private isCtrlDown = false;
@@ -429,7 +429,8 @@ export class RegionSelectorComponent {
       return;
     }
 
-    const content = this.state.content;
+    const drawState = this.state as DrawState;
+    const content = drawState.content;
     const drawnPolygonList = content.drawnPolygonList;
     if (drawnPolygonList.length === 0) {
       this.cancelDrawing();
@@ -452,9 +453,18 @@ export class RegionSelectorComponent {
     );
     this.onDraw();
 
-    this.regionSelected.emit(
-      new RegionSelectedEvent([normalizedBorder, ...normalizedHoles])
-    );
+    if (drawState.regionIDToEdit === null) {
+      this.regionSelected.emit(
+        new RegionSelectedEvent([normalizedBorder, ...normalizedHoles])
+      );
+    } else {
+      this.regionEdited.emit(
+        new RegionEditedEvent(drawState.regionIDToEdit, [
+          normalizedBorder,
+          ...normalizedHoles,
+        ])
+      );
+    }
   }
 
   public cancelDrawing(): void {
@@ -512,15 +522,13 @@ export class RegionSelectorComponent {
 
   public handleContextMenu(event: MouseEvent): boolean {
     event.preventDefault();
-    if (this.mouseOverRegionID !== null || this.isMouseOverDrawnPolygonList) {
-      this.regionRightClicked.emit(
-        new RegionClickedEvent(
-          this.isMouseOverDrawnPolygonList,
-          this.mouseOverRegionID,
-          event
-        )
-      );
-    }
+    this.contextMenu.emit(
+      new RegionClickedEvent(
+        this.isMouseOverDrawnPolygonList,
+        this.mouseOverRegionID,
+        event
+      )
+    );
     return false;
   }
 
@@ -630,7 +638,7 @@ export class RegionSelectorComponent {
       if (
         this.mouseOverRegionID !== null &&
         !this.isInDrawState() &&
-        !this.isRegionListVisible()
+        this.isRegionListVisible()
       ) {
         this.regionSelectorGraphicService.drawRegionLabel(
           canvasElement,

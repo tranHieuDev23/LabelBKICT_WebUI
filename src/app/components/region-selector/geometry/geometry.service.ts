@@ -194,8 +194,6 @@ export class GeometryService {
       });
     });
 
-    console.log(verticesFarFromKinkList);
-
     const unKinkedPolygonList = unkinkPolygon(
       toTurfPolygon([verticesFarFromKinkList])
     );

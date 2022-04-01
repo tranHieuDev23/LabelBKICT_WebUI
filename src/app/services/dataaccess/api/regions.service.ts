@@ -137,8 +137,6 @@ export class RegionsService {
         throw e;
       }
       switch (e.response?.status) {
-        case HttpStatusCode.BadRequest:
-          throw new InvalidRegionInformation();
         case HttpStatusCode.Unauthorized:
           throw new UnauthenticatedError();
         case HttpStatusCode.Forbidden:

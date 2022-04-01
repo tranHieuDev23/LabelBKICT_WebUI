@@ -1,13 +1,17 @@
 import { Location } from '@angular/common';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { AfterContentInit, Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
+import {
+  NzContextMenuService,
+  NzDropdownMenuComponent,
+} from 'ng-zorro-antd/dropdown';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { EditableTextComponent } from 'src/app/components/editable-text/editable-text.component';
 import { Polygon } from 'src/app/components/region-selector/models';
 import {
   RegionClickedEvent,
+  RegionEditedEvent,
   RegionSelectedEvent,
 } from 'src/app/components/region-selector/region-selector-events';
 import { RegionSelectorComponent } from 'src/app/components/region-selector/region-selector.component';
@@ -45,8 +49,8 @@ import { JSONCompressService } from 'src/app/services/utils/json-compress/json-c
   templateUrl: './manage-image.component.html',
   styleUrls: ['./manage-image.component.scss'],
 })
-export class ManageImageComponent implements OnInit {
-  @ViewChild(RegionSelectorComponent, { static: false })
+export class ManageImageComponent implements AfterContentInit {
+  @ViewChild('regionSelector', { static: false })
   public regionSelector: RegionSelectorComponent | undefined;
   @ViewChild('descriptionEditableText', { static: false })
   public descriptionEditableText: EditableTextComponent | undefined;
@@ -69,6 +73,9 @@ export class ManageImageComponent implements OnInit {
   public regionInformationModalRegion: Region | null = null;
   public regionInformationModalImage: string = '';
 
+  public contextMenuRegion: Region | null = null;
+  public contextMenuRegionID: number | null = null;
+
   public allowedImageTagGroupListForImageType: ImageTagGroup[] = [];
   public allowedImageTagListForImageType: ImageTag[][] = [];
 
@@ -84,10 +91,11 @@ export class ManageImageComponent implements OnInit {
     private readonly router: Router,
     private readonly notificationService: NzNotificationService,
     private readonly modalService: NzModalService,
+    private readonly contextMenuService: NzContextMenuService,
     private readonly jsonCompress: JSONCompressService
   ) {}
 
-  ngOnInit(): void {
+  ngAfterContentInit(): void {
     this.route.params.subscribe(async (params) => {
       this.onParamsChanged(params);
     });
@@ -525,6 +533,60 @@ export class ManageImageComponent implements OnInit {
     this.isLabelRegionModalVisible = true;
   }
 
+  public async onRegionEdited(event: RegionEditedEvent): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+    this.regionSelector?.cancelDrawing();
+    const editedRegion = this.regionList[event.regionID];
+    try {
+      const border = event.newPolygonList[0];
+      const holes = event.newPolygonList.slice(1);
+      const region = await this.regionManagementService.updateRegionBoundary(
+        this.image.id,
+        editedRegion.id,
+        border,
+        holes
+      );
+      this.regionList = [...this.regionList];
+      this.regionList[event.regionID] = region;
+    } catch (e) {
+      if (e instanceof InvalidRegionInformation) {
+        this.notificationService.error(
+          'Failed to update region boundary',
+          'Invalid region information'
+        );
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to update region boundary',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to update region boundary',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof RegionNotFoundError) {
+        this.notificationService.error(
+          'Failed to update region boundary',
+          'Region not found'
+        );
+      } else {
+        this.notificationService.error(
+          'Failed to update region boundary',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+    this.notificationService.success(
+      'Updated region boundary successfully',
+      ''
+    );
+  }
+
   public onCloseLabelRegionModal(): void {
     this.isLabelRegionModalVisible = false;
   }
@@ -536,7 +598,7 @@ export class ManageImageComponent implements OnInit {
     this.isLabelRegionModalVisible = false;
   }
 
-  private async addSelectedRegion(regionLabel: RegionLabel): Promise<void> {
+  public async addSelectedRegion(regionLabel: RegionLabel): Promise<void> {
     if (!this.image) {
       return;
     }
@@ -580,7 +642,7 @@ export class ManageImageComponent implements OnInit {
       } else if (e instanceof RegionLabelCannotBeAssignedToImageError) {
         this.notificationService.error(
           'Failed to add region',
-          'Region label value cannot be assigned to image of this image type'
+          'Region label cannot be assigned to image of this image type'
         );
       } else {
         this.notificationService.error('Failed to add region', 'Unknown error');
@@ -589,10 +651,141 @@ export class ManageImageComponent implements OnInit {
   }
 
   public async onRegionDbClicked(event: RegionClickedEvent): Promise<void> {
-    if (!this.image || event.isDrawnPolygonClicked || event.regionID === null) {
+    if (event.regionID === null) {
       return;
     }
     const region = this.regionList[event.regionID];
+    await this.openRegionInfoModal(region);
+  }
+
+  public async onRegionInformationModalDeleteRegionClicked(): Promise<void> {
+    if (!this.image || !this.regionInformationModalRegion) {
+      return;
+    }
+    await this.handleDeleteRegion(this.regionInformationModalRegion);
+    this.isRegionInformationModalVisible = false;
+  }
+
+  public onRegionInformationModalClose(): void {
+    this.isRegionInformationModalVisible = false;
+  }
+
+  public async onContextMenu(event: RegionClickedEvent): Promise<void> {
+    if (!this.image || !this.contextMenu) {
+      return;
+    }
+    if (event.regionID !== null) {
+      this.contextMenuRegion = this.regionList[event.regionID];
+      this.contextMenuRegionID = event.regionID;
+    } else {
+      this.contextMenuRegion = null;
+      this.contextMenuRegionID = null;
+    }
+    this.contextMenuService.create(event.event, this.contextMenu);
+  }
+
+  public isRegionListVisible(): boolean {
+    return this.regionSelector?.isRegionListVisible() || false;
+  }
+
+  public onContextMenuResetZoomClicked(): void {
+    this.regionSelector?.resetZoom();
+  }
+
+  public onContextMenuHideRegionsClicked(): void {
+    this.regionSelector?.hideRegionList();
+  }
+
+  public onContextMenuShowRegionsClicked(): void {
+    this.regionSelector?.showRegionList();
+  }
+
+  public isRegionSelectorIsInDrawState(): boolean {
+    return this.regionSelector?.isInDrawState() || false;
+  }
+
+  public isRegionSelectorIsInSelectedState(): boolean {
+    return this.regionSelector?.isInSelectedState() || false;
+  }
+
+  public onContextMenuEditRegionBoundaryClicked(): void {
+    if (this.contextMenuRegionID === null) {
+      return;
+    }
+    this.regionSelector?.editRegion(this.contextMenuRegionID);
+  }
+
+  public async onContextMenuRelabelRegionLabelClicked(
+    regionLabel: RegionLabel
+  ): Promise<void> {
+    if (
+      !this.image ||
+      !this.contextMenuRegion ||
+      this.contextMenuRegionID === null
+    ) {
+      return;
+    }
+    try {
+      const updatedRegion =
+        await this.regionManagementService.updateRegionRegionLabel(
+          this.image.id,
+          this.contextMenuRegion.id,
+          regionLabel.id
+        );
+      this.regionList = [...this.regionList];
+      this.regionList[this.contextMenuRegionID] = updatedRegion;
+      this.notificationService.success('Updated region label successfully', '');
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to update region label',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to update region label',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof RegionNotFoundError) {
+        this.notificationService.error(
+          'Failed to update region label',
+          'Region not found'
+        );
+      } else if (e instanceof RegionLabelCannotBeAssignedToImageError) {
+        this.notificationService.error(
+          'Failed to update region label',
+          'Region label cannot be assigned to image of this image type'
+        );
+      } else {
+        this.notificationService.error(
+          'Failed to update region label',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+  }
+
+  public async onContextMenuShowRegionInfoClicked(): Promise<void> {
+    if (!this.contextMenuRegion) {
+      return;
+    }
+    await this.openRegionInfoModal(this.contextMenuRegion);
+  }
+
+  public async onContextMenuDeleteRegionClicked(): Promise<void> {
+    if (!this.contextMenuRegion) {
+      return;
+    }
+    await this.handleDeleteRegion(this.contextMenuRegion);
+  }
+
+  private async openRegionInfoModal(region: Region): Promise<void> {
+    if (!this.image) {
+      return;
+    }
     this.regionInformationModalImage =
       await this.regionImageService.generateRegionImage(
         this.image.originalImageURL,
@@ -602,14 +795,14 @@ export class ManageImageComponent implements OnInit {
     this.isRegionInformationModalVisible = true;
   }
 
-  public async onRegionInformationModalDeleteRegionClicked(): Promise<void> {
-    if (!this.image || !this.regionInformationModalRegion) {
+  private async handleDeleteRegion(deletedRegion: Region): Promise<void> {
+    if (!this.image) {
       return;
     }
     try {
       await this.regionManagementService.deleteRegion(
         this.image.id,
-        this.regionInformationModalRegion.id
+        deletedRegion.id
       );
     } catch (e) {
       if (e instanceof UnauthenticatedError) {
@@ -639,12 +832,7 @@ export class ManageImageComponent implements OnInit {
     }
     this.notificationService.success('Deleted region successfully', '');
     this.regionList = this.regionList.filter(
-      (region) => region.id !== this.regionInformationModalRegion?.id
+      (region) => region.id !== deletedRegion.id
     );
-    this.isRegionInformationModalVisible = false;
-  }
-
-  public onRegionInformationModalClose(): void {
-    this.isRegionInformationModalVisible = false;
   }
 }

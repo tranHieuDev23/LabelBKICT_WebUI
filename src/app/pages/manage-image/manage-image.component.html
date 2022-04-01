@@ -1,7 +1,8 @@
 <div nz-row>
     <div nz-col class="region-selector-col" [nzSpan]="24" [nzMd]="16" [nzXl]="18">
-        <app-region-selector *ngIf="image" [imageSrc]="image.originalImageURL" [regionList]="regionList"
-            (regionSelected)="onRegionSelected($event)" (regionDbClicked)="onRegionDbClicked($event)">
+        <app-region-selector #regionSelector *ngIf="image" [imageSrc]="image.originalImageURL" [regionList]="regionList"
+            (regionSelected)="onRegionSelected($event)" (regionEdited)="onRegionEdited($event)"
+            (regionDbClicked)="onRegionDbClicked($event)" (contextMenu)="onContextMenu($event)">
         </app-region-selector>
     </div>
     <div nz-col class="sidebar-col" [nzSpan]="24" [nzMd]="8" [nzXl]="6">
@@ -115,3 +116,49 @@
         </button>
     </div>
 </nz-modal>
+
+<nz-dropdown-menu #contextMenu>
+    <ul nz-menu oncontextmenu="() => false;">
+        <li nz-menu-item (click)="onContextMenuResetZoomClicked()">Reset zoom</li>
+        <li *ngIf="isRegionListVisible()" nz-menu-item (click)="onContextMenuHideRegionsClicked()">
+            Hide regions
+        </li>
+        <li *ngIf="!isRegionListVisible()" nz-menu-item (click)="onContextMenuShowRegionsClicked()">
+            Show regions
+        </li>
+        <li *ngIf="isRegionSelectorIsInDrawState()" nz-menu-item (click)="regionSelector?.finishDrawing()">
+            Finish drawing region
+        </li>
+        <li *ngIf="contextMenuRegion && editable" nz-menu-item (click)="onContextMenuEditRegionBoundaryClicked()">
+            Edit region boundary
+        </li>
+        <li *ngIf="isRegionSelectorIsInSelectedState()" nz-submenu nzTitle="Add region as...">
+            <ul>
+                <li *ngFor="let regionLabel of regionLabelList" nz-menu-item (click)="addSelectedRegion(regionLabel)">
+                    {{ regionLabel.displayName }}
+                </li>
+            </ul>
+        </li>
+        <li *ngIf="contextMenuRegion && editable" nz-submenu nzTitle="Relabel region as...">
+            <ul>
+                <li *ngFor="let regionLabel of regionLabelList" nz-menu-item
+                    [nzDisabled]="regionLabel.id === contextMenuRegion.label?.id"
+                    (click)="onContextMenuRelabelRegionLabelClicked(regionLabel)">
+                    {{ regionLabel.displayName }}
+                </li>
+            </ul>
+        </li>
+        <li *ngIf="isRegionSelectorIsInSelectedState()" nz-menu-item (click)="regionSelector?.cancelDrawing()">
+            Clear selection
+        </li>
+        <li *ngIf="contextMenuRegion" nz-menu-item (click)="onContextMenuShowRegionInfoClicked()">
+            Show region info
+        </li>
+        <li *ngIf="contextMenuRegion && editable" nz-menu-item nzDanger (click)="onContextMenuDeleteRegionClicked()">
+            Delete region
+        </li>
+        <!-- <li *ngIf="editable" nz-menu-item nzDanger (click)="onDeleteAllRegionsClicked()">
+            Delete all regions
+        </li> -->
+    </ul>
+</nz-dropdown-menu>
