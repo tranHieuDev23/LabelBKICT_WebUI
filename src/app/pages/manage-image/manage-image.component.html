@@ -30,17 +30,17 @@
             <p>Original file name: <b>{{ image.originalFileName }}</b></p>
 
             <p>
-                Uploaded on {{ image.uploadTime | date:'short' }} by
+                Uploaded at {{ image.uploadTime | date:'short' }} by
                 <b>{{ image.uploadedByUser.displayName }}</b>
             </p>
 
             <p *ngIf="image.publishedByUser" nz-typography>
-                Published on {{ image.publishTime | date:'short' }} by
+                Published at {{ image.publishTime | date:'short' }} by
                 <b>{{ image.publishedByUser.displayName }}</b>
             </p>
 
             <p *ngIf="image.verifiedByUser" nz-typography>
-                Published on {{ image.verifyTime | date:'short' }} by
+                Verified at {{ image.verifyTime | date:'short' }} by
                 <b>{{ image.verifiedByUser.displayName }}</b>
             </p>
 

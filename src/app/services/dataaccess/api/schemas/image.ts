@@ -33,11 +33,11 @@ export class Image {
       imageJSON.published_by_user
         ? User.fromJSON(imageJSON.published_by_user)
         : null,
-      imageJSON.upload_time || 0,
+      imageJSON.publish_time || 0,
       imageJSON.verified_by_user
         ? User.fromJSON(imageJSON.verified_by_user)
         : null,
-      imageJSON.upload_time || 0,
+      imageJSON.verify_time || 0,
       imageJSON.original_file_name || '',
       imageJSON.original_image_url || '',
       imageJSON.thumbnail_url || '',
