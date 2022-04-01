@@ -5,6 +5,6 @@ import { Injectable } from '@angular/core';
 })
 export class DateToTimeService {
   public getUnixTimestampFromDate(date: Date): number {
-    return Math.round(date.getTime() / 1000);
+    return Math.round(date.getTime());
   }
 }
