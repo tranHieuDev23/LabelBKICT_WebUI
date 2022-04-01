@@ -890,15 +890,10 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     }
     this.isImageSettingsModalVisible = false;
     try {
-      this.image = await this.imageManagementService.updateImageImageType(
+      await this.imageManagementService.updateImageImageType(
         this.image.id,
         imageType.id
       );
-      this.imageTagList = [];
-      this.regionList = this.regionList.map((region) => {
-        region.label = null;
-        return region;
-      });
     } catch (e) {
       if (e instanceof UnauthenticatedError) {
         this.notificationService.error(
@@ -926,6 +921,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       return;
     }
     this.notificationService.success('Updated image type successfully', '');
+    await this.loadImage(this.image.id);
   }
 
   public async onImageSettingsModalCloseImageTypeClickedDeleteImageClicked(): Promise<void> {
