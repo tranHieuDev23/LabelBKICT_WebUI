@@ -78,7 +78,7 @@
                     (click)="onPublishImageClicked()">
                     <i nz-icon nzType="check-circle"></i> Publish
                 </button>
-                <button nz-button>
+                <button nz-button (click)="onImageSettingsClicked()">
                     <i nz-icon nzType="setting"></i> Settings
                 </button>
             </div>
@@ -113,6 +113,34 @@
         <button *ngIf="editable" nz-button nzDanger nzType="primary"
             (click)="onRegionInformationModalDeleteRegionClicked()" style="margin-top: 8px">
             <i nz-icon nzType="delete"></i> Delete region
+        </button>
+    </div>
+</nz-modal>
+
+<nz-modal *ngIf="isImageSettingsModalVisible" nzTitle="Image Settings" [nzVisible]="isImageSettingsModalVisible"
+    [nzClosable]="false" nzCancelText="Close" (nzOnCancel)="onImageSettingsModalClose()" [nzOkText]="null">
+    <div *nzModalContent>
+        <h4 nz-typography>Change image type</h4>
+        <p nz-typography>
+            This will remove all tags from this image, and mark all regions extracted from it as not labeled.
+        </p>
+        <div>
+            Image type <nz-select class="image-type-select" nzPlaceHolder="Select image type"
+                [(ngModel)]="imageSettingsModalSelectedImageType"
+                (ngModelChange)="onImageSettingsModalCloseImageTypeClicked($event)">
+                <nz-option *ngFor="let imageType of imageSettingsModalImageTypeList" [nzValue]="imageType"
+                    [nzLabel]="imageType.displayName"
+                    [nzDisabled]="image?.imageType && imageType.id === image?.imageType?.id">
+                </nz-option>
+            </nz-select>
+        </div>
+        <h4 nz-typography style="margin-top: 8px;">Delete this image</h4>
+        <p nz-typography>
+            This will also delete all regions extracted from it.
+        </p>
+        <button nz-button nzType="primary" nzDanger
+            (click)="onImageSettingsModalCloseImageTypeClickedDeleteImageClicked()">
+            <i nz-icon nzType="delete"></i> Delete
         </button>
     </div>
 </nz-modal>

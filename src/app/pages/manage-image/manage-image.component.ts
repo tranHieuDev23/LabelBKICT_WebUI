@@ -23,9 +23,11 @@ import {
   ImageListFilterOptions,
   ImageNotFoundError,
   ImageOrImageTagNotFoundError,
+  ImageOrImageTypeNotFoundError,
   ImageStatus,
   ImageTag,
   ImageTagGroup,
+  ImageType,
   ImageTypesService,
   InvalidImageInformationError,
   InvalidImageStatusError,
@@ -49,7 +51,7 @@ import { JSONCompressService } from 'src/app/services/utils/json-compress/json-c
   templateUrl: './manage-image.component.html',
   styleUrls: ['./manage-image.component.scss'],
 })
-export class ManageImageComponent implements AfterContentInit {
+export class ManageImageComponent implements OnInit, AfterContentInit {
   @ViewChild('regionSelector', { static: false })
   public regionSelector: RegionSelectorComponent | undefined;
   @ViewChild('descriptionEditableText', { static: false })
@@ -71,11 +73,15 @@ export class ManageImageComponent implements AfterContentInit {
   public isLabelRegionModalVisible = false;
 
   public isRegionInformationModalVisible = false;
-  public regionInformationModalRegion: Region | null = null;
+  public regionInformationModalRegion: Region | undefined;
   public regionInformationModalImage: string = '';
 
-  public contextMenuRegion: Region | null = null;
-  public contextMenuRegionID: number | null = null;
+  public isImageSettingsModalVisible = false;
+  public imageSettingsModalImageTypeList: ImageType[] = [];
+  public imageSettingsModalSelectedImageType: ImageType | undefined;
+
+  public contextMenuRegion: Region | undefined;
+  public contextMenuRegionID: number | undefined;
 
   public allowedImageTagGroupListForImageType: ImageTagGroup[] = [];
   public allowedImageTagListForImageType: ImageTag[][] = [];
@@ -95,6 +101,37 @@ export class ManageImageComponent implements AfterContentInit {
     private readonly contextMenuService: NzContextMenuService,
     private readonly jsonCompress: JSONCompressService
   ) {}
+
+  ngOnInit(): void {
+    (async () => {
+      try {
+        const { imageTypeList } = await this.imageTypesService.getImageTypeList(
+          false
+        );
+        this.imageSettingsModalImageTypeList = imageTypeList;
+      } catch (e) {
+        if (e instanceof UnauthenticatedError) {
+          this.notificationService.error(
+            'Failed to load page',
+            'User is not logged in'
+          );
+          this.router.navigateByUrl('/login');
+        } else if (e instanceof UnauthorizedError) {
+          this.notificationService.error(
+            'Failed to load page',
+            "User doesn't have the required permission"
+          );
+          this.router.navigateByUrl('/welcome');
+        } else {
+          this.notificationService.error(
+            'Failed to load page',
+            'Unknown error'
+          );
+          return;
+        }
+      }
+    })().then();
+  }
 
   ngAfterContentInit(): void {
     this.route.params.subscribe(async (params) => {
@@ -529,6 +566,10 @@ export class ManageImageComponent implements AfterContentInit {
     });
   }
 
+  public onImageSettingsClicked(): void {
+    this.isImageSettingsModalVisible = true;
+  }
+
   public onRegionSelected(event: RegionSelectedEvent): void {
     this.selectedRegionBorder = event.border;
     this.selectedRegionHoles = event.holes;
@@ -679,8 +720,8 @@ export class ManageImageComponent implements AfterContentInit {
       this.contextMenuRegion = this.regionList[event.regionID];
       this.contextMenuRegionID = event.regionID;
     } else {
-      this.contextMenuRegion = null;
-      this.contextMenuRegionID = null;
+      this.contextMenuRegion = undefined;
+      this.contextMenuRegionID = undefined;
     }
     this.contextMenuService.create(event.event, this.contextMenu);
   }
@@ -710,7 +751,7 @@ export class ManageImageComponent implements AfterContentInit {
   }
 
   public onContextMenuEditRegionBoundaryClicked(): void {
-    if (this.contextMenuRegionID === null) {
+    if (this.contextMenuRegionID === undefined) {
       return;
     }
     this.regionSelector?.editRegion(this.contextMenuRegionID);
@@ -722,7 +763,7 @@ export class ManageImageComponent implements AfterContentInit {
     if (
       !this.image ||
       !this.contextMenuRegion ||
-      this.contextMenuRegionID === null
+      this.contextMenuRegionID === undefined
     ) {
       return;
     }
@@ -835,5 +876,93 @@ export class ManageImageComponent implements AfterContentInit {
     this.regionList = this.regionList.filter(
       (region) => region.id !== deletedRegion.id
     );
+  }
+
+  public onImageSettingsModalClose(): void {
+    this.isImageSettingsModalVisible = false;
+  }
+
+  public async onImageSettingsModalCloseImageTypeClicked(
+    imageType: ImageType
+  ): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+    this.isImageSettingsModalVisible = false;
+    try {
+      this.image = await this.imageManagementService.updateImageImageType(
+        this.image.id,
+        imageType.id
+      );
+      this.imageTagList = [];
+      this.regionList = this.regionList.map((region) => {
+        region.label = null;
+        return region;
+      });
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to update image type',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to update image type',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof ImageOrImageTypeNotFoundError) {
+        this.notificationService.error(
+          'Failed to update image type',
+          'Image or image type not found'
+        );
+      } else {
+        this.notificationService.error(
+          'Failed to update image type',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+    this.notificationService.success('Updated image type successfully', '');
+  }
+
+  public async onImageSettingsModalCloseImageTypeClickedDeleteImageClicked(): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+    this.isImageSettingsModalVisible = false;
+    try {
+      await this.imageManagementService.deleteImage(this.image.id);
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to update image type',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to update image type',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof ImageNotFoundError) {
+        this.notificationService.error(
+          'Failed to update image type',
+          'Image not found'
+        );
+        this.location.back();
+      } else {
+        this.notificationService.error(
+          'Failed to update image type',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+    this.notificationService.success('Updated image type successfully', '');
+    this.location.back();
   }
 }
