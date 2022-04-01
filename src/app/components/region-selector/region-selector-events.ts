@@ -1,11 +1,15 @@
 import { Polygon } from './models';
 
 export class RegionSelectedEvent {
-  constructor(public polygonList: Polygon[]) {}
+  constructor(public border: Polygon, public holes: Polygon[]) {}
 }
 
 export class RegionEditedEvent {
-  constructor(public regionID: number, public newPolygonList: Polygon[]) {}
+  constructor(
+    public regionID: number,
+    public newBorder: Polygon,
+    public newHoles: Polygon[]
+  ) {}
 }
 
 export class RegionClickedEvent {

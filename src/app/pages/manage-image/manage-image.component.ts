@@ -65,7 +65,8 @@ export class ManageImageComponent implements AfterContentInit {
 
   private filterOptions: ImageListFilterOptions | undefined;
 
-  public selectedRegion: Polygon[] = [];
+  public selectedRegionBorder: Polygon | undefined;
+  public selectedRegionHoles: Polygon[] = [];
 
   public isLabelRegionModalVisible = false;
 
@@ -529,7 +530,8 @@ export class ManageImageComponent implements AfterContentInit {
   }
 
   public onRegionSelected(event: RegionSelectedEvent): void {
-    this.selectedRegion = event.polygonList;
+    this.selectedRegionBorder = event.border;
+    this.selectedRegionHoles = event.holes;
     this.isLabelRegionModalVisible = true;
   }
 
@@ -540,8 +542,8 @@ export class ManageImageComponent implements AfterContentInit {
     this.regionSelector?.cancelDrawing();
     const editedRegion = this.regionList[event.regionID];
     try {
-      const border = event.newPolygonList[0];
-      const holes = event.newPolygonList.slice(1);
+      const border = event.newHoles[0];
+      const holes = event.newHoles.slice(1);
       const region = await this.regionManagementService.updateRegionBoundary(
         this.image.id,
         editedRegion.id,
@@ -599,21 +601,20 @@ export class ManageImageComponent implements AfterContentInit {
   }
 
   public async addSelectedRegion(regionLabel: RegionLabel): Promise<void> {
-    if (!this.image) {
+    if (!this.image || !this.selectedRegionBorder) {
       return;
     }
-    const border = this.selectedRegion[0];
-    const holes = this.selectedRegion.slice(1);
     try {
       const region = await this.regionManagementService.createRegion(
         this.image.id,
-        border,
-        holes,
+        this.selectedRegionBorder,
+        this.selectedRegionHoles,
         regionLabel.id
       );
       this.notificationService.success('Region added successfully', '');
       this.regionList = [...this.regionList, region];
-      this.selectedRegion = [];
+      this.selectedRegionBorder = undefined;
+      this.selectedRegionHoles = [];
       this.regionSelector?.cancelDrawing();
     } catch (e) {
       if (e instanceof InvalidRegionInformation) {

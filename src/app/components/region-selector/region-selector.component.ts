@@ -455,14 +455,15 @@ export class RegionSelectorComponent {
 
     if (drawState.regionIDToEdit === null) {
       this.regionSelected.emit(
-        new RegionSelectedEvent([normalizedBorder, ...normalizedHoles])
+        new RegionSelectedEvent(normalizedBorder, normalizedHoles)
       );
     } else {
       this.regionEdited.emit(
-        new RegionEditedEvent(drawState.regionIDToEdit, [
+        new RegionEditedEvent(
+          drawState.regionIDToEdit,
           normalizedBorder,
-          ...normalizedHoles,
-        ])
+          normalizedHoles
+        )
       );
     }
   }
