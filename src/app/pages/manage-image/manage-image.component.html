@@ -87,8 +87,7 @@
                 </button>
             </div>
 
-            <div *ngIf="prevImageID !== undefined || nextImageID !== undefined" nz-row nzJustify="space-between"
-                class="action-buttons">
+            <div nz-row nzJustify="space-between" class="action-buttons">
                 <button [disabled]="prevImageID === undefined" nz-col nz-button (click)="onPreviousClicked()">
                     <i nz-icon nzType="left"></i>Previous
                 </button>
