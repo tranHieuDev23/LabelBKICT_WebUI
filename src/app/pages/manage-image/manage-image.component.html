@@ -44,6 +44,10 @@
                 <b>{{ image.verifiedByUser.displayName }}</b>
             </p>
 
+            <p *ngIf="position !== undefined && totalImageCount !== undefined" nz-typography>
+                Image {{ position }} of {{ totalImageCount }}
+            </p>
+
             <nz-collapse nzAccordion>
                 <nz-collapse-panel nzHeader="Description" nzActive="true">
                     <app-editable-text #descriptionEditableText [text]="image.description" [editable]="editable"
@@ -80,6 +84,16 @@
                 </button>
                 <button nz-button (click)="onImageSettingsClicked()">
                     <i nz-icon nzType="setting"></i> Settings
+                </button>
+            </div>
+
+            <div *ngIf="prevImageID !== undefined || nextImageID !== undefined" nz-row nzJustify="space-between"
+                class="action-buttons">
+                <button *ngIf="prevImageID !== undefined" nz-col nz-button (click)="onPreviousClicked()">
+                    <i nz-icon nzType="left"></i>Previous
+                </button>
+                <button *ngIf="nextImageID !== undefined" nz-col nz-button (click)="onNextClicked()">
+                    Next<i nz-icon nzType="right"></i>
                 </button>
             </div>
         </div>

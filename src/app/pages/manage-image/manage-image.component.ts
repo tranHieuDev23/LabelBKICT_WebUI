@@ -21,6 +21,7 @@ import {
   ImageCannotBeAssignedWithImageTagError,
   ImageDoesNotHaveImageTagError,
   ImageListFilterOptions,
+  ImageListSortOption,
   ImageNotFoundError,
   ImageOrImageTagNotFoundError,
   ImageOrImageTypeNotFoundError,
@@ -39,12 +40,15 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from 'src/app/services/dataaccess/api';
+import { ImageListManagementService } from 'src/app/services/module/image-list-management';
 import { ImageManagementService } from 'src/app/services/module/image-management';
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
 import { RegionImageService } from 'src/app/services/module/region-management/region-image.service';
 import { RegionManagementService } from 'src/app/services/module/region-management/region-management.service';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
+
+const DEFAULT_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
 
 @Component({
   selector: 'app-manage-image',
@@ -59,13 +63,20 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   @ViewChild('contextMenu', { static: false })
   public contextMenu: NzDropdownMenuComponent | undefined;
 
+  private imageID: number | undefined;
+  private imageListSortOption: number | undefined;
+  private filterOptions: ImageListFilterOptions | undefined;
+
   public image: Image | undefined;
   public imageTagList: ImageTag[] = [];
   public regionList: Region[] = [];
   public regionLabelList: RegionLabel[] = [];
   public editable = true;
 
-  private filterOptions: ImageListFilterOptions | undefined;
+  public position: number | undefined;
+  public totalImageCount: number | undefined;
+  public prevImageID: number | undefined;
+  public nextImageID: number | undefined;
 
   public selectedRegionBorder: Polygon | undefined;
   public selectedRegionHoles: Polygon[] = [];
@@ -89,6 +100,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   constructor(
     private readonly sessionManagementService: SessionManagementService,
     private readonly imageManagementService: ImageManagementService,
+    private readonly imageListManagementService: ImageListManagementService,
     private readonly regionManagementService: RegionManagementService,
     private readonly imageTypesService: ImageTypesService,
     private readonly imageStatusService: ImageStatusService,
@@ -99,7 +111,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     private readonly notificationService: NzNotificationService,
     private readonly modalService: NzModalService,
     private readonly contextMenuService: NzContextMenuService,
-    private readonly jsonCompress: JSONCompressService
+    private readonly jsonCompressService: JSONCompressService
   ) {}
 
   ngOnInit(): void {
@@ -143,8 +155,48 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   }
 
   private async onParamsChanged(params: Params): Promise<void> {
-    const imageID = +params['id'];
-    await this.loadImage(imageID);
+    this.imageID = +params['id'];
+    await this.initializePage();
+  }
+
+  private async onQueryParamsChanged(queryParams: Params): Promise<void> {
+    const filterParam = queryParams['filter'];
+    if (filterParam !== undefined) {
+      this.filterOptions = this.jsonCompressService.decompress(filterParam);
+    } else {
+      const authUserInfo =
+        await this.sessionManagementService.getUserFromSession();
+      if (authUserInfo === null) {
+        return;
+      }
+      this.filterOptions = this.getDefaultFilterOptions(authUserInfo.user.id);
+    }
+
+    if (queryParams['sort'] !== undefined) {
+      this.imageListSortOption = +queryParams['sort'];
+    } else {
+      this.imageListSortOption = DEFAULT_SORT_OPTION;
+    }
+
+    await this.initializePage();
+  }
+
+  private async initializePage(): Promise<void> {
+    if (
+      this.imageID === undefined ||
+      this.imageListSortOption === undefined ||
+      this.filterOptions === undefined
+    ) {
+      return;
+    }
+    await Promise.all([
+      this.loadImage(this.imageID),
+      this.loadImagePositionInList(
+        this.imageID,
+        this.imageListSortOption,
+        this.filterOptions
+      ),
+    ]);
   }
 
   private async loadImage(imageID: number): Promise<void> {
@@ -197,17 +249,42 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     }
   }
 
-  private async onQueryParamsChanged(queryParams: Params): Promise<void> {
-    const filterParam = queryParams['filter'];
-    if (filterParam !== undefined) {
-      this.filterOptions = this.jsonCompress.decompress(filterParam);
-    } else {
-      const authUserInfo =
-        await this.sessionManagementService.getUserFromSession();
-      if (authUserInfo === null) {
-        return;
+  private async loadImagePositionInList(
+    imageID: number,
+    sortOption: ImageListSortOption,
+    filterOptions: ImageListFilterOptions
+  ): Promise<void> {
+    try {
+      const { position, totalImageCount, prevImageID, nextImageID } =
+        await this.imageListManagementService.getImagePositionInList(
+          imageID,
+          sortOption,
+          filterOptions
+        );
+      this.position = position;
+      this.totalImageCount = totalImageCount;
+      this.prevImageID = prevImageID;
+      this.nextImageID = nextImageID;
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to load image position in list',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to load image position in list',
+          'User does not have the required permission'
+        );
+        this.location.back();
+      } else if (e instanceof ImageNotFoundError) {
+        this.notificationService.error(
+          'Failed to load image position in list',
+          'Image not found'
+        );
+        this.location.back();
       }
-      this.filterOptions = this.getDefaultFilterOptions(authUserInfo.user.id);
     }
   }
 
@@ -960,5 +1037,29 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     }
     this.notificationService.success('Updated image type successfully', '');
     this.location.back();
+  }
+
+  public async onPreviousClicked(): Promise<void> {
+    if (this.prevImageID === undefined) {
+      return;
+    }
+    this.router.navigate([`/manage-image/${this.prevImageID}`], {
+      queryParams: {
+        sort: this.imageListSortOption,
+        filter: this.jsonCompressService.compress(this.filterOptions),
+      },
+    });
+  }
+
+  public async onNextClicked(): Promise<void> {
+    if (this.nextImageID === undefined) {
+      return;
+    }
+    this.router.navigate([`/manage-image/${this.nextImageID}`], {
+      queryParams: {
+        sort: this.imageListSortOption,
+        filter: this.jsonCompressService.compress(this.filterOptions),
+      },
+    });
   }
 }

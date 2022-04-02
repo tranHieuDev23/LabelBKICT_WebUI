@@ -411,6 +411,7 @@ export class AllImagesComponent implements OnInit {
       );
     this.router.navigate([`/manage-image/${image.id}`], {
       queryParams: {
+        sort: this.imageListSortOption,
         filter: this.jsonCompressService.compress(filterOptions),
       },
     });

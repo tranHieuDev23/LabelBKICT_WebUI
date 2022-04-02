@@ -7,7 +7,13 @@ import {
   UnauthorizedError,
   UnknownAPIError,
 } from './errors';
-import { Image, ImageListFilterOptions, ImageTag, User } from './schemas';
+import {
+  Image,
+  ImageListFilterOptions,
+  ImageListSortOption,
+  ImageTag,
+  User,
+} from './schemas';
 
 export class TooManyImagesError extends Error {
   constructor() {
@@ -96,7 +102,7 @@ export class ImageListService {
   public async getUserImageList(
     offset: number,
     limit: number,
-    sortOrder: number,
+    sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<{
     totalImageCount: number;
@@ -110,7 +116,7 @@ export class ImageListService {
         params: {
           offset: offset,
           limit: limit,
-          sort_order: sortOrder,
+          sort_order: sortOption,
           ...filterOptionsQueryParams,
         },
         paramsSerializer: (params) => {
@@ -174,7 +180,7 @@ export class ImageListService {
   public async getUserManageableImageList(
     offset: number,
     limit: number,
-    sortOrder: number,
+    sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<{
     totalImageCount: number;
@@ -190,7 +196,7 @@ export class ImageListService {
           params: {
             offset: offset,
             limit: limit,
-            sort_order: sortOrder,
+            sort_order: sortOption,
             ...filterOptionsQueryParams,
           },
           paramsSerializer: (params) => {
@@ -255,7 +261,7 @@ export class ImageListService {
   public async getUserVerifiableImageList(
     offset: number,
     limit: number,
-    sortOrder: number,
+    sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<{
     totalImageCount: number;
@@ -271,7 +277,7 @@ export class ImageListService {
           params: {
             offset: offset,
             limit: limit,
-            sort_order: sortOrder,
+            sort_order: sortOption,
             ...filterOptionsQueryParams,
           },
         }
@@ -333,7 +339,7 @@ export class ImageListService {
   public async getUserExportableImageList(
     offset: number,
     limit: number,
-    sortOrder: number,
+    sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<{
     totalImageCount: number;
@@ -349,7 +355,7 @@ export class ImageListService {
           params: {
             offset: offset,
             limit: limit,
-            sort_order: sortOrder,
+            sort_order: sortOption,
             ...filterOptionsQueryParams,
           },
           paramsSerializer: (params) => {
@@ -365,6 +371,51 @@ export class ImageListService {
       );
 
       return { totalImageCount, imageList, imageTagList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidImageListFilterOptionsError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getImagePositionInList(
+    imageID: number,
+    sortOption: ImageListSortOption,
+    filterOptions: ImageListFilterOptions
+  ): Promise<{
+    position: number;
+    totalImageCount: number;
+    prevImageID: number | undefined;
+    nextImageID: number | undefined;
+  }> {
+    try {
+      const filterOptionsQueryParams =
+        this.getQueryParamsFromFilterOptions(filterOptions);
+      const response = await this.axios.get(`/api/images/${imageID}/position`, {
+        params: {
+          sort_order: sortOption,
+          ...filterOptionsQueryParams,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
+        },
+      });
+
+      const position = +response.data.position;
+      const totalImageCount = +response.data.total_image_count;
+      const prevImageID = response.data.prev_image_id;
+      const nextImageID = response.data.next_image_id;
+      return { position, totalImageCount, prevImageID, nextImageID };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

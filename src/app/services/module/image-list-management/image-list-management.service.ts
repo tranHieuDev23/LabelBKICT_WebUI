@@ -5,6 +5,7 @@ import {
   ImageTag,
   User,
   ImageListService,
+  ImageListSortOption,
 } from '../../dataaccess/api';
 
 @Injectable({
@@ -30,7 +31,7 @@ export class ImageListManagementService {
   public async getUserImageList(
     offset: number,
     limit: number,
-    sortOrder: number,
+    sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<{
     totalImageCount: number;
@@ -43,7 +44,7 @@ export class ImageListManagementService {
     return await this.imageListService.getUserImageList(
       offset,
       limit,
-      sortOrder,
+      sortOption,
       filterOptions
     );
   }
@@ -61,7 +62,7 @@ export class ImageListManagementService {
   public async getUserManageableImageList(
     offset: number,
     limit: number,
-    sortOrder: number,
+    sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<{
     totalImageCount: number;
@@ -73,7 +74,7 @@ export class ImageListManagementService {
     return await this.imageListService.getUserManageableImageList(
       offset,
       limit,
-      sortOrder,
+      sortOption,
       filterOptions
     );
   }
@@ -91,7 +92,7 @@ export class ImageListManagementService {
   public async getUserVerifiableImageList(
     offset: number,
     limit: number,
-    sortOrder: number,
+    sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<{
     totalImageCount: number;
@@ -103,7 +104,7 @@ export class ImageListManagementService {
     return await this.imageListService.getUserVerifiableImageList(
       offset,
       limit,
-      sortOrder,
+      sortOption,
       filterOptions
     );
   }
@@ -121,7 +122,7 @@ export class ImageListManagementService {
   public async getUserExportableImageList(
     offset: number,
     limit: number,
-    sortOrder: number,
+    sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<{
     totalImageCount: number;
@@ -133,7 +134,24 @@ export class ImageListManagementService {
     return await this.imageListService.getUserExportableImageList(
       offset,
       limit,
-      sortOrder,
+      sortOption,
+      filterOptions
+    );
+  }
+
+  public async getImagePositionInList(
+    imageID: number,
+    sortOption: ImageListSortOption,
+    filterOptions: ImageListFilterOptions
+  ): Promise<{
+    position: number;
+    totalImageCount: number;
+    prevImageID: number | undefined;
+    nextImageID: number | undefined;
+  }> {
+    return await this.imageListService.getImagePositionInList(
+      imageID,
+      sortOption,
       filterOptions
     );
   }

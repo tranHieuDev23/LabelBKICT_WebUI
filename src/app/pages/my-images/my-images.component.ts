@@ -419,6 +419,7 @@ export class MyImagesComponent implements OnInit {
     filterOptions.uploadedByUserIDList = [authUserInfo.user.id];
     this.router.navigate([`/manage-image/${image.id}`], {
       queryParams: {
+        sort: this.imageListSortOption,
         filter: this.jsonCompressService.compress(filterOptions),
       },
     });
