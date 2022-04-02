@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import {
@@ -85,6 +86,7 @@ export class MyImagesComponent implements OnInit {
     private readonly jsonCompressService: JSONCompressService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
+    private readonly location: Location,
     private readonly notificationService: NzNotificationService,
     private readonly contextMenuService: NzContextMenuService,
     private readonly modalService: NzModalService
@@ -152,30 +154,7 @@ export class MyImagesComponent implements OnInit {
       this.fromImageIndex = offset + 1;
       this.toImageIndex = offset + imageList.length;
     } catch (e) {
-      if (e instanceof InvalidImageListFilterOptionsError) {
-        this.notificationService.error(
-          'Failed to get image list',
-          'Invalid image filter options'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to get image list',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to get image list',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else {
-        this.notificationService.error(
-          'Failed to get image list',
-          'Unknown error'
-        );
-      }
+      this.handleError('Failed to delete image(s)', e);
     } finally {
       this.isLoadingImageList = false;
     }
@@ -280,25 +259,8 @@ export class MyImagesComponent implements OnInit {
             await this.imageTypesService.getImageTypeList(false);
           this.imageTypeList = imageTypeList;
         } catch (e) {
-          if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to get image type list',
-              'User is not logged in'
-            );
-            this.router.navigateByUrl('/login');
-          } else if (e instanceof UnauthorizedError) {
-            this.notificationService.error(
-              'Failed to get image type list',
-              "User doesn't have the required permission"
-            );
-            this.router.navigateByUrl('/welcome');
-          } else {
-            this.notificationService.error(
-              'Failed to get image type list',
-              'Unknown error'
-            );
-            return;
-          }
+          this.handleError('Failed to get image type list', e);
+          return;
         }
       }
 
@@ -329,28 +291,7 @@ export class MyImagesComponent implements OnInit {
             ''
           );
         } catch (e) {
-          if (e instanceof TooManyImagesError) {
-            this.notificationService.error(
-              'Failed to change image type of image(s)',
-              'Too many image selected'
-            );
-          } else if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to change image type of image(s)',
-              'User is not logged in'
-            );
-            this.router.navigateByUrl('/login');
-          } else if (e instanceof UnauthorizedError) {
-            this.notificationService.error(
-              'Failed to change image type of image(s)',
-              'User does not have the required permission'
-            );
-          } else if (e instanceof OneOrMoreImagesNotFoundError) {
-            this.notificationService.error(
-              'Failed to change image type of image(s)',
-              'One or more image cannot be found'
-            );
-          }
+          this.handleError('Failed to change image type of image(s)', e);
         }
       },
     });
@@ -372,28 +313,7 @@ export class MyImagesComponent implements OnInit {
           await this.getImageListFromPaginationInfo();
           this.notificationService.success('Delete image(s) successfully', '');
         } catch (e) {
-          if (e instanceof TooManyImagesError) {
-            this.notificationService.error(
-              'Failed to delete image(s)',
-              'Too many image selected'
-            );
-          } else if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to delete image(s)',
-              'User is not logged in'
-            );
-            this.router.navigateByUrl('/login');
-          } else if (e instanceof UnauthorizedError) {
-            this.notificationService.error(
-              'Failed to delete image(s)',
-              'User does not have the required permission'
-            );
-          } else if (e instanceof OneOrMoreImagesNotFoundError) {
-            this.notificationService.error(
-              'Failed to delete image(s)',
-              'One or more image cannot be found'
-            );
-          }
+          this.handleError('Failed to delete image(s)', e);
         }
       },
     });
@@ -423,5 +343,47 @@ export class MyImagesComponent implements OnInit {
         filter: this.jsonCompressService.compress(filterOptions),
       },
     });
+  }
+
+  private handleError(notificationTitle: string, e: any): void {
+    if (e instanceof UnauthenticatedError) {
+      this.notificationService.error(
+        notificationTitle,
+        'User is not logged in'
+      );
+      this.router.navigateByUrl('/login');
+      return;
+    }
+    if (e instanceof UnauthorizedError) {
+      this.notificationService.error(
+        notificationTitle,
+        'User does not have the required permission'
+      );
+      this.router.navigateByUrl('/welcome');
+      return;
+    }
+    if (e instanceof InvalidImageListFilterOptionsError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Invalid image filter options'
+      );
+      this.location.back();
+      return;
+    }
+    if (e instanceof OneOrMoreImagesNotFoundError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Invalid image filter options'
+      );
+      return;
+    }
+    if (e instanceof TooManyImagesError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Too many images selected'
+      );
+      return;
+    }
+    this.notificationService.error(notificationTitle, 'Unknown error');
   }
 }
