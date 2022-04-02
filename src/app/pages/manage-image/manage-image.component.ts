@@ -135,25 +135,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         );
         this.imageSettingsModalImageTypeList = imageTypeList;
       } catch (e) {
-        if (e instanceof UnauthenticatedError) {
-          this.notificationService.error(
-            'Failed to load page',
-            'User is not logged in'
-          );
-          this.router.navigateByUrl('/login');
-        } else if (e instanceof UnauthorizedError) {
-          this.notificationService.error(
-            'Failed to load page',
-            "User doesn't have the required permission"
-          );
-          this.router.navigateByUrl('/welcome');
-        } else {
-          this.notificationService.error(
-            'Failed to load page',
-            'Unknown error'
-          );
-          return;
-        }
+        this.handleError('Failed to load page', e);
       }
     })().then();
   }
@@ -247,25 +229,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
 
       window.scrollTo(0, 0);
     } catch (e) {
-      if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to load image',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to load image',
-          'User does not have the required permission'
-        );
-        this.location.back();
-      } else if (e instanceof ImageNotFoundError) {
-        this.notificationService.error(
-          'Failed to load image',
-          'Image not found'
-        );
-        this.location.back();
-      }
+      this.handleError('Failed to load image', e);
     }
   }
 
@@ -291,25 +255,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       this.prevImageID = prevImageID;
       this.nextImageID = nextImageID;
     } catch (e) {
-      if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to load image position in list',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to load image position in list',
-          'User does not have the required permission'
-        );
-        this.location.back();
-      } else if (e instanceof ImageNotFoundError) {
-        this.notificationService.error(
-          'Failed to load image position in list',
-          'Image not found'
-        );
-        this.location.back();
-      }
+      this.handleError('Failed to load image position in list', e);
     }
   }
 
@@ -448,39 +394,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         addedImageTag.id
       );
     } catch (e) {
-      if (e instanceof ImageCannotBeAssignedWithImageTagError) {
-        this.notificationService.error(
-          'Failed to add image tag to image',
-          'This image tag is not allowed for this image type'
-        );
-      } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to add image tag to image',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to add image tag to image',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof ImageOrImageTagNotFoundError) {
-        this.notificationService.error(
-          'Failed to add image tag to image',
-          'Image or image tag cannot be found'
-        );
-      } else if (e instanceof ImageAlreadyHasImageTagError) {
-        this.notificationService.error(
-          'Failed to add image tag to image',
-          'Image already has image tag'
-        );
-      } else {
-        this.notificationService.error(
-          'Failed to add image tag to image',
-          'Unknown error'
-        );
-      }
+      this.handleError('Failed to add image tag to image', e);
       return;
     }
     this.notificationService.success(
@@ -502,34 +416,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         deletedImageTag.id
       );
     } catch (e) {
-      if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to remove image tag from image',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to remove image tag from image',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof ImageOrImageTagNotFoundError) {
-        this.notificationService.error(
-          'Failed to remove image tag from image',
-          'Image or image tag cannot be found'
-        );
-      } else if (e instanceof ImageDoesNotHaveImageTagError) {
-        this.notificationService.error(
-          'Failed to remove image tag from image',
-          'Image does not have image tag'
-        );
-      } else {
-        this.notificationService.error(
-          'Failed to remove image tag from image',
-          'Unknown error'
-        );
-      }
+      this.handleError('Failed to remove image tag from image', e);
       return;
     }
     this.notificationService.success(
@@ -551,35 +438,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         description
       );
     } catch (e) {
-      if (e instanceof InvalidImageInformationError) {
-        this.notificationService.error(
-          'Failed to update image description',
-          'Invalid description'
-        );
-      } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update image description',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update image description',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof ImageNotFoundError) {
-        this.notificationService.error(
-          'Failed to update image description',
-          'Image cannot be found'
-        );
-        this.location.back();
-      } else {
-        this.notificationService.error(
-          'Failed to update image description',
-          'Unknown error'
-        );
-      }
+      this.handleError('Failed to update image description', e);
       return;
     }
     this.notificationService.success(
@@ -600,35 +459,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         );
       this.isShowingRegionSnapshot = true;
     } catch (e) {
-      if (e instanceof InvalidImageStatusError) {
-        this.notificationService.error(
-          'Failed to get image region snapshot list',
-          'Invalid image status'
-        );
-      } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to get image region snapshot list',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to get image region snapshot list',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof ImageNotFoundError) {
-        this.notificationService.error(
-          'Failed to get image region snapshot list',
-          'Image cannot be found'
-        );
-        this.location.back();
-      } else {
-        this.notificationService.error(
-          'Failed to get image region snapshot list',
-          'Unknown error'
-        );
-      }
+      this.handleError('Failed to get image region snapshot list', e);
       return;
     }
   }
@@ -645,35 +476,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         );
       this.isShowingRegionSnapshot = true;
     } catch (e) {
-      if (e instanceof InvalidImageStatusError) {
-        this.notificationService.error(
-          'Failed to get image region snapshot list',
-          'Invalid image status'
-        );
-      } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to get image region snapshot list',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to get image region snapshot list',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof ImageNotFoundError) {
-        this.notificationService.error(
-          'Failed to get image region snapshot list',
-          'Image cannot be found'
-        );
-        this.location.back();
-      } else {
-        this.notificationService.error(
-          'Failed to get image region snapshot list',
-          'Unknown error'
-        );
-      }
+      this.handleError('Failed to get image region snapshot list', e);
       return;
     }
   }
@@ -701,35 +504,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
             ImageStatus.EXCLUDED
           );
         } catch (e) {
-          if (e instanceof InvalidImageStatusError) {
-            this.notificationService.error(
-              'Failed to exclude image',
-              'Invalid image status transition'
-            );
-          } else if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to exclude image',
-              'User is not logged in'
-            );
-            this.router.navigateByUrl('/login');
-          } else if (e instanceof UnauthorizedError) {
-            this.notificationService.error(
-              'Failed to exclude image',
-              'User does not have the required permission'
-            );
-            this.router.navigateByUrl('/welcome');
-          } else if (e instanceof ImageNotFoundError) {
-            this.notificationService.error(
-              'Failed to exclude image',
-              'Image cannot be found'
-            );
-            this.location.back();
-          } else {
-            this.notificationService.error(
-              'Failed to exclude image',
-              'Unknown error'
-            );
-          }
+          this.handleError('Failed to exclude image', e);
           return;
         }
         this.notificationService.success('Excluded image successfully', '');
@@ -754,35 +529,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
             ImageStatus.UPLOADED
           );
         } catch (e) {
-          if (e instanceof InvalidImageStatusError) {
-            this.notificationService.error(
-              'Failed to include image',
-              'Invalid image status transition'
-            );
-          } else if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to include image',
-              'User is not logged in'
-            );
-            this.router.navigateByUrl('/login');
-          } else if (e instanceof UnauthorizedError) {
-            this.notificationService.error(
-              'Failed to include image',
-              'User does not have the required permission'
-            );
-            this.router.navigateByUrl('/welcome');
-          } else if (e instanceof ImageNotFoundError) {
-            this.notificationService.error(
-              'Failed to include image',
-              'Image cannot be found'
-            );
-            this.location.back();
-          } else {
-            this.notificationService.error(
-              'Failed to include image',
-              'Unknown error'
-            );
-          }
+          this.handleError('Failed to include image', e);
           return;
         }
         this.notificationService.success('Included image successfully', '');
@@ -806,35 +553,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
             ImageStatus.PUBLISHED
           );
         } catch (e) {
-          if (e instanceof InvalidImageStatusError) {
-            this.notificationService.error(
-              'Failed to publish image',
-              'Invalid image status transition'
-            );
-          } else if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to publish image',
-              'User is not logged in'
-            );
-            this.router.navigateByUrl('/login');
-          } else if (e instanceof UnauthorizedError) {
-            this.notificationService.error(
-              'Failed to publish image',
-              'User does not have the required permission'
-            );
-            this.router.navigateByUrl('/welcome');
-          } else if (e instanceof ImageNotFoundError) {
-            this.notificationService.error(
-              'Failed to publish image',
-              'Image cannot be found'
-            );
-            this.location.back();
-          } else {
-            this.notificationService.error(
-              'Failed to publish image',
-              'Unknown error'
-            );
-          }
+          this.handleError('Failed to publish image', e);
           return;
         }
         this.notificationService.success('Published image successfully', '');
@@ -870,34 +589,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       this.regionList = [...this.regionList];
       this.regionList[event.regionID] = region;
     } catch (e) {
-      if (e instanceof InvalidRegionInformation) {
-        this.notificationService.error(
-          'Failed to update region boundary',
-          'Invalid region information'
-        );
-      } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update region boundary',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update region boundary',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof RegionNotFoundError) {
-        this.notificationService.error(
-          'Failed to update region boundary',
-          'Region not found'
-        );
-      } else {
-        this.notificationService.error(
-          'Failed to update region boundary',
-          'Unknown error'
-        );
-      }
+      this.handleError('Failed to update region boundary', e);
       return;
     }
     this.notificationService.success(
@@ -934,37 +626,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       this.selectedRegionHoles = [];
       this.regionSelector?.cancelDrawing();
     } catch (e) {
-      if (e instanceof InvalidRegionInformation) {
-        this.notificationService.error(
-          'Failed to add region',
-          'Invalid region information'
-        );
-      } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to add region',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to add region',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof ImageNotFoundError) {
-        this.notificationService.error(
-          'Failed to add region',
-          'Image not found'
-        );
-        this.location.back();
-      } else if (e instanceof RegionLabelCannotBeAssignedToImageError) {
-        this.notificationService.error(
-          'Failed to add region',
-          'Region label cannot be assigned to image of this image type'
-        );
-      } else {
-        this.notificationService.error('Failed to add region', 'Unknown error');
-      }
+      this.handleError('Failed to add region', e);
     }
   }
 
@@ -1054,34 +716,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       this.regionList[this.contextMenuRegionID] = updatedRegion;
       this.notificationService.success('Updated region label successfully', '');
     } catch (e) {
-      if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof RegionNotFoundError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          'Region not found'
-        );
-      } else if (e instanceof RegionLabelCannotBeAssignedToImageError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          'Region label cannot be assigned to image of this image type'
-        );
-      } else {
-        this.notificationService.error(
-          'Failed to update region label',
-          'Unknown error'
-        );
-      }
+      this.handleError('Failed to update region label', e);
       return;
     }
   }
@@ -1118,30 +753,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
           region.id
         );
     } catch (e) {
-      if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to get region operation log list',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to get region operation log list',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof RegionNotFoundError) {
-        this.notificationService.error(
-          'Failed to get region operation log list',
-          'Region not found'
-        );
-      } else {
-        this.notificationService.error(
-          'Failed to get region operation log list',
-          'Unknown error'
-        );
-      }
-
+      this.handleError('Failed to get region operation log list', e);
       return;
     }
 
@@ -1158,29 +770,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         deletedRegion.id
       );
     } catch (e) {
-      if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to delete region',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to delete region',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof RegionNotFoundError) {
-        this.notificationService.error(
-          'Failed to delete region',
-          'Region not found'
-        );
-      } else {
-        this.notificationService.error(
-          'Failed to delete region',
-          'Unknown error'
-        );
-      }
+      this.handleError('Failed to delete region', e);
       return;
     }
     this.notificationService.success('Deleted region successfully', '');
@@ -1206,29 +796,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         imageType.id
       );
     } catch (e) {
-      if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof ImageOrImageTypeNotFoundError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'Image or image type not found'
-        );
-      } else {
-        this.notificationService.error(
-          'Failed to update image type',
-          'Unknown error'
-        );
-      }
+      this.handleError('Failed to update image type', e);
       return;
     }
     this.notificationService.success('Updated image type successfully', '');
@@ -1243,33 +811,10 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     try {
       await this.imageManagementService.deleteImage(this.image.id);
     } catch (e) {
-      if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'User is not logged in'
-        );
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'User does not have the required permission'
-        );
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof ImageNotFoundError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'Image not found'
-        );
-        this.location.back();
-      } else {
-        this.notificationService.error(
-          'Failed to update image type',
-          'Unknown error'
-        );
-      }
+      this.handleError('Failed to delete image', e);
       return;
     }
-    this.notificationService.success('Updated image type successfully', '');
+    this.notificationService.success('Deleted image successfully', '');
     this.location.back();
   }
 
@@ -1295,5 +840,100 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         filter: this.jsonCompressService.compress(this.filterOptions),
       },
     });
+  }
+
+  private handleError(notificationTitle: string, e: any): void {
+    if (e instanceof UnauthenticatedError) {
+      this.notificationService.error(
+        notificationTitle,
+        'User is not logged in'
+      );
+      this.router.navigateByUrl('/login');
+      return;
+    }
+    if (e instanceof UnauthorizedError) {
+      this.notificationService.error(
+        notificationTitle,
+        'User does not have the required permission'
+      );
+      this.router.navigateByUrl('/welcome');
+      return;
+    }
+    if (e instanceof ImageAlreadyHasImageTagError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Image already has image tag'
+      );
+      return;
+    }
+    if (e instanceof ImageCannotBeAssignedWithImageTagError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Image of this image type cannot be assigned with image tag'
+      );
+      return;
+    }
+    if (e instanceof ImageDoesNotHaveImageTagError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Image does not have image tag'
+      );
+      return;
+    }
+    if (e instanceof ImageNotFoundError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Image cannot be found'
+      );
+      this.location.back();
+      return;
+    }
+    if (e instanceof ImageOrImageTagNotFoundError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Image or image tag cannot be found'
+      );
+      return;
+    }
+    if (e instanceof ImageOrImageTypeNotFoundError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Image or image type cannot be found'
+      );
+      return;
+    }
+    if (e instanceof InvalidImageInformationError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Invalid image information'
+      );
+      return;
+    }
+    if (e instanceof InvalidImageStatusError) {
+      this.notificationService.error(notificationTitle, 'Invalid image status');
+      return;
+    }
+    if (e instanceof InvalidRegionInformation) {
+      this.notificationService.error(
+        notificationTitle,
+        'Invalid region information'
+      );
+      return;
+    }
+    if (e instanceof RegionLabelCannotBeAssignedToImageError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Region label cannot be assigned to image of this image type'
+      );
+      return;
+    }
+    if (e instanceof RegionNotFoundError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Region cannot be found'
+      );
+      return;
+    }
+    this.notificationService.error(notificationTitle, 'Unknown error');
   }
 }
