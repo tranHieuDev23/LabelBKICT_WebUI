@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { RegionSelectorEditorSnapshot } from './region-selector-editor-snapshot';
+import { RegionSelectorSnapshot } from './region-selector-editor-snapshot';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RegionSelectorSnapshotService {
-  private snapshotList: RegionSelectorEditorSnapshot[] = [];
+  private snapshotList: RegionSelectorSnapshot[] = [];
   private currentSnapshotID: number = -1;
 
   public clear(): void {
@@ -25,7 +25,7 @@ export class RegionSelectorSnapshotService {
     return this.currentSnapshotID < this.snapshotList.length - 1;
   }
 
-  public storeSnapshot(snapshot: RegionSelectorEditorSnapshot): void {
+  public storeSnapshot(snapshot: RegionSelectorSnapshot): void {
     if (this.canRedo()) {
       this.snapshotList = this.snapshotList.slice(
         0,
@@ -36,14 +36,14 @@ export class RegionSelectorSnapshotService {
     this.currentSnapshotID = this.snapshotList.length - 1;
   }
 
-  public getCurrentSnapshot(): RegionSelectorEditorSnapshot | null {
+  public getCurrentSnapshot(): RegionSelectorSnapshot | null {
     if (this.currentSnapshotID < 0) {
       return null;
     }
     return this.snapshotList[this.currentSnapshotID];
   }
 
-  public undo(): RegionSelectorEditorSnapshot | null {
+  public undo(): RegionSelectorSnapshot | null {
     if (!this.canUndo()) {
       return null;
     }
@@ -51,14 +51,14 @@ export class RegionSelectorSnapshotService {
     return this.snapshotList[this.currentSnapshotID];
   }
 
-  public peekUndo(): RegionSelectorEditorSnapshot | null {
+  public peekUndo(): RegionSelectorSnapshot | null {
     if (!this.canUndo()) {
       return null;
     }
     return this.snapshotList[this.currentSnapshotID - 1];
   }
 
-  public redo(): RegionSelectorEditorSnapshot | null {
+  public redo(): RegionSelectorSnapshot | null {
     if (!this.canRedo()) {
       return null;
     }
@@ -66,7 +66,7 @@ export class RegionSelectorSnapshotService {
     return this.snapshotList[this.currentSnapshotID];
   }
 
-  public peekRedo(): RegionSelectorEditorSnapshot | null {
+  public peekRedo(): RegionSelectorSnapshot | null {
     if (!this.canRedo()) {
       return null;
     }

@@ -4,7 +4,7 @@ import { CanvasGraphicService } from '../graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic.service';
 import { Coordinate } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
-import { RegionSelectorEditorSnapshot } from '../snapshot/region-selector-editor-snapshot';
+import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
 import { RegionSelectorState } from './region-selector-state';
 
@@ -242,7 +242,7 @@ export class DrawState implements RegionSelectorState {
     }
 
     this.snapshotService.storeSnapshot(
-      new RegionSelectorEditorSnapshot(this.content.drawnPolygonList)
+      new RegionSelectorSnapshot(this.content.drawnPolygonList)
     );
     return new DrawState(
       this.content,
@@ -283,7 +283,7 @@ export class DrawState implements RegionSelectorState {
       (polygon) => polygon.vertices.length > 0
     );
     this.snapshotService.storeSnapshot(
-      new RegionSelectorEditorSnapshot(drawnPolygonListWithNoEmpty)
+      new RegionSelectorSnapshot(drawnPolygonListWithNoEmpty)
     );
 
     const newContent = { ...this.content };

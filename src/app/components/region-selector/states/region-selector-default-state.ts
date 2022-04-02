@@ -3,6 +3,7 @@ import { RegionSelectorGeometryService } from '../geometry/region-selector-geome
 import { CanvasGraphicService } from '../graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic.service';
 import { RegionSelectorContent } from '../region-selector-content';
+import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
 import { DrawState } from './region-selector-draw-state';
 import { RegionSelectorState } from './region-selector-state';
@@ -34,6 +35,9 @@ export class DefaultState implements RegionSelectorState {
       ...this.content,
     };
     newContent.cursorImagePosition = cursorImagePosition;
+    newContent.drawnPolygonList = [];
+
+    this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
 
     return new DrawState(
       newContent,

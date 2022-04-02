@@ -19,7 +19,7 @@ import {
   RegionEditedEvent,
   RegionSelectedEvent,
 } from './region-selector-events';
-import { RegionSelectorEditorSnapshot } from './snapshot/region-selector-editor-snapshot';
+import { RegionSelectorSnapshot } from './snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from './snapshot/region-selector-snapshot.service';
 import {
   DefaultState,
@@ -349,7 +349,7 @@ export class RegionSelectorComponent {
 
     this.snapshotService.clear();
     this.snapshotService.storeSnapshot(
-      new RegionSelectorEditorSnapshot(densifiedDrawnPolygonList)
+      new RegionSelectorSnapshot(densifiedDrawnPolygonList)
     );
 
     const newContent = { ...this.state.content };
@@ -383,7 +383,7 @@ export class RegionSelectorComponent {
 
     this.snapshotService.clear();
     this.snapshotService.storeSnapshot(
-      new RegionSelectorEditorSnapshot(densifiedDrawnPolygonList)
+      new RegionSelectorSnapshot(densifiedDrawnPolygonList)
     );
 
     const newContent = { ...this.state.content };
@@ -558,7 +558,7 @@ export class RegionSelectorComponent {
     this.setZoomLevel(newZoom, mouseImagePos);
   }
 
-  private loadSnapshot(snapshot: RegionSelectorEditorSnapshot): void {
+  private loadSnapshot(snapshot: RegionSelectorSnapshot): void {
     this.state.content.drawnPolygonList = snapshot.drawnRegionList;
     this.onDraw();
   }

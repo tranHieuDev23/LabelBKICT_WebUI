@@ -1,5 +1,5 @@
 import { Polygon } from '../models';
 
-export class RegionSelectorEditorSnapshot {
+export class RegionSelectorSnapshot {
   constructor(public readonly drawnRegionList: Polygon[]) {}
 }

@@ -1,5 +1,11 @@
 import { Location } from '@angular/common';
-import { AfterContentInit, Component, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterContentInit,
+  Component,
+  HostListener,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import {
   NzContextMenuService,
@@ -96,6 +102,8 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
 
   public allowedImageTagGroupListForImageType: ImageTagGroup[] = [];
   public allowedImageTagListForImageType: ImageTag[][] = [];
+
+  private isKeyPressed = false;
 
   constructor(
     private readonly sessionManagementService: SessionManagementService,
@@ -294,6 +302,72 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     const filterOptions = new ImageListFilterOptions();
     filterOptions.uploadedByUserIDList = [sessionUserID];
     return filterOptions;
+  }
+
+  @HostListener('document: keydown', ['$event'])
+  public onKeyDown(event: KeyboardEvent): void {
+    if (
+      this.isRegionInformationModalVisible ||
+      this.isLabelRegionModalVisible ||
+      this.isImageSettingsModalVisible
+    ) {
+      return;
+    }
+    if (this.descriptionEditableText?.isEditing) {
+      return;
+    }
+    switch (event.code) {
+      case 'ArrowLeft':
+        if (!this.isKeyPressed) {
+          event.preventDefault();
+          this.onPreviousClicked();
+        }
+        break;
+      case 'ArrowRight':
+        if (!this.isKeyPressed) {
+          event.preventDefault();
+          this.onNextClicked();
+        }
+        break;
+      case 'KeyZ':
+        if (event.ctrlKey) {
+          event.preventDefault();
+          if (event.shiftKey) {
+            this.regionSelector?.redo();
+          } else {
+            this.regionSelector?.undo();
+          }
+        }
+        break;
+      case 'Enter':
+        if (event.ctrlKey && this.regionSelector?.isInDrawState()) {
+          event.preventDefault();
+          this.regionSelector.finishDrawing();
+        }
+        break;
+      case 'Escape':
+        if (
+          this.regionSelector?.isInDrawState() ||
+          this.regionSelector?.isInSelectedState()
+        ) {
+          this.regionSelector.cancelDrawing();
+        }
+        break;
+      case 'KeyP':
+        if (event.ctrlKey && event.shiftKey) {
+          event.preventDefault();
+          if (this.isImagePublishable()) {
+            this.onPublishImageClicked();
+          }
+        }
+        break;
+    }
+    this.isKeyPressed = true;
+  }
+
+  @HostListener('document: keyup')
+  onKeyUp(): void {
+    this.isKeyPressed = false;
   }
 
   public getImageStatusColor(status: ImageStatus): string {
