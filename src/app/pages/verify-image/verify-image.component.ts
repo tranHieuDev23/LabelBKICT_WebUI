@@ -3,7 +3,6 @@ import {
   AfterContentInit,
   Component,
   HostListener,
-  OnInit,
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
@@ -30,11 +29,9 @@ import {
   ImageListSortOption,
   ImageNotFoundError,
   ImageOrImageTagNotFoundError,
-  ImageOrImageTypeNotFoundError,
   ImageStatus,
   ImageTag,
   ImageTagGroup,
-  ImageType,
   ImageTypesService,
   InvalidImageInformationError,
   InvalidImageStatusError,
@@ -52,17 +49,16 @@ import { ImageManagementService } from 'src/app/services/module/image-management
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
 import { RegionImageService } from 'src/app/services/module/region-management/region-image.service';
 import { RegionManagementService } from 'src/app/services/module/region-management/region-management.service';
-import { SessionManagementService } from 'src/app/services/module/session-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 
 const DEFAULT_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
 
 @Component({
-  selector: 'app-manage-image',
-  templateUrl: './manage-image.component.html',
-  styleUrls: ['./manage-image.component.scss'],
+  selector: 'app-verify-image',
+  templateUrl: './verify-image.component.html',
+  styleUrls: ['./verify-image.component.scss'],
 })
-export class ManageImageComponent implements OnInit, AfterContentInit {
+export class VerifyImageComponent implements AfterContentInit {
   @ViewChild('regionSelector', { static: false })
   public regionSelector: RegionSelectorComponent | undefined;
   @ViewChild('descriptionEditableText', { static: false })
@@ -98,10 +94,6 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   public regionInformationModalImage: string = '';
   public regionInformationModalOperationLogList: RegionOperationLog[] = [];
 
-  public isImageSettingsModalVisible = false;
-  public imageSettingsModalImageTypeList: ImageType[] = [];
-  public imageSettingsModalSelectedImageType: ImageType | undefined;
-
   public contextMenuRegion: Region | undefined;
   public contextMenuRegionID: number | undefined;
 
@@ -111,7 +103,6 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   private isKeyPressed = false;
 
   constructor(
-    private readonly sessionManagementService: SessionManagementService,
     private readonly imageManagementService: ImageManagementService,
     private readonly imageListManagementService: ImageListManagementService,
     private readonly regionManagementService: RegionManagementService,
@@ -126,19 +117,6 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     private readonly contextMenuService: NzContextMenuService,
     private readonly jsonCompressService: JSONCompressService
   ) {}
-
-  ngOnInit(): void {
-    (async () => {
-      try {
-        const { imageTypeList } = await this.imageTypesService.getImageTypeList(
-          false
-        );
-        this.imageSettingsModalImageTypeList = imageTypeList;
-      } catch (e) {
-        this.handleError('Failed to load page', e);
-      }
-    })().then();
-  }
 
   ngAfterContentInit(): void {
     this.route.params.subscribe(async (params) => {
@@ -159,12 +137,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     if (filterParam !== undefined) {
       this.filterOptions = this.jsonCompressService.decompress(filterParam);
     } else {
-      const authUserInfo =
-        await this.sessionManagementService.getUserFromSession();
-      if (authUserInfo === null) {
-        return;
-      }
-      this.filterOptions = this.getDefaultFilterOptions(authUserInfo.user.id);
+      this.filterOptions = this.getDefaultFilterOptions();
     }
 
     if (queryParams['sort'] !== undefined) {
@@ -259,11 +232,12 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     }
   }
 
-  private getDefaultFilterOptions(
-    sessionUserID: number
-  ): ImageListFilterOptions {
+  private getDefaultFilterOptions(): ImageListFilterOptions {
     const filterOptions = new ImageListFilterOptions();
-    filterOptions.uploadedByUserIDList = [sessionUserID];
+    filterOptions.imageStatusList = [
+      ImageStatus.PUBLISHED,
+      ImageStatus.VERIFIED,
+    ];
     return filterOptions;
   }
 
@@ -271,8 +245,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   public onKeyDown(event: KeyboardEvent): void {
     if (
       this.isRegionInformationModalVisible ||
-      this.isLabelRegionModalVisible ||
-      this.isImageSettingsModalVisible
+      this.isLabelRegionModalVisible
     ) {
       return;
     }
@@ -316,14 +289,6 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
           this.regionSelector.cancelDrawing();
         }
         break;
-      case 'KeyP':
-        if (event.ctrlKey && event.shiftKey) {
-          event.preventDefault();
-          if (this.isImagePublishable()) {
-            this.onPublishImageClicked();
-          }
-        }
-        break;
     }
     this.isKeyPressed = true;
   }
@@ -339,40 +304,6 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
 
   public getImageStatusString(status: ImageStatus): string {
     return this.imageStatusService.getImageStatusString(status);
-  }
-
-  public isImagePublishable(): boolean {
-    if (this.isImagePublished()) {
-      return false;
-    }
-    if (this.regionList.length === 0) {
-      return false;
-    }
-    const unlabeledCount = this.regionList.filter(
-      (region) => region.label === null
-    ).length;
-    return unlabeledCount === 0;
-  }
-
-  public isImageExcludable(): boolean {
-    if (!this.image) {
-      return false;
-    }
-    return this.imageStatusService.isImageExcludable(this.image?.status);
-  }
-
-  public isImageExcluded(): boolean {
-    if (!this.image) {
-      return false;
-    }
-    return this.imageStatusService.isImageExcluded(this.image?.status);
-  }
-
-  public isImagePublished(): boolean {
-    if (!this.image) {
-      return false;
-    }
-    return this.imageStatusService.isImagePublished(this.image?.status);
   }
 
   public isImageVerified(): boolean {
@@ -482,14 +413,10 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     this.isShowingRegionSnapshot = false;
   }
 
-  public onExcludeImageClicked(): void {
+  public onVerifyImageClicked(): void {
     this.modalService.create({
-      nzTitle: 'Exclude this image from labeling',
-      nzContent:
-        '<p>Are you sure? Excluded images are not shown to other users, ' +
-        'except for those with Manage All Image privilege. Use this if you ' +
-        'only want to keep this image on the system for managing, not for ' +
-        'labeling image data.</p><p>You can undo this action later.</p>',
+      nzTitle: 'Mark this image as verified',
+      nzContent: 'Are you sure? This action is <b>IRREVERSIBLE</b>.',
       nzOnOk: async () => {
         if (!this.image) {
           return;
@@ -497,68 +424,15 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         try {
           this.image = await this.imageManagementService.updateImageStatus(
             this.image.id,
-            ImageStatus.EXCLUDED
+            ImageStatus.VERIFIED
           );
         } catch (e) {
-          this.handleError('Failed to exclude image', e);
+          this.handleError('Failed to verify image', e);
           return;
         }
-        this.notificationService.success('Excluded image successfully', '');
+        this.notificationService.success('Verified image successfully', '');
       },
     });
-  }
-
-  public onIncludeImageClicked(): void {
-    this.modalService.create({
-      nzTitle: 'Include this image for labeling',
-      nzContent:
-        '<p>Are you sure? Included images can be published to show to other users ' +
-        'for verification. Use this if you want to keep this image on the system for ' +
-        'labeling image data.</p><p>You can undo this action later.</p>',
-      nzOnOk: async () => {
-        if (!this.image) {
-          return;
-        }
-        try {
-          this.image = await this.imageManagementService.updateImageStatus(
-            this.image.id,
-            ImageStatus.UPLOADED
-          );
-        } catch (e) {
-          this.handleError('Failed to include image', e);
-          return;
-        }
-        this.notificationService.success('Included image successfully', '');
-      },
-    });
-  }
-
-  public onPublishImageClicked(): void {
-    this.modalService.create({
-      nzTitle: 'Include this image for labeling',
-      nzContent:
-        'Are you sure? Publishing this image will allow other people to see, ' +
-        'label and verify its regions. This action is <b>IRREVERSIBLE</b>.',
-      nzOnOk: async () => {
-        if (!this.image) {
-          return;
-        }
-        try {
-          this.image = await this.imageManagementService.updateImageStatus(
-            this.image.id,
-            ImageStatus.PUBLISHED
-          );
-        } catch (e) {
-          this.handleError('Failed to publish image', e);
-          return;
-        }
-        this.notificationService.success('Published image successfully', '');
-      },
-    });
-  }
-
-  public onImageSettingsClicked(): void {
-    this.isImageSettingsModalVisible = true;
   }
 
   public onRegionSelected(event: RegionSelectedEvent): void {
@@ -775,50 +649,11 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     );
   }
 
-  public onImageSettingsModalClose(): void {
-    this.isImageSettingsModalVisible = false;
-  }
-
-  public async onImageSettingsModalCloseImageTypeClicked(
-    imageType: ImageType
-  ): Promise<void> {
-    if (!this.image) {
-      return;
-    }
-    this.isImageSettingsModalVisible = false;
-    try {
-      await this.imageManagementService.updateImageImageType(
-        this.image.id,
-        imageType.id
-      );
-    } catch (e) {
-      this.handleError('Failed to update image type', e);
-      return;
-    }
-    this.notificationService.success('Updated image type successfully', '');
-    await this.loadImage(this.image.id);
-  }
-
-  public async onImageSettingsModalCloseImageTypeClickedDeleteImageClicked(): Promise<void> {
-    if (!this.image) {
-      return;
-    }
-    this.isImageSettingsModalVisible = false;
-    try {
-      await this.imageManagementService.deleteImage(this.image.id);
-    } catch (e) {
-      this.handleError('Failed to delete image', e);
-      return;
-    }
-    this.notificationService.success('Deleted image successfully', '');
-    this.location.back();
-  }
-
   public async onPreviousClicked(): Promise<void> {
     if (this.prevImageID === undefined) {
       return;
     }
-    this.router.navigate([`/manage-image/${this.prevImageID}`], {
+    this.router.navigate([`/verify-image/${this.prevImageID}`], {
       queryParams: {
         sort: this.imageListSortOption,
         filter: this.jsonCompressService.compress(this.filterOptions),
@@ -830,7 +665,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     if (this.nextImageID === undefined) {
       return;
     }
-    this.router.navigate([`/manage-image/${this.nextImageID}`], {
+    this.router.navigate([`/verify-image/${this.nextImageID}`], {
       queryParams: {
         sort: this.imageListSortOption,
         filter: this.jsonCompressService.compress(this.filterOptions),
@@ -888,13 +723,6 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       this.notificationService.error(
         notificationTitle,
         'Image or image tag cannot be found'
-      );
-      return;
-    }
-    if (e instanceof ImageOrImageTypeNotFoundError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Image or image type cannot be found'
       );
       return;
     }

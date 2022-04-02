@@ -57,13 +57,7 @@
                 </nz-collapse-panel>
 
                 <nz-collapse-panel nzHeader="Region snapshots">
-                    <p *ngIf="!isImagePublished()" nz-typography>
-                        <i>
-                            When the image is published/verified, region snapshots at the time of publish/verify will be
-                            stored and can be viewed via this section.
-                        </i>
-                    </p>
-                    <button *ngIf="isImagePublished() && !isShowingRegionSnapshot" nz-button
+                    <button *ngIf="!isShowingRegionSnapshot" nz-button
                         (click)="onShowRegionSnapshotAtPublishTimeClicked()">
                         Publish time
                     </button>
@@ -91,19 +85,8 @@
             </nz-collapse>
 
             <div *ngIf="isImageEditable" class="action-buttons">
-                <button *ngIf="!isImageExcluded() && !isImagePublished()" nz-button nzType="primary"
-                    (click)="onExcludeImageClicked()">
-                    <i nz-icon nzType="minus-circle"></i> Exclude from labeling
-                </button>
-                <button *ngIf="isImageExcluded()" nz-button nzType="primary" (click)="onIncludeImageClicked()">
-                    <i nz-icon nzType="plus-circle"></i> Include for labeling
-                </button>
-                <button *ngIf="!isImageExcluded()" nz-button nzType="primary" [disabled]="!isImagePublishable()"
-                    (click)="onPublishImageClicked()">
-                    <i nz-icon nzType="check-circle"></i> Publish
-                </button>
-                <button nz-button (click)="onImageSettingsClicked()">
-                    <i nz-icon nzType="setting"></i> Settings
+                <button nz-button nzType="primary" [disabled]="isImageVerified()" (click)="onVerifyImageClicked()">
+                    <i nz-icon nzType="check-circle"></i> Verify
                 </button>
             </div>
 
@@ -154,34 +137,6 @@
         <button *ngIf="isImageEditable" nz-button nzDanger nzType="primary"
             (click)="onRegionInformationModalDeleteRegionClicked()" style="margin-top: 8px">
             <i nz-icon nzType="delete"></i> Delete region
-        </button>
-    </div>
-</nz-modal>
-
-<nz-modal *ngIf="isImageSettingsModalVisible" nzTitle="Image Settings" [nzVisible]="isImageSettingsModalVisible"
-    [nzClosable]="false" nzCancelText="Close" (nzOnCancel)="onImageSettingsModalClose()" [nzOkText]="null">
-    <div *nzModalContent>
-        <h4 nz-typography>Change image type</h4>
-        <p nz-typography>
-            This will remove all tags from this image, and mark all regions extracted from it as not labeled.
-        </p>
-        <div>
-            <nz-select class="image-type-select" nzPlaceHolder="Select image type"
-                [(ngModel)]="imageSettingsModalSelectedImageType"
-                (ngModelChange)="onImageSettingsModalCloseImageTypeClicked($event)">
-                <nz-option *ngFor="let imageType of imageSettingsModalImageTypeList" [nzValue]="imageType"
-                    [nzLabel]="imageType.displayName"
-                    [nzDisabled]="image?.imageType && imageType.id === image?.imageType?.id">
-                </nz-option>
-            </nz-select>
-        </div>
-        <h4 nz-typography style="margin-top: 8px;">Delete this image</h4>
-        <p nz-typography>
-            This will also delete all regions extracted from it.
-        </p>
-        <button nz-button nzType="primary" nzDanger
-            (click)="onImageSettingsModalCloseImageTypeClickedDeleteImageClicked()">
-            <i nz-icon nzType="delete"></i> Delete
         </button>
     </div>
 </nz-modal>

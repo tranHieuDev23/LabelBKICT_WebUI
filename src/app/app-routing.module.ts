@@ -97,6 +97,14 @@ const routes: Routes = [
     canActivate: [UserLoggedInGuard],
   },
   {
+    path: 'verify-image',
+    loadChildren: () =>
+      import('./pages/verify-image/verify-image.module').then(
+        (m) => m.VerifyImageModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
+  {
     path: 'export-images',
     loadChildren: () =>
       import('./pages/export-images/export-images.module').then(

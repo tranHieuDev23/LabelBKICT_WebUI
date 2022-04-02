@@ -79,6 +79,7 @@ class UserLoggedInGuard implements CanActivate {
           )
         );
       case 'verify-images':
+      case 'verify-image':
         return this.sessionManagementService.checkSessionUserHasPermission(
           'images.verify'
         );
