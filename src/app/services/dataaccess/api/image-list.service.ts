@@ -104,30 +104,14 @@ export class ImageListService {
     imageTagList: ImageTag[][];
   }> {
     try {
+      const filterOptionsQueryParams =
+        this.getQueryParamsFromFilterOptions(filterOptions);
       const response = await this.axios.get('/api/sessions/user/images', {
         params: {
           offset: offset,
           limit: limit,
           sort_order: sortOrder,
-          filter_image_types: filterOptions.imageTypeIDList,
-          filter_image_tags: filterOptions.imageTagIDList,
-          filter_region_labels: filterOptions.regionLabelIDList,
-          filter_published_by_user_ids: filterOptions.publishedByUserIDList,
-          filter_verified_by_user_ids: filterOptions.verifiedByUserIDList,
-          filter_upload_time_start: filterOptions.uploadTimeStart,
-          filter_upload_time_end: filterOptions.uploadTimeEnd,
-          filter_publish_time_start: filterOptions.publishTimeStart,
-          filter_publish_time_end: filterOptions.publishTimeEnd,
-          filter_verify_time_start: filterOptions.verifyTimeStart,
-          filter_verify_time_end: filterOptions.verifyTimeEnd,
-          original_file_name_query: filterOptions.originalFilenameQuery,
-          filter_image_statuses: filterOptions.imageStatusList,
-          must_match_all_image_tags: filterOptions.mustMatchAllImageTags
-            ? 1
-            : 0,
-          must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
-            ? 1
-            : 0,
+          ...filterOptionsQueryParams,
         },
         paramsSerializer: (params) => {
           return qs.stringify(params, { arrayFormat: 'repeat' });
@@ -198,6 +182,8 @@ export class ImageListService {
     imageTagList: ImageTag[][];
   }> {
     try {
+      const filterOptionsQueryParams =
+        this.getQueryParamsFromFilterOptions(filterOptions);
       const response = await this.axios.get(
         '/api/sessions/user/manageable-images',
         {
@@ -205,26 +191,7 @@ export class ImageListService {
             offset: offset,
             limit: limit,
             sort_order: sortOrder,
-            filter_image_types: filterOptions.imageTypeIDList,
-            filter_image_tags: filterOptions.imageTagIDList,
-            filter_region_labels: filterOptions.regionLabelIDList,
-            filter_uploaded_by_user_ids: filterOptions.uploadedByUserIDList,
-            filter_published_by_user_ids: filterOptions.publishedByUserIDList,
-            filter_verified_by_user_ids: filterOptions.verifiedByUserIDList,
-            filter_upload_time_start: filterOptions.uploadTimeStart,
-            filter_upload_time_end: filterOptions.uploadTimeEnd,
-            filter_publish_time_start: filterOptions.publishTimeStart,
-            filter_publish_time_end: filterOptions.publishTimeEnd,
-            filter_verify_time_start: filterOptions.verifyTimeStart,
-            filter_verify_time_end: filterOptions.verifyTimeEnd,
-            original_file_name_query: filterOptions.originalFilenameQuery,
-            filter_image_statuses: filterOptions.imageStatusList,
-            must_match_all_image_tags: filterOptions.mustMatchAllImageTags
-              ? 1
-              : 0,
-            must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
-              ? 1
-              : 0,
+            ...filterOptionsQueryParams,
           },
           paramsSerializer: (params) => {
             return qs.stringify(params, { arrayFormat: 'repeat' });
@@ -296,6 +263,8 @@ export class ImageListService {
     imageTagList: ImageTag[][];
   }> {
     try {
+      const filterOptionsQueryParams =
+        this.getQueryParamsFromFilterOptions(filterOptions);
       const response = await this.axios.get(
         '/api/sessions/user/verifiable-images',
         {
@@ -303,26 +272,7 @@ export class ImageListService {
             offset: offset,
             limit: limit,
             sort_order: sortOrder,
-            filter_image_types: filterOptions.imageTypeIDList,
-            filter_image_tags: filterOptions.imageTagIDList,
-            filter_region_labels: filterOptions.regionLabelIDList,
-            filter_uploaded_by_user_ids: filterOptions.uploadedByUserIDList,
-            filter_published_by_user_ids: filterOptions.publishedByUserIDList,
-            filter_verified_by_user_ids: filterOptions.verifiedByUserIDList,
-            filter_upload_time_start: filterOptions.uploadTimeStart,
-            filter_upload_time_end: filterOptions.uploadTimeEnd,
-            filter_publish_time_start: filterOptions.publishTimeStart,
-            filter_publish_time_end: filterOptions.publishTimeEnd,
-            filter_verify_time_start: filterOptions.verifyTimeStart,
-            filter_verify_time_end: filterOptions.verifyTimeEnd,
-            original_file_name_query: filterOptions.originalFilenameQuery,
-            filter_image_statuses: filterOptions.imageStatusList,
-            must_match_all_image_tags: filterOptions.mustMatchAllImageTags
-              ? 1
-              : 0,
-            must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
-              ? 1
-              : 0,
+            ...filterOptionsQueryParams,
           },
         }
       );
@@ -391,6 +341,8 @@ export class ImageListService {
     imageTagList: ImageTag[][];
   }> {
     try {
+      const filterOptionsQueryParams =
+        this.getQueryParamsFromFilterOptions(filterOptions);
       const response = await this.axios.get(
         '/api/sessions/user/exportable-images',
         {
@@ -398,26 +350,7 @@ export class ImageListService {
             offset: offset,
             limit: limit,
             sort_order: sortOrder,
-            filter_image_types: filterOptions.imageTypeIDList,
-            filter_image_tags: filterOptions.imageTagIDList,
-            filter_region_labels: filterOptions.regionLabelIDList,
-            filter_uploaded_by_user_ids: filterOptions.uploadedByUserIDList,
-            filter_published_by_user_ids: filterOptions.publishedByUserIDList,
-            filter_verified_by_user_ids: filterOptions.verifiedByUserIDList,
-            filter_upload_time_start: filterOptions.uploadTimeStart,
-            filter_upload_time_end: filterOptions.uploadTimeEnd,
-            filter_publish_time_start: filterOptions.publishTimeStart,
-            filter_publish_time_end: filterOptions.publishTimeEnd,
-            filter_verify_time_start: filterOptions.verifyTimeStart,
-            filter_verify_time_end: filterOptions.verifyTimeEnd,
-            original_file_name_query: filterOptions.originalFilenameQuery,
-            filter_image_statuses: filterOptions.imageStatusList,
-            must_match_all_image_tags: filterOptions.mustMatchAllImageTags
-              ? 1
-              : 0,
-            must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
-              ? 1
-              : 0,
+            ...filterOptionsQueryParams,
           },
           paramsSerializer: (params) => {
             return qs.stringify(params, { arrayFormat: 'repeat' });
@@ -447,5 +380,30 @@ export class ImageListService {
           throw new UnknownAPIError(e);
       }
     }
+  }
+
+  private getQueryParamsFromFilterOptions(
+    filterOptions: ImageListFilterOptions
+  ): any {
+    return {
+      filter_image_types: filterOptions.imageTypeIDList,
+      filter_image_tags: filterOptions.imageTagIDList,
+      filter_region_labels: filterOptions.regionLabelIDList,
+      filter_uploaded_by_user_ids: filterOptions.uploadedByUserIDList,
+      filter_published_by_user_ids: filterOptions.publishedByUserIDList,
+      filter_verified_by_user_ids: filterOptions.verifiedByUserIDList,
+      filter_upload_time_start: filterOptions.uploadTimeStart,
+      filter_upload_time_end: filterOptions.uploadTimeEnd,
+      filter_publish_time_start: filterOptions.publishTimeStart,
+      filter_publish_time_end: filterOptions.publishTimeEnd,
+      filter_verify_time_start: filterOptions.verifyTimeStart,
+      filter_verify_time_end: filterOptions.verifyTimeEnd,
+      original_file_name_query: filterOptions.originalFilenameQuery,
+      filter_image_statuses: filterOptions.imageStatusList,
+      must_match_all_image_tags: filterOptions.mustMatchAllImageTags ? 1 : 0,
+      must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
+        ? 1
+        : 0,
+    };
   }
 }
