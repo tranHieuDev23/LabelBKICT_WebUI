@@ -62,7 +62,7 @@ export class RegionOperationLog {
     const id = logJSON.id || 0;
     const byUser = logJSON.by_user ? User.fromJSON(logJSON.by_user) : null;
     const operationTime = logJSON.operation_time || 0;
-    const operationType = logJSON.operation_type || OperationType;
+    const operationType = logJSON.operation_type || OperationType.DRAW;
     const operationMetadata =
       operationType === OperationType.DRAW
         ? RegionOperationLogDrawMetadata.fromJSON(logJSON.operation_metadata)

@@ -102,7 +102,7 @@
 <nz-modal *ngIf="isLabelRegionModalVisible" nzTitle="Label region" [nzVisible]="isLabelRegionModalVisible"
     [nzClosable]="false" nzCancelText="Close" (nzOnCancel)="onCloseLabelRegionModal()" [nzOkText]="null">
     <div *nzModalContent>
-        <nz-list nzBordered>
+        <nz-list [nzDataSource]="regionLabelList" nzBordered>
             <nz-list-item *ngFor="let regionLabel of regionLabelList" class="label-region-modal-item"
                 (click)="onLabelRegionModalItemClicked(regionLabel)">
                 <span nz-typography>{{ regionLabel.displayName }}</span>
@@ -115,14 +115,22 @@
     [nzVisible]="isRegionInformationModalVisible" [nzClosable]="false" nzCancelText="Close"
     (nzOnCancel)="onRegionInformationModalClose()" [nzOkText]="null">
     <div *nzModalContent>
-        <img class="modal-image" [src]="regionInformationModalImage" />
-        <p *ngIf="regionInformationModalRegion?.label" nz-typography>
-            Labeled by <b>{{ regionInformationModalRegion?.labeledByUser?.displayName }}</b> as <b>{{
-                regionInformationModalRegion?.label?.displayName }}</b>
-        </p>
-        <p *ngIf="!(regionInformationModalRegion?.label)" nz-typography>
-            Not yet labeled
-        </p>
+        <nz-collapse nzAccordion>
+            <nz-collapse-panel nzHeader="Region information" nzActive="true">
+                <img class="modal-image" [src]="regionInformationModalImage" />
+                <p *ngIf="regionInformationModalRegion?.label" nz-typography>
+                    Labeled by <b>{{ regionInformationModalRegion?.labeledByUser?.displayName }}</b> as <b>{{
+                        regionInformationModalRegion?.label?.displayName }}</b>
+                </p>
+                <p *ngIf="!(regionInformationModalRegion?.label)" nz-typography>
+                    Not yet labeled
+                </p>
+            </nz-collapse-panel>
+            <nz-collapse-panel nzHeader="Operation history">
+                <app-region-operation-log-list [operationLogList]="regionInformationModalOperationLogList">
+                </app-region-operation-log-list>
+            </nz-collapse-panel>
+        </nz-collapse>
         <button *ngIf="editable" nz-button nzDanger nzType="primary"
             (click)="onRegionInformationModalDeleteRegionClicked()" style="margin-top: 8px">
             <i nz-icon nzType="delete"></i> Delete region

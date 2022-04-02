@@ -43,6 +43,7 @@ import {
   RegionLabel,
   RegionLabelCannotBeAssignedToImageError,
   RegionNotFoundError,
+  RegionOperationLog,
   UnauthenticatedError,
   UnauthorizedError,
 } from 'src/app/services/dataaccess/api';
@@ -92,6 +93,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   public isRegionInformationModalVisible = false;
   public regionInformationModalRegion: Region | undefined;
   public regionInformationModalImage: string = '';
+  public regionInformationModalOperationLogList: RegionOperationLog[] = [];
 
   public isImageSettingsModalVisible = false;
   public imageSettingsModalImageTypeList: ImageType[] = [];
@@ -997,6 +999,41 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         region.border
       );
     this.regionInformationModalRegion = region;
+
+    try {
+      this.regionInformationModalOperationLogList =
+        await this.regionManagementService.getRegionOperationLogList(
+          this.image.id,
+          region.id
+        );
+    } catch (e) {
+      if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to get region operation log list',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to get region operation log list',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof RegionNotFoundError) {
+        this.notificationService.error(
+          'Failed to get region operation log list',
+          'Region not found'
+        );
+      } else {
+        this.notificationService.error(
+          'Failed to get region operation log list',
+          'Unknown error'
+        );
+      }
+
+      return;
+    }
+
     this.isRegionInformationModalVisible = true;
   }
 
