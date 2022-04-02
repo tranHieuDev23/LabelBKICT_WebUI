@@ -20,3 +20,16 @@
     margin-bottom: 8px;
   }
 }
+
+.image-type-select {
+  width: 200px;
+}
+
+.label-region-modal-item {
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+}

@@ -139,7 +139,7 @@
             This will remove all tags from this image, and mark all regions extracted from it as not labeled.
         </p>
         <div>
-            Image type <nz-select class="image-type-select" nzPlaceHolder="Select image type"
+            <nz-select class="image-type-select" nzPlaceHolder="Select image type"
                 [(ngModel)]="imageSettingsModalSelectedImageType"
                 (ngModelChange)="onImageSettingsModalCloseImageTypeClicked($event)">
                 <nz-option *ngFor="let imageType of imageSettingsModalImageTypeList" [nzValue]="imageType"
