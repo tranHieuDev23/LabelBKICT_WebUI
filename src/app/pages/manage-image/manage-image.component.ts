@@ -78,12 +78,15 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   public imageTagList: ImageTag[] = [];
   public regionList: Region[] = [];
   public regionLabelList: RegionLabel[] = [];
-  public editable = true;
+  public isImageEditable = true;
 
   public position: number | undefined;
   public totalImageCount: number | undefined;
   public prevImageID: number | undefined;
   public nextImageID: number | undefined;
+
+  public isShowingRegionSnapshot = false;
+  public regionSnapshotList: Region[] = [];
 
   public selectedRegionBorder: Polygon | undefined;
   public selectedRegionHoles: Polygon[] = [];
@@ -393,7 +396,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   }
 
   public isImagePublishable(): boolean {
-    if (this.image?.status !== ImageStatus.UPLOADED) {
+    if (this.isImagePublished()) {
       return false;
     }
     if (this.regionList.length === 0) {
@@ -405,19 +408,32 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     return unlabeledCount === 0;
   }
 
-  public isImagePublished(): boolean {
-    return (
-      this.image?.status === ImageStatus.PUBLISHED ||
-      this.image?.status === ImageStatus.VERIFIED
-    );
-  }
-
   public isImageExcludable(): boolean {
-    return this.image?.status === ImageStatus.UPLOADED;
+    if (!this.image) {
+      return false;
+    }
+    return this.imageStatusService.isImageExcludable(this.image?.status);
   }
 
   public isImageExcluded(): boolean {
-    return this.image?.status === ImageStatus.EXCLUDED;
+    if (!this.image) {
+      return false;
+    }
+    return this.imageStatusService.isImageExcluded(this.image?.status);
+  }
+
+  public isImagePublished(): boolean {
+    if (!this.image) {
+      return false;
+    }
+    return this.imageStatusService.isImagePublished(this.image?.status);
+  }
+
+  public isImageVerified(): boolean {
+    if (!this.image) {
+      return false;
+    }
+    return this.imageStatusService.isImageVerified(this.image?.status);
   }
 
   public async onImageTagForUploadedImageAdded(
@@ -570,6 +586,101 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       'Updated image description successfully',
       ''
     );
+  }
+
+  public async onShowRegionSnapshotAtPublishTimeClicked(): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+    try {
+      this.regionSnapshotList =
+        await this.imageManagementService.getImageRegionSnapshotList(
+          this.image.id,
+          ImageStatus.PUBLISHED
+        );
+      this.isShowingRegionSnapshot = true;
+    } catch (e) {
+      if (e instanceof InvalidImageStatusError) {
+        this.notificationService.error(
+          'Failed to get image region snapshot list',
+          'Invalid image status'
+        );
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to get image region snapshot list',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to get image region snapshot list',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof ImageNotFoundError) {
+        this.notificationService.error(
+          'Failed to get image region snapshot list',
+          'Image cannot be found'
+        );
+        this.location.back();
+      } else {
+        this.notificationService.error(
+          'Failed to get image region snapshot list',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+  }
+
+  public async onShowRegionSnapshotAtVerifyTimeClicked(): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+    try {
+      this.regionSnapshotList =
+        await this.imageManagementService.getImageRegionSnapshotList(
+          this.image.id,
+          ImageStatus.VERIFIED
+        );
+      this.isShowingRegionSnapshot = true;
+    } catch (e) {
+      if (e instanceof InvalidImageStatusError) {
+        this.notificationService.error(
+          'Failed to get image region snapshot list',
+          'Invalid image status'
+        );
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to get image region snapshot list',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to get image region snapshot list',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof ImageNotFoundError) {
+        this.notificationService.error(
+          'Failed to get image region snapshot list',
+          'Image cannot be found'
+        );
+        this.location.back();
+      } else {
+        this.notificationService.error(
+          'Failed to get image region snapshot list',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+  }
+
+  public onRestoreCurrentRegionListClicked(): void {
+    this.regionSnapshotList = [];
+    this.isShowingRegionSnapshot = false;
   }
 
   public onExcludeImageClicked(): void {
@@ -858,7 +969,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   }
 
   public async onRegionDbClicked(event: RegionClickedEvent): Promise<void> {
-    if (event.regionID === null) {
+    if (event.regionID === null || this.isShowingRegionSnapshot) {
       return;
     }
     const region = this.regionList[event.regionID];
@@ -878,7 +989,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   }
 
   public async onContextMenu(event: RegionClickedEvent): Promise<void> {
-    if (!this.image || !this.contextMenu) {
+    if (!this.image || !this.contextMenu || this.isShowingRegionSnapshot) {
       return;
     }
     if (event.regionID !== null) {

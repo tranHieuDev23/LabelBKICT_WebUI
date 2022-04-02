@@ -58,7 +58,7 @@ export class RegionSelectorComponent {
       // HACK: This allows the DOM to initialize the image properly and fixes incorrect centering.
       setTimeout(() => {
         this.centerImage();
-      });
+      }, 500);
     };
     image.src = v;
   }
@@ -224,7 +224,10 @@ export class RegionSelectorComponent {
         this.isMouseDown
       );
       this.onDraw();
+      return;
     }
+
+    this.onDraw();
   }
 
   @HostListener('window: touchend', ['$event'])

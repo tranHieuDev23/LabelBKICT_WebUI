@@ -30,4 +30,20 @@ export class ImageStatusService {
         return 'purple';
     }
   }
+
+  public isImageExcludable(status: ImageStatus): boolean {
+    return status === ImageStatus.UPLOADED;
+  }
+
+  public isImageExcluded(status: ImageStatus): boolean {
+    return status === ImageStatus.EXCLUDED;
+  }
+
+  public isImagePublished(status: ImageStatus): boolean {
+    return status === ImageStatus.PUBLISHED || status === ImageStatus.VERIFIED;
+  }
+
+  public isImageVerified(status: ImageStatus): boolean {
+    return status === ImageStatus.VERIFIED;
+  }
 }

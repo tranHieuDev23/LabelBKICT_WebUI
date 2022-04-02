@@ -1,6 +1,7 @@
 <div nz-row>
     <div nz-col class="region-selector-col" [nzSpan]="24" [nzMd]="16" [nzXl]="18">
-        <app-region-selector #regionSelector *ngIf="image" [imageSrc]="image.originalImageURL" [regionList]="regionList"
+        <app-region-selector #regionSelector *ngIf="image" [editable]="isImageEditable && !isShowingRegionSnapshot"
+            [imageSrc]="image.originalImageURL" [regionList]="isShowingRegionSnapshot? regionSnapshotList : regionList"
             (regionSelected)="onRegionSelected($event)" (regionEdited)="onRegionEdited($event)"
             (regionDbClicked)="onRegionDbClicked($event)" (contextMenu)="onContextMenu($event)">
         </app-region-selector>
@@ -50,17 +51,37 @@
 
             <nz-collapse nzAccordion>
                 <nz-collapse-panel nzHeader="Description" nzActive="true">
-                    <app-editable-text #descriptionEditableText [text]="image.description" [editable]="editable"
-                        [placeholder]="editable? 'Add image description...' : 'No description'" [multiline]="true"
-                        (textEdited)="onImageDescriptionUpdated($event)">
+                    <app-editable-text #descriptionEditableText [text]="image.description" [editable]="isImageEditable"
+                        [placeholder]="isImageEditable? 'Add image description...' : 'No description'"
+                        [multiline]="true" (textEdited)="onImageDescriptionUpdated($event)">
                     </app-editable-text>
+                </nz-collapse-panel>
+
+                <nz-collapse-panel nzHeader="Region snapshots">
+                    <p *ngIf="!isImagePublished()" nz-typography>
+                        <i>
+                            When the image is published/verified, region snapshots at the time of publish/verify will be
+                            stored and can be viewed via this section.
+                        </i>
+                    </p>
+                    <button *ngIf="isImagePublished() && !isShowingRegionSnapshot" nz-button
+                        (click)="onShowRegionSnapshotAtPublishTimeClicked()">
+                        Show region snapshots at publish time
+                    </button>
+                    <button *ngIf="isImageVerified() && !isShowingRegionSnapshot" nz-button
+                        (click)="onShowRegionSnapshotAtVerifyTimeClicked()">
+                        Show region snapshots at publish time
+                    </button>
+                    <button *ngIf="isShowingRegionSnapshot" nz-button (click)="onRestoreCurrentRegionListClicked()">
+                        Restore current regions
+                    </button>
                 </nz-collapse-panel>
 
                 <nz-collapse-panel nzHeader="Shortcuts">
                     <ul>
-                        <li *ngIf="editable">Ctrl + Z/Ctrl + Shift + Z: Undo/Redo</li>
-                        <li *ngIf="editable">Ctrl + Enter: Finish drawing</li>
-                        <li *ngIf="editable">Escape: Clear selection</li>
+                        <li *ngIf="isImageEditable">Ctrl + Z/Ctrl + Shift + Z: Undo/Redo</li>
+                        <li *ngIf="isImageEditable">Ctrl + Enter: Finish drawing</li>
+                        <li *ngIf="isImageEditable">Escape: Clear selection</li>
                         <li>Ctrl + Middle mouse scroll: Zoom</li>
                         <li>Ctrl + Left mouse drag: Move image</li>
                         <li>Ctrl + Shift + P: Publish image</li>
@@ -70,7 +91,7 @@
                 </nz-collapse-panel>
             </nz-collapse>
 
-            <div *ngIf="editable" class="action-buttons">
+            <div *ngIf="isImageEditable" class="action-buttons">
                 <button *ngIf="!isImageExcluded() && !isImagePublished()" nz-button nzType="primary"
                     (click)="onExcludeImageClicked()">
                     <i nz-icon nzType="minus-circle"></i> Exclude from labeling
@@ -131,7 +152,7 @@
                 </app-region-operation-log-list>
             </nz-collapse-panel>
         </nz-collapse>
-        <button *ngIf="editable" nz-button nzDanger nzType="primary"
+        <button *ngIf="isImageEditable" nz-button nzDanger nzType="primary"
             (click)="onRegionInformationModalDeleteRegionClicked()" style="margin-top: 8px">
             <i nz-icon nzType="delete"></i> Delete region
         </button>
@@ -178,7 +199,8 @@
         <li *ngIf="isRegionSelectorIsInDrawState()" nz-menu-item (click)="regionSelector?.finishDrawing()">
             Finish drawing region
         </li>
-        <li *ngIf="contextMenuRegion && editable" nz-menu-item (click)="onContextMenuEditRegionBoundaryClicked()">
+        <li *ngIf="contextMenuRegion && isImageEditable" nz-menu-item
+            (click)="onContextMenuEditRegionBoundaryClicked()">
             Edit region boundary
         </li>
         <li *ngIf="isRegionSelectorIsInSelectedState()" nz-submenu nzTitle="Add region as...">
@@ -188,7 +210,7 @@
                 </li>
             </ul>
         </li>
-        <li *ngIf="contextMenuRegion && editable" nz-submenu nzTitle="Relabel region as...">
+        <li *ngIf="contextMenuRegion && isImageEditable" nz-submenu nzTitle="Relabel region as...">
             <ul>
                 <li *ngFor="let regionLabel of regionLabelList" nz-menu-item
                     [nzDisabled]="regionLabel.id === contextMenuRegion.label?.id"
@@ -203,7 +225,8 @@
         <li *ngIf="contextMenuRegion" nz-menu-item (click)="onContextMenuShowRegionInfoClicked()">
             Show region info
         </li>
-        <li *ngIf="contextMenuRegion && editable" nz-menu-item nzDanger (click)="onContextMenuDeleteRegionClicked()">
+        <li *ngIf="contextMenuRegion && isImageEditable" nz-menu-item nzDanger
+            (click)="onContextMenuDeleteRegionClicked()">
             Delete region
         </li>
         <!-- <li *ngIf="editable" nz-menu-item nzDanger (click)="onDeleteAllRegionsClicked()">
