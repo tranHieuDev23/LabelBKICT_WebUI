@@ -35,7 +35,7 @@
             </button>
         </nz-button-group>
     </div>
-    <div class="draw-option">
+    <div *ngIf="editable" class="draw-option">
         <nz-button-group *ngIf="isInDrawState()">
             <button nz-button [disabled]="isInAddingVertexDrawState()" (click)="toggleDrawDelete(true)"
                 title="Draw mode">

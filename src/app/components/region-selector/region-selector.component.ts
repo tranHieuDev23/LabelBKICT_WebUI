@@ -58,7 +58,7 @@ export class RegionSelectorComponent {
       // HACK: This allows the DOM to initialize the image properly and fixes incorrect centering.
       setTimeout(() => {
         this.centerImage();
-      }, 100);
+      });
     };
     image.src = v;
   }
@@ -69,7 +69,18 @@ export class RegionSelectorComponent {
     this.mouseOverRegionID = null;
   }
 
-  @Input() public editable = true;
+  private _editable = true;
+
+  @Input() public set editable(v: boolean) {
+    this._editable = v;
+    if (!this.isInDefaultState()) {
+      this.cancelDrawing();
+    }
+  }
+
+  public get editable(): boolean {
+    return this._editable;
+  }
 
   @Output() public regionSelected = new EventEmitter<RegionSelectedEvent>();
   @Output() public regionEdited = new EventEmitter<RegionEditedEvent>();
