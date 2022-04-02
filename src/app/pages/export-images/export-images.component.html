@@ -2,4 +2,40 @@
     <h1 nz-typography>
         Export images
     </h1>
+
+    <nz-tabset>
+        <nz-tab nzTitle="Request export">
+            <app-image-filter-options-selector [filterOptions]="filterOptions" [sortOption]="imageListSortOption"
+                [uploadedByUserOptionList]="uploadedByUserOptionList"
+                [publishedByUserOptionList]="publishedByUserOptionList"
+                [verifiedByUserOptionList]="verifiedByUserOptionList"
+                (uploadedByUserSearch)="onUploadedByUserSearch($event)"
+                (publishedByUserSearch)="onPublishedByUserSearch($event)"
+                (verifiedByUserSearch)="onVerifiedByUserSearch($event)"
+                (filterOptionsUpdated)="onImageListFilterOptionsUpdated($event)"
+                (sortOptionUpdated)="onImageListSortOptionUploaded($event)">
+            </app-image-filter-options-selector>
+
+            <p *ngIf="fromImageIndex !== 0" nz-typography>
+                Showing image {{ fromImageIndex }} - {{ toImageIndex }} of {{ totalImageCount }}
+            </p>
+
+            <app-image-grid emptyText="No image" [imageList]="imageList" [imageTagList]="imageTagList"
+                [loading]="isLoadingImageList">
+            </app-image-grid>
+
+            <div *ngIf="!isLoadingImageList" class="pagination">
+                <nz-pagination [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzTotal]="totalImageCount"
+                    nzShowQuickJumper nzShowSizeChanger [nzPageSizeOptions]="[12, 24, 60, 120, 240]"
+                    (nzPageIndexChange)="onPageIndexChanged($event)" (nzPageSizeChange)="onPageSizeChanged($event)">
+                </nz-pagination>
+            </div>
+        </nz-tab>
+        <nz-tab nzTitle="Download export">
+            Content of Tab Pane 2
+        </nz-tab>
+        <nz-tab nzTitle="Requests in queue">
+            Content of Tab Pane 3
+        </nz-tab>
+    </nz-tabset>
 </div>
