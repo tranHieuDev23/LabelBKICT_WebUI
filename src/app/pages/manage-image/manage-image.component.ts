@@ -208,6 +208,13 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   }
 
   private async loadImage(imageID: number): Promise<void> {
+    this.image = undefined;
+    this.imageTagList = [];
+    this.regionList = [];
+    this.regionLabelList = [];
+    this.allowedImageTagGroupListForImageType = [];
+    this.allowedImageTagListForImageType = [];
+
     try {
       const { image, imageTagList, regionList } =
         await this.imageManagementService.getImage(imageID);
@@ -262,6 +269,11 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<void> {
+    this.position = undefined;
+    this.totalImageCount = undefined;
+    this.prevImageID = undefined;
+    this.nextImageID = undefined;
+
     try {
       const { position, totalImageCount, prevImageID, nextImageID } =
         await this.imageListManagementService.getImagePositionInList(
