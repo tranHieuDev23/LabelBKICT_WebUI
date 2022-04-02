@@ -78,7 +78,7 @@ export class RegionSelectorComponent {
 
   private isMouseDown = false;
   private isCtrlDown = false;
-  private lastTranslateCanvasPos: Coordinate | null = null;
+  private lastTranslateMousePos: Coordinate | null = null;
   private mouseOverRegionID: number | null = null;
   private isMouseOverDrawnPolygonList = false;
 
@@ -155,12 +155,7 @@ export class RegionSelectorComponent {
         this.regionSelectorGeometryService.getMousePositionFromMouseEvent(
           event
         );
-      const mouseCanvasPos =
-        this.regionSelectorGeometryService.mouseToCanvasPosition(
-          canvasElement,
-          mousePos
-        );
-      this.lastTranslateCanvasPos = mouseCanvasPos;
+      this.lastTranslateMousePos = mousePos;
       return;
     }
 
@@ -180,15 +175,10 @@ export class RegionSelectorComponent {
     this.updateMouseOverRegionID(event);
 
     const canvasElement = this.canvas.nativeElement;
-    if (this.lastTranslateCanvasPos && this.isMouseDown) {
+    if (this.lastTranslateMousePos && this.isMouseDown) {
       const mousePos =
         this.regionSelectorGeometryService.getMousePositionFromMouseEvent(
           event
-        );
-      const mouseCanvasPos =
-        this.regionSelectorGeometryService.mouseToCanvasPosition(
-          canvasElement,
-          mousePos
         );
       const mouseImagePos =
         this.regionSelectorGeometryService.mouseToImagePosition(
@@ -196,20 +186,22 @@ export class RegionSelectorComponent {
           this.state.content,
           mousePos
         );
-      const lastImagePos =
-        this.regionSelectorGeometryService.canvasToImagePosition(
+      const lastTranslateImagePos =
+        this.regionSelectorGeometryService.mouseToImagePosition(
           canvasElement,
           this.state.content,
-          this.lastTranslateCanvasPos
+          this.lastTranslateMousePos
         );
       const newImageOrigin = {
         x:
-          this.state.content.imageOrigin.x - (mouseImagePos.x - lastImagePos.x),
+          this.state.content.imageOrigin.x -
+          (mouseImagePos.x - lastTranslateImagePos.x),
         y:
-          this.state.content.imageOrigin.y - (mouseImagePos.x - lastImagePos.y),
+          this.state.content.imageOrigin.y -
+          (mouseImagePos.y - lastTranslateImagePos.y),
       };
       this.state.content.imageOrigin = newImageOrigin;
-      this.lastTranslateCanvasPos = mouseCanvasPos;
+      this.lastTranslateMousePos = mousePos;
       this.onDraw();
       return;
     }
@@ -238,8 +230,8 @@ export class RegionSelectorComponent {
     }
     this.isMouseDown = false;
 
-    if (this.lastTranslateCanvasPos) {
-      this.lastTranslateCanvasPos = null;
+    if (this.lastTranslateMousePos) {
+      this.lastTranslateMousePos = null;
       return;
     }
 
@@ -303,15 +295,15 @@ export class RegionSelectorComponent {
     if (!this.canvas || !this.state.content.image) {
       return;
     }
-    const canvasCenterInImage =
+    const canvasCenterImagePos =
       this.regionSelectorGeometryService.canvasToImagePosition(
         this.canvas.nativeElement,
         this.state.content,
         { x: 0.5, y: 0.5 }
       );
     this.state.content.imageOrigin = {
-      x: this.state.content.imageOrigin.x + (0.5 - canvasCenterInImage.x),
-      y: this.state.content.imageOrigin.y + (0.5 - canvasCenterInImage.y),
+      x: this.state.content.imageOrigin.x + (0.5 - canvasCenterImagePos.x),
+      y: this.state.content.imageOrigin.y + (0.5 - canvasCenterImagePos.y),
     };
     this.onDraw();
   }
