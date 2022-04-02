@@ -63,17 +63,20 @@
                             stored and can be viewed via this section.
                         </i>
                     </p>
-                    <button *ngIf="isImagePublished() && !isShowingRegionSnapshot" nz-button
-                        (click)="onShowRegionSnapshotAtPublishTimeClicked()">
-                        Publish time
-                    </button>
-                    <button *ngIf="isImageVerified() && !isShowingRegionSnapshot" nz-button
-                        (click)="onShowRegionSnapshotAtVerifyTimeClicked()">
-                        Verify time
-                    </button>
-                    <button *ngIf="isShowingRegionSnapshot" nz-button (click)="onRestoreCurrentRegionListClicked()">
-                        Restore
-                    </button>
+                    <nz-button-group>
+                        <button *ngIf="isImagePublished()" [disabled]="isShowingRegionSnapshot" nz-button
+                            (click)="onShowRegionSnapshotAtPublishTimeClicked()">
+                            Publish time
+                        </button>
+                        <button *ngIf="isImageVerified()" [disabled]="isShowingRegionSnapshot" nz-button
+                            (click)="onShowRegionSnapshotAtVerifyTimeClicked()">
+                            Verify time
+                        </button>
+                        <button [disabled]="!isShowingRegionSnapshot" nz-button
+                            (click)="onRestoreCurrentRegionListClicked()">
+                            Restore
+                        </button>
+                    </nz-button-group>
                 </nz-collapse-panel>
 
                 <nz-collapse-panel nzHeader="Shortcuts">
