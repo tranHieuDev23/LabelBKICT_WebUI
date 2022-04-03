@@ -449,7 +449,7 @@ export class ImageListService {
       filter_publish_time_end: filterOptions.publishTimeEnd,
       filter_verify_time_start: filterOptions.verifyTimeStart,
       filter_verify_time_end: filterOptions.verifyTimeEnd,
-      original_file_name_query: filterOptions.originalFilenameQuery,
+      original_filename_query: filterOptions.originalFilenameQuery,
       filter_image_statuses: filterOptions.imageStatusList,
       must_match_all_image_tags: filterOptions.mustMatchAllImageTags ? 1 : 0,
       must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
