@@ -1,0 +1,14 @@
+server {
+  listen       80;
+  listen  [::]:80;
+
+  location /api {
+    proxy_pass http://${GATEWAY_HOST}:${GATEWAY_PORT}/api;
+  }
+
+  location / {
+    try_files $uri $uri/ /index.html;
+    root /var/www;
+    expires 1y;
+  }
+}
