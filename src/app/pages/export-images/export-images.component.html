@@ -68,9 +68,9 @@
                         </nz-list-item-meta>
                         <ul nz-list-item-actions>
                             <nz-list-item-action>
-                                <a (click)="onDownloadExportClicked(exportRequest)">
-                                    <i nz-icon nzTheme="outline"
-                                        [nzType]="exportRequest.status === 2? 'download' : 'disabled'"></i>
+                                <a nz-typography [nzDisabled]="exportRequest.status !== 2"
+                                    (click)="onDownloadExportClicked(exportRequest)">
+                                    <i nz-icon nzTheme="outline" nzType="download"></i>
                                     {{ 'Download' | emptyStringOnMobile }}
                                 </a>
                             </nz-list-item-action>
