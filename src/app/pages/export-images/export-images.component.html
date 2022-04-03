@@ -34,9 +34,10 @@
             </app-image-grid>
 
             <div *ngIf="!isLoadingImageList" class="pagination">
-                <nz-pagination [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzTotal]="totalImageCount"
+                <nz-pagination [nzPageIndex]="imagePageIndex" [nzPageSize]="imagePageSize" [nzTotal]="totalImageCount"
                     nzShowQuickJumper nzShowSizeChanger [nzPageSizeOptions]="[12, 24, 60, 120, 240]"
-                    (nzPageIndexChange)="onPageIndexChanged($event)" (nzPageSizeChange)="onPageSizeChanged($event)">
+                    (nzPageIndexChange)="onImagePageIndexChanged($event)"
+                    (nzPageSizeChange)="onImagePageSizeChanged($event)">
                 </nz-pagination>
             </div>
         </nz-tab>

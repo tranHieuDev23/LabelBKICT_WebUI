@@ -16,6 +16,7 @@ import {
   UnauthorizedError,
   ImageListSortOption,
   ExportType,
+  Export,
 } from 'src/app/services/dataaccess/api';
 import { ExportManagementService } from 'src/app/services/module/export-management/export-management.service';
 import {
@@ -26,10 +27,13 @@ import { UserManagementService } from 'src/app/services/module/user-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
 
-const DEFAULT_PAGE_INDEX = 1;
-const DEFAULT_PAGE_SIZE = 12;
-const DEFAULT_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
+const DEFAULT_IMAGE_PAGE_INDEX = 1;
+const DEFAULT_IMAGE_PAGE_SIZE = 12;
+const DEFAULT_IMAGE_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
 const MAX_SEARCH_USER_RESULT = 10;
+
+const DEFAULT_EXPORT_PAGE_INDEX = 1;
+const DEFAULT_EXPORT_PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-export-images',
@@ -41,11 +45,11 @@ export class ExportImagesComponent implements OnInit {
     | NzDropdownMenuComponent
     | undefined;
 
-  public pageIndex: number = DEFAULT_PAGE_INDEX;
-  public pageSize: number = DEFAULT_PAGE_SIZE;
+  public imagePageIndex: number = DEFAULT_IMAGE_PAGE_INDEX;
+  public imagePageSize: number = DEFAULT_IMAGE_PAGE_SIZE;
   public filterOptions: ImageListFilterOptionsWithMetadata =
     this.getDefaultImageListFilterOptions();
-  public imageListSortOption = DEFAULT_SORT_OPTION;
+  public imageListSortOption = DEFAULT_IMAGE_SORT_OPTION;
 
   public uploadedByUserOptionList: User[] = [];
   public publishedByUserOptionList: User[] = [];
@@ -57,6 +61,10 @@ export class ExportImagesComponent implements OnInit {
   public imageList: Image[] = [];
   public imageTagList: ImageTag[][] = [];
   public isLoadingImageList: boolean = false;
+
+  public exportPageIndex: number = DEFAULT_EXPORT_PAGE_INDEX;
+  public exportPageSize: number = DEFAULT_EXPORT_PAGE_SIZE;
+  public exportList: Export[] = [];
 
   private getDefaultImageListFilterOptions(): ImageListFilterOptionsWithMetadata {
     const filterOptions = new ImageListFilterOptionsWithMetadata();
@@ -88,19 +96,19 @@ export class ExportImagesComponent implements OnInit {
 
   private getPaginationInfoFromQueryParams(queryParams: Params): void {
     if (queryParams['index'] !== undefined) {
-      this.pageIndex = +queryParams['index'];
+      this.imagePageIndex = +queryParams['index'];
     } else {
-      this.pageIndex = DEFAULT_PAGE_INDEX;
+      this.imagePageIndex = DEFAULT_IMAGE_PAGE_INDEX;
     }
     if (queryParams['size'] !== undefined) {
-      this.pageSize = +queryParams['size'];
+      this.imagePageSize = +queryParams['size'];
     } else {
-      this.pageSize = DEFAULT_PAGE_SIZE;
+      this.imagePageSize = DEFAULT_IMAGE_PAGE_SIZE;
     }
     if (queryParams['sort'] !== undefined) {
       this.imageListSortOption = +queryParams['sort'];
     } else {
-      this.imageListSortOption = DEFAULT_SORT_OPTION;
+      this.imageListSortOption = DEFAULT_IMAGE_SORT_OPTION;
     }
     if (queryParams['filter'] !== undefined) {
       this.filterOptions = this.jsonCompressService.decompress(
@@ -114,8 +122,8 @@ export class ExportImagesComponent implements OnInit {
   private async getImageListFromPaginationInfo(): Promise<void> {
     this.isLoadingImageList = true;
     const offset = this.paginationService.getPageOffset(
-      this.pageIndex,
-      this.pageSize
+      this.imagePageIndex,
+      this.imagePageSize
     );
     const filterOptions =
       this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
@@ -125,7 +133,7 @@ export class ExportImagesComponent implements OnInit {
       const { totalImageCount, imageList, imageTagList } =
         await this.imageListManagementService.getUserExportableImageList(
           offset,
-          this.pageSize,
+          this.imagePageSize,
           this.imageListSortOption,
           filterOptions
         );
@@ -207,8 +215,8 @@ export class ExportImagesComponent implements OnInit {
     filterOptions: ImageListFilterOptionsWithMetadata
   ): void {
     this.navigateToPage(
-      this.pageIndex,
-      this.pageSize,
+      this.imagePageIndex,
+      this.imagePageSize,
       this.imageListSortOption,
       filterOptions
     );
@@ -216,25 +224,25 @@ export class ExportImagesComponent implements OnInit {
 
   public onImageListSortOptionUploaded(sortOption: ImageListSortOption): void {
     this.navigateToPage(
-      this.pageIndex,
-      this.pageSize,
+      this.imagePageIndex,
+      this.imagePageSize,
       sortOption,
       this.filterOptions
     );
   }
 
-  public onPageIndexChanged(newPageIndex: number): void {
+  public onImagePageIndexChanged(newPageIndex: number): void {
     this.navigateToPage(
       newPageIndex,
-      this.pageSize,
+      this.imagePageSize,
       this.imageListSortOption,
       this.filterOptions
     );
   }
 
-  public onPageSizeChanged(newPageSize: number): void {
+  public onImagePageSizeChanged(newPageSize: number): void {
     this.navigateToPage(
-      this.pageIndex,
+      this.imagePageIndex,
       newPageSize,
       this.imageListSortOption,
       this.filterOptions
@@ -248,13 +256,13 @@ export class ExportImagesComponent implements OnInit {
     filterOptions: ImageListFilterOptionsWithMetadata
   ) {
     const queryParams: any = {};
-    if (pageIndex !== DEFAULT_PAGE_INDEX) {
+    if (pageIndex !== DEFAULT_IMAGE_PAGE_INDEX) {
       queryParams['index'] = pageIndex;
     }
-    if (pageSize !== DEFAULT_PAGE_SIZE) {
+    if (pageSize !== DEFAULT_IMAGE_PAGE_SIZE) {
       queryParams['size'] = pageSize;
     }
-    if (sortOption !== DEFAULT_SORT_OPTION) {
+    if (sortOption !== DEFAULT_IMAGE_SORT_OPTION) {
       queryParams['sort'] = sortOption;
     }
     queryParams['filter'] = this.jsonCompressService.compress(filterOptions);
