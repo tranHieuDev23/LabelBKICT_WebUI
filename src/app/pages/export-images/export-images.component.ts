@@ -1,22 +1,22 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
+import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import {
-  ImageListFilterOptionsWithMetadata,
-  ImageFilterOptionsSelectorConfig,
-} from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
+import { ImageListFilterOptionsWithMetadata } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
 import {
   User,
   Image,
   ImageTag,
-  ImageStatus,
   InvalidImageListFilterOptionsError,
   UnauthenticatedError,
   UnauthorizedError,
   ImageListSortOption,
   ExportType,
   Export,
+  InvalidExportListArgument,
+  ExportNotFoundError,
+  ExportStatus,
 } from 'src/app/services/dataaccess/api';
 import { ExportManagementService } from 'src/app/services/module/export-management/export-management.service';
 import {
@@ -64,7 +64,9 @@ export class ExportImagesComponent implements OnInit {
 
   public exportPageIndex: number = DEFAULT_EXPORT_PAGE_INDEX;
   public exportPageSize: number = DEFAULT_EXPORT_PAGE_SIZE;
+  public totalExportCount: number = 0;
   public exportList: Export[] = [];
+  public isLoadingExportList: boolean = false;
 
   private getDefaultImageListFilterOptions(): ImageListFilterOptionsWithMetadata {
     const filterOptions = new ImageListFilterOptionsWithMetadata();
@@ -80,7 +82,8 @@ export class ExportImagesComponent implements OnInit {
     private readonly jsonCompressService: JSONCompressService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
-    private readonly notificationService: NzNotificationService
+    private readonly notificationService: NzNotificationService,
+    private readonly modalService: NzModalService
   ) {}
 
   ngOnInit(): void {
@@ -314,5 +317,117 @@ export class ExportImagesComponent implements OnInit {
       'Export requested successfully',
       'Check the status of your export in <b>My exports</b> tab'
     );
+  }
+
+  public async onMyExportsTabSelected(): Promise<void> {
+    await this.getExportListFromPaginationInfo();
+  }
+
+  public async onReloadExportListClicked(): Promise<void> {
+    await this.getExportListFromPaginationInfo();
+  }
+
+  public async onExportPageIndexChanged(newPageIndex: number): Promise<void> {
+    this.exportPageIndex = newPageIndex;
+    await this.getExportListFromPaginationInfo();
+  }
+
+  public async onExportPageSizeChanged(newPageSize: number): Promise<void> {
+    this.exportPageIndex = newPageSize;
+    await this.getExportListFromPaginationInfo();
+  }
+
+  private async getExportListFromPaginationInfo(): Promise<void> {
+    this.isLoadingExportList = true;
+    this.totalImageCount = 0;
+    this.exportList = [];
+    const offset = this.paginationService.getPageOffset(
+      this.exportPageIndex,
+      this.exportPageSize
+    );
+    try {
+      const { totalExportCount, exportList } =
+        await this.exportManagementService.getExportList(
+          offset,
+          this.imagePageSize
+        );
+      this.totalExportCount = totalExportCount;
+      this.exportList = exportList;
+    } catch (e) {
+      if (e instanceof InvalidExportListArgument) {
+        this.notificationService.error(
+          'Failed to get export list',
+          'Invalid export list arguments'
+        );
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to get export list',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to get export list',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else {
+        this.notificationService.error(
+          'Failed to get export list',
+          'Unknown error'
+        );
+      }
+      return;
+    } finally {
+      this.isLoadingExportList = false;
+    }
+  }
+
+  public async onDownloadExportClicked(exportRequest: Export): Promise<void> {
+    if (exportRequest.status !== ExportStatus.DONE) {
+      return;
+    }
+    await this.exportManagementService.getExportFile(exportRequest.id);
+  }
+
+  public onDeleteExportClicked(exportRequest: Export): void {
+    this.modalService.warning({
+      nzTitle: 'Delete export',
+      nzContent: 'Are you sure? This action <b>CANNOT</b> be undone.',
+      nzCancelText: 'Cancel',
+      nzOnOk: async () => {
+        try {
+          await this.exportManagementService.deleteExport(exportRequest.id);
+        } catch (e) {
+          if (e instanceof UnauthenticatedError) {
+            this.notificationService.error(
+              'Failed to delete export',
+              'User is not logged in'
+            );
+            this.router.navigateByUrl('/login');
+          } else if (e instanceof UnauthorizedError) {
+            this.notificationService.error(
+              'Failed to delete export',
+              'User does not have the required permission'
+            );
+            this.router.navigateByUrl('/welcome');
+          } else if (e instanceof ExportNotFoundError) {
+            this.notificationService.error(
+              'Failed to delete export',
+              'Export not found'
+            );
+            await this.getExportListFromPaginationInfo();
+          } else {
+            this.notificationService.error(
+              'Failed to delete export',
+              'Unknown error'
+            );
+          }
+          return;
+        }
+        this.notificationService.success('Deleted export successfully', '');
+        await this.getExportListFromPaginationInfo();
+      },
+    });
   }
 }

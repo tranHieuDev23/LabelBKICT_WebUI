@@ -22,8 +22,8 @@ export class ExportManagementService {
   public async getExportList(
     offset: number,
     limit: number
-  ): Promise<{ totalImageCount: number; exportList: Export[] }> {
-    return this.getExportList(offset, limit);
+  ): Promise<{ totalExportCount: number; exportList: Export[] }> {
+    return this.exportsService.getExportList(offset, limit);
   }
 
   public async deleteExport(id: number): Promise<void> {

@@ -12,6 +12,9 @@ import { ImageGridModule } from 'src/app/components/image-grid/image-grid.module
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzListModule } from 'ng-zorro-antd/list';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { EmptyStringOnMobileModule } from 'src/app/pipes/empty-string-on-mobile/empty-string-on-mobile.module';
 
 @NgModule({
   declarations: [ExportImagesComponent],
@@ -27,6 +30,9 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
     NzTabsModule,
     NzButtonModule,
     NzIconModule,
+    NzListModule,
+    NzTagModule,
+    EmptyStringOnMobileModule,
   ],
   exports: [ExportImagesComponent],
 })

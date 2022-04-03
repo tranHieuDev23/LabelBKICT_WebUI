@@ -74,16 +74,16 @@ export class ExportsService {
   public async getExportList(
     offset: number,
     limit: number
-  ): Promise<{ totalImageCount: number; exportList: Export[] }> {
+  ): Promise<{ totalExportCount: number; exportList: Export[] }> {
     try {
       const response = await this.axios.get('/api/exports', {
         params: { offset, limit },
       });
-      const totalImageCount = response.data.total_image_count || 0;
+      const totalExportCount = response.data.total_export_count || 0;
       const exportList = response.data.export_list.map((exportJSON: any) =>
         Export.fromJSON(exportJSON)
       );
-      return { totalImageCount, exportList };
+      return { totalExportCount, exportList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

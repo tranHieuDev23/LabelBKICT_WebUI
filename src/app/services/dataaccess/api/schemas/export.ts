@@ -25,12 +25,12 @@ export class Export {
   public static fromJSON(exportJSON: any): Export {
     return new Export(
       exportJSON.id || 0,
-      User.fromJSON(exportJSON.requestedByUser),
+      User.fromJSON(exportJSON.requested_by_user),
       exportJSON.type || ExportType.DATASET,
-      exportJSON.requestTime || 0,
+      exportJSON.request_time || 0,
       exportJSON.status || ExportStatus.REQUESTED,
-      exportJSON.expireTime || 0,
-      exportJSON.exportedFileFilename || ''
+      exportJSON.expire_time || 0,
+      exportJSON.exported_file_filename || ''
     );
   }
 }
