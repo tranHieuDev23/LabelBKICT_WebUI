@@ -14,7 +14,16 @@
                 (verifiedByUserSearch)="onVerifiedByUserSearch($event)"
                 (filterOptionsUpdated)="onImageListFilterOptionsUpdated($event)"
                 (sortOptionUpdated)="onImageListSortOptionUploaded($event)">
-            </app-image-filter-options-selector>
+            </app-image-filter-options-selector><br />
+
+            <button nz-button class="action-button" [disabled]="imageList.length === 0"
+                (click)="onRequestDatasetZipClicked()">
+                <i nz-icon nzType="export" nzTheme="outline"></i> Request Dataset Zip file
+            </button>
+            <button nz-button class="action-button" [disabled]="imageList.length === 0"
+                (click)="onRequestDatasetExcelClicked()">
+                <i nz-icon nzType="file-excel" nzTheme="outline"></i> Request Dataset Information Excel file
+            </button>
 
             <p *ngIf="fromImageIndex !== 0" nz-typography>
                 Showing image {{ fromImageIndex }} - {{ toImageIndex }} of {{ totalImageCount }}
@@ -31,11 +40,8 @@
                 </nz-pagination>
             </div>
         </nz-tab>
-        <nz-tab nzTitle="Download export">
+        <nz-tab nzTitle="My exports">
             Content of Tab Pane 2
-        </nz-tab>
-        <nz-tab nzTitle="Requests in queue">
-            Content of Tab Pane 3
         </nz-tab>
     </nz-tabset>
 </div>

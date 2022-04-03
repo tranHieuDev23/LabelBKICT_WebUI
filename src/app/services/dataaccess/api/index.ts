@@ -9,6 +9,7 @@ export * from './image-tags.service';
 export * from './images.service';
 export * from './image-list.service';
 export * from './regions.service';
+export * from './exports.service';
 export {
   UploadImageInput,
   UploadImageBatchMessage,

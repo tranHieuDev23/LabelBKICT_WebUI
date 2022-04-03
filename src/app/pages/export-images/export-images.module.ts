@@ -10,6 +10,8 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { ImageFilterOptionsSelectorModule } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.module';
 import { ImageGridModule } from 'src/app/components/image-grid/image-grid.module';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 @NgModule({
   declarations: [ExportImagesComponent],
@@ -23,6 +25,8 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
     NzDropDownModule,
     NzModalModule,
     NzTabsModule,
+    NzButtonModule,
+    NzIconModule,
   ],
   exports: [ExportImagesComponent],
 })

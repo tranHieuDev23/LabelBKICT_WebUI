@@ -12,6 +12,12 @@ export class UnauthorizedError extends Error {
   }
 }
 
+export class InvalidImageListFilterOptionsError extends Error {
+  constructor() {
+    super('Invalid image list filter options');
+  }
+}
+
 export class UnknownAPIError extends Error {
   constructor(public readonly error: Error) {
     super(`Error when communicating with server: ${error.message}`);

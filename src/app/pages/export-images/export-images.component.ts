@@ -15,7 +15,9 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
   ImageListSortOption,
+  ExportType,
 } from 'src/app/services/dataaccess/api';
+import { ExportManagementService } from 'src/app/services/module/export-management/export-management.service';
 import {
   ImageListManagementService,
   FilterOptionsService,
@@ -63,6 +65,7 @@ export class ExportImagesComponent implements OnInit {
 
   constructor(
     private readonly imageListManagementService: ImageListManagementService,
+    private readonly exportManagementService: ExportManagementService,
     private readonly filterOptionsService: FilterOptionsService,
     private readonly userManagementService: UserManagementService,
     private readonly paginationService: PaginationService,
@@ -256,5 +259,52 @@ export class ExportImagesComponent implements OnInit {
     }
     queryParams['filter'] = this.jsonCompressService.compress(filterOptions);
     this.router.navigate(['/export-images'], { queryParams });
+  }
+
+  public async onRequestDatasetZipClicked(): Promise<void> {
+    await this.requestExport(ExportType.DATASET);
+  }
+
+  public async onRequestDatasetExcelClicked(): Promise<void> {
+    await this.requestExport(ExportType.EXCEL);
+  }
+
+  private async requestExport(type: ExportType): Promise<void> {
+    const filterOptions =
+      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
+        this.filterOptions
+      );
+    try {
+      this.exportManagementService.createExport(type, filterOptions);
+    } catch (e) {
+      if (e instanceof InvalidImageListFilterOptionsError) {
+        this.notificationService.error(
+          'Failed to request export',
+          'Invalid image filter options'
+        );
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to request export',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to request export',
+          'User does not have the required permission'
+        );
+        this.router.navigateByUrl('/welcome');
+      } else {
+        this.notificationService.error(
+          'Failed to request export',
+          'Unknown error'
+        );
+      }
+      return;
+    }
+    this.notificationService.success(
+      'Export requested successfully',
+      'Check the status of your export in <b>My exports</b> tab'
+    );
   }
 }

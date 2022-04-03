@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
 import qs from 'qs';
 import {
+  InvalidImageListFilterOptionsError,
   UnauthenticatedError,
   UnauthorizedError,
   UnknownAPIError,
@@ -24,12 +25,6 @@ export class TooManyImagesError extends Error {
 export class OneOrMoreImagesNotFoundError extends Error {
   constructor() {
     super('One or more images cannot be found');
-  }
-}
-
-export class InvalidImageListFilterOptionsError extends Error {
-  constructor() {
-    super('Invalid image list filter options');
   }
 }
 
