@@ -286,7 +286,7 @@ export class ExportImagesComponent implements OnInit {
         this.filterOptions
       );
     try {
-      this.exportManagementService.createExport(type, filterOptions);
+      await this.exportManagementService.createExport(type, filterOptions);
     } catch (e) {
       if (e instanceof InvalidImageListFilterOptionsError) {
         this.notificationService.error(
