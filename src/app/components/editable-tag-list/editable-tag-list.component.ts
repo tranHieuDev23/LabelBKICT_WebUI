@@ -105,10 +105,12 @@ export class EditableTagListComponent {
 
   private updateAllowedImageTagGroupIndexList(): void {
     this.allowedImageTagGroupIndexList = [];
-    this.allImageTagGroupList.forEach((_, index) => {
-      for (const imageTag of this.allImageTagList[index] || []) {
-        if (this.isImageTagInImageTagList(imageTag)) {
-          return;
+    this.allImageTagGroupList.forEach((imageTagGroup, index) => {
+      if (imageTagGroup.isSingleValue) {
+        for (const imageTag of this.allImageTagList[index] || []) {
+          if (this.isImageTagInImageTagList(imageTag)) {
+            return;
+          }
         }
       }
       this.allowedImageTagGroupIndexList.push(index);
