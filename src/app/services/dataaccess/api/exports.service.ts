@@ -53,7 +53,7 @@ export class ExportsService {
           must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels,
         },
       });
-      return Export.fromJSON(response.data);
+      return Export.fromJSON(response.data.export);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
