@@ -22,6 +22,7 @@ import {
 } from 'src/app/components/region-selector/region-selector-events';
 import { RegionSelectorComponent } from 'src/app/components/region-selector/region-selector.component';
 import {
+  DetectionTaskAlreadyExistsError,
   Image,
   ImageAlreadyHasImageTagError,
   ImageCannotBeAssignedWithImageTagError,
@@ -779,7 +780,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     this.isImageSettingsModalVisible = false;
   }
 
-  public async onImageSettingsModalCloseImageTypeClicked(
+  public async onImageSettingsModalImageTypeClicked(
     imageType: ImageType
   ): Promise<void> {
     if (!this.image) {
@@ -799,7 +800,25 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     await this.loadImage(this.image.id);
   }
 
-  public async onImageSettingsModalCloseImageTypeClickedDeleteImageClicked(): Promise<void> {
+  public async onImageSettingsModalRequestDetectionClicked(): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+    this.isImageSettingsModalVisible = false;
+    try {
+      await this.imageManagementService.createImageDetectionTask(this.image.id);
+    } catch (e) {
+      console.log(e);
+      this.handleError('Failed to request for region detection', e);
+      return;
+    }
+    this.notificationService.success(
+      'Requested for region detection successfully',
+      ''
+    );
+  }
+
+  public async onImageSettingsModalDeleteImageClicked(): Promise<void> {
     if (!this.image) {
       return;
     }
@@ -927,6 +946,13 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       this.notificationService.error(
         notificationTitle,
         'Region cannot be found'
+      );
+      return;
+    }
+    if (e instanceof DetectionTaskAlreadyExistsError) {
+      this.notificationService.error(
+        notificationTitle,
+        'A detection task has already been created for this image'
       );
       return;
     }

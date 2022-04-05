@@ -63,6 +63,12 @@ export class ImageDoesNotHaveImageTagError extends Error {
   }
 }
 
+export class DetectionTaskAlreadyExistsError extends Error {
+  constructor() {
+    super('Detection task already exists');
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -304,6 +310,28 @@ export class ImagesService {
           throw new ImageOrImageTagNotFoundError();
         case HttpStatusCode.Conflict:
           throw new ImageDoesNotHaveImageTagError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async createImageDetectionTask(id: number): Promise<void> {
+    try {
+      await this.axios.post(`/api/images/${id}/detection-task`);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new DetectionTaskAlreadyExistsError();
         default:
           throw new UnknownAPIError(e);
       }

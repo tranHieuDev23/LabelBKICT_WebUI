@@ -121,4 +121,8 @@ export class ImageManagementService {
   ): Promise<void> {
     await this.imagesService.removeImageTagFromImage(id, imageTagID);
   }
+
+  public async createImageDetectionTask(id: number): Promise<void> {
+    await this.imagesService.createImageDetectionTask(id);
+  }
 }

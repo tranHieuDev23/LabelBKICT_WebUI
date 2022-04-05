@@ -171,19 +171,27 @@
         <div>
             <nz-select class="image-type-select" nzPlaceHolder="Select image type"
                 [(ngModel)]="imageSettingsModalSelectedImageType"
-                (ngModelChange)="onImageSettingsModalCloseImageTypeClicked($event)">
+                (ngModelChange)="onImageSettingsModalImageTypeClicked($event)">
                 <nz-option *ngFor="let imageType of imageSettingsModalImageTypeList" [nzValue]="imageType"
                     [nzLabel]="imageType.displayName"
                     [nzDisabled]="image?.imageType && imageType.id === image?.imageType?.id">
                 </nz-option>
             </nz-select>
         </div>
+        <span *ngIf="image?.imageType?.hasPredictiveModel">
+            <h4 nz-typography style="margin-top: 8px;">Request for region detection</h4>
+            <p nz-typography>
+                The image will be sent to AI model for automatic region detection.
+            </p>
+            <button nz-button nzType="primary" (click)="onImageSettingsModalRequestDetectionClicked()">
+                <i nz-icon nzType="reload"></i> Request
+            </button>
+        </span>
         <h4 nz-typography style="margin-top: 8px;">Delete this image</h4>
         <p nz-typography>
             This will also delete all regions extracted from it.
         </p>
-        <button nz-button nzType="primary" nzDanger
-            (click)="onImageSettingsModalCloseImageTypeClickedDeleteImageClicked()">
+        <button nz-button nzType="primary" nzDanger (click)="onImageSettingsModalDeleteImageClicked()">
             <i nz-icon nzType="delete"></i> Delete
         </button>
     </div>
