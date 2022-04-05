@@ -21,6 +21,7 @@
     "@angular/router": "~13.1.0",
     "@turf/turf": "^6.5.0",
     "axios": "^0.26.0",
+    "html2canvas": "^1.4.1",
     "lz-string": "^1.4.4",
     "ng-zorro-antd": "^13.1.1",
     "ngx-color": "^7.3.3",

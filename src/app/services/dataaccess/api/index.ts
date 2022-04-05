@@ -10,6 +10,7 @@ export * from './images.service';
 export * from './image-list.service';
 export * from './regions.service';
 export * from './exports.service';
+export * from './pinned-pages.service';
 export {
   UploadImageInput,
   UploadImageBatchMessage,
