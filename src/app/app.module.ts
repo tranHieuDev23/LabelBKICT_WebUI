@@ -19,6 +19,10 @@ import { getAxiosInstance } from './services/dataaccess/api/axios';
 import { UserLoggedInGuard } from './services/utils/route-guards/logged-in-guard';
 import { UserLoggedOutGuard } from './services/utils/route-guards/logged-out-guard';
 import { DragToSelectModule } from 'ngx-drag-to-select';
+import { NzPopoverModule } from 'ng-zorro-antd/popover';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzNotificationModule } from 'ng-zorro-antd/notification';
 
 registerLocaleData(en);
 
@@ -36,6 +40,11 @@ registerLocaleData(en);
     NzBackTopModule,
     EmptyStringOnMobileModule,
     DragToSelectModule.forRoot(),
+    NzPopoverModule,
+    NzInputModule,
+    FormsModule,
+    NzButtonModule,
+    NzNotificationModule,
   ],
   providers: [
     UserLoggedInGuard,

@@ -14,6 +14,12 @@
           </li>
         </ul>
       </li>
+
+      <li *ngIf="isUserLoggedIn" nz-menu-item class="header-item header-pin" nz-popover
+        [nzPopoverContent]="pinPageContent">
+        <i nz-icon nzType="pushpin" nzTheme="outline"></i>
+        {{ "Pin this page" | emptyStringOnMobile }}
+      </li>
     </ul>
   </nz-header>
 
@@ -31,3 +37,15 @@
   </nz-layout>
 </nz-layout>
 <nz-back-top></nz-back-top>
+
+<ng-template #pinPageContent>
+  <p>Pin this page and come back to continue your work later</p>
+  <p>
+    <input nz-input placeholder="Description" [disabled]="isPinningPage" [(ngModel)]="pinPageDescription"
+      (keydown.enter)="onPinThisPageClicked()" />
+  </p>
+  <button nz-button type="button" nzType="primary" [disabled]="isPinningPage" [nzLoading]="isPinningPage"
+    (click)="onPinThisPageClicked()">
+    <i nz-icon nzType="pushpin" nzTheme="outline"></i> Pin this page
+  </button>
+</ng-template>

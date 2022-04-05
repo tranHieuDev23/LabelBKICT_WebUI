@@ -1,6 +1,11 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { UserPermission } from './services/dataaccess/api';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
+import {
+  InvalidPinnedPageInformationError,
+  UnauthenticatedError,
+} from './services/dataaccess/api';
+import { PinnedPageManagementService } from './services/module/pinned-page-management/pinned-page-management.service';
 import {
   SessionManagementService,
   SessionUserInfo,
@@ -28,24 +33,38 @@ export class AppMenuItem {
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  public appTitle: string = 'Endoscopy Labeler';
+  public appTitle = 'Endoscopy Labeler';
+  public isUserLoggedIn = false;
   public menuItemList: AppMenuItem[] = [];
+
+  public isPinningPage = false;
+  public pinPageDescription = '';
 
   constructor(
     private readonly sessionManagementService: SessionManagementService,
+    private readonly pinnedPageManagementService: PinnedPageManagementService,
+    private readonly notificationService: NzNotificationService,
     private readonly router: Router
   ) {
     this.sessionManagementService.subscribeForSessionUserInfo(
-      (sessionUserInfo) => this.updateMenuItemList(sessionUserInfo)
+      (sessionUserInfo) => this.onSessionUserInfoChanged(sessionUserInfo)
     );
   }
 
-  private updateMenuItemList(sessionUserInfo: SessionUserInfo | null): void {
-    this.menuItemList = [];
+  private onSessionUserInfoChanged(
+    sessionUserInfo: SessionUserInfo | null
+  ): void {
     if (sessionUserInfo === null) {
-      return;
+      this.isUserLoggedIn = false;
+      this.menuItemList = [];
+    } else {
+      this.isUserLoggedIn = true;
+      this.updateMenuItemList(sessionUserInfo);
     }
+  }
 
+  private updateMenuItemList(sessionUserInfo: SessionUserInfo): void {
+    this.menuItemList = [];
     // Label menu
     const labelSubmenuList: AppSubmenuItem[] = [];
     if (
@@ -171,7 +190,36 @@ export class AppComponent {
   }
 
   public async onLogOutClicked(): Promise<void> {
+    if (!this.isUserLoggedIn) {
+      return;
+    }
     await this.sessionManagementService.logout();
     this.router.navigateByUrl('/login');
+  }
+
+  public async onPinThisPageClicked(): Promise<void> {
+    this.isPinningPage = true;
+    try {
+      await this.pinnedPageManagementService.createPinnedPage(
+        this.router.url,
+        this.pinPageDescription
+      );
+      this.notificationService.success('Pinned page successfully', '');
+      this.pinPageDescription = '';
+    } catch (e) {
+      if (e instanceof InvalidPinnedPageInformationError) {
+        this.notificationService.error('Failed to pin page', 'Invalid URL');
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error(
+          'Failed to pin page',
+          'User is not logged in'
+        );
+        this.router.navigateByUrl('/login');
+      } else {
+        this.notificationService.error('Failed to pin page', 'Unknown error');
+      }
+    } finally {
+      this.isPinningPage = false;
+    }
   }
 }
