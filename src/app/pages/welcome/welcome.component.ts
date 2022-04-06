@@ -108,32 +108,6 @@ export class WelcomeComponent implements OnInit {
       ])
     );
 
-    // Image settings
-    if (this.isImageSettingsMenuItemAvailable()) {
-      const submenuItemList: WelcomeSubmenuItem[] = [];
-      if (
-        this.sessionManagementService.checkSessionUserHasPermission(
-          'image_types.manage'
-        )
-      ) {
-        submenuItemList.push(
-          new WelcomeSubmenuItem('Manage image types', '/manage-image-types')
-        );
-      }
-      if (
-        this.sessionManagementService.checkSessionUserHasPermission(
-          'image_tags.manage'
-        )
-      ) {
-        submenuItemList.push(
-          new WelcomeSubmenuItem('Manage image tags', '/manage-image-tags')
-        );
-      }
-      this.menuItemList.push(
-        new WelcomeMenuItem('Image settings', 'picture', submenuItemList)
-      );
-    }
-
     // User settings
     if (this.isUserSettingsMenuItemAvailable()) {
       const submenuItemList: WelcomeSubmenuItem[] = [];
@@ -169,6 +143,32 @@ export class WelcomeComponent implements OnInit {
       }
       this.menuItemList.push(
         new WelcomeMenuItem('User settings', 'user', submenuItemList)
+      );
+    }
+
+    // Image settings
+    if (this.isImageSettingsMenuItemAvailable()) {
+      const submenuItemList: WelcomeSubmenuItem[] = [];
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'image_types.manage'
+        )
+      ) {
+        submenuItemList.push(
+          new WelcomeSubmenuItem('Manage image types', '/manage-image-types')
+        );
+      }
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'image_tags.manage'
+        )
+      ) {
+        submenuItemList.push(
+          new WelcomeSubmenuItem('Manage image tags', '/manage-image-tags')
+        );
+      }
+      this.menuItemList.push(
+        new WelcomeMenuItem('Image settings', 'picture', submenuItemList)
       );
     }
   }
