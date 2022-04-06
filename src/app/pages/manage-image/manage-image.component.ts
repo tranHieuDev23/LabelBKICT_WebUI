@@ -25,6 +25,7 @@ import {
   DetectionTaskAlreadyExistsError,
   Image,
   ImageAlreadyHasImageTagError,
+  ImageBookmark,
   ImageCannotBeAssignedWithImageTagError,
   ImageDoesNotHaveImageTagError,
   ImageListFilterOptions,
@@ -47,6 +48,7 @@ import {
   RegionOperationLog,
   UnauthenticatedError,
   UnauthorizedError,
+  UserHasNotBookmarkedImageError,
 } from 'src/app/services/dataaccess/api';
 import { ImageListManagementService } from 'src/app/services/module/image-list-management';
 import { ImageManagementService } from 'src/app/services/module/image-management';
@@ -68,6 +70,8 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   public regionSelector: RegionSelectorComponent | undefined;
   @ViewChild('descriptionEditableText', { static: false })
   public descriptionEditableText: EditableTextComponent | undefined;
+  @ViewChild('imageBookmarkEditableText', { static: false })
+  public imageBookmarkEditableText: EditableTextComponent | undefined;
   @ViewChild('contextMenu', { static: false })
   public contextMenu: NzDropdownMenuComponent | undefined;
 
@@ -79,12 +83,16 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   public imageTagList: ImageTag[] = [];
   public regionList: Region[] = [];
   public regionLabelList: RegionLabel[] = [];
+  public imageBookmark: ImageBookmark | undefined;
   public isImageEditable = true;
 
   public position: number | undefined;
   public totalImageCount: number | undefined;
   public prevImageID: number | undefined;
   public nextImageID: number | undefined;
+
+  public isCreatingImageBookmark = false;
+  public isDeletingImageBookmark = false;
 
   public isShowingRegionSnapshot = false;
   public regionSnapshotList: Region[] = [];
@@ -192,6 +200,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         this.imageListSortOption,
         this.filterOptions
       ),
+      this.loadImageBookmark(this.imageID),
     ]);
   }
 
@@ -227,7 +236,6 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         this.allowedImageTagGroupListForImageType = [];
         this.allowedImageTagListForImageType = [];
       }
-
       window.scrollTo(0, 0);
     } catch (e) {
       this.handleError('Failed to load image', e);
@@ -257,6 +265,20 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       this.nextImageID = nextImageID;
     } catch (e) {
       this.handleError('Failed to load image position in list', e);
+    }
+  }
+
+  private async loadImageBookmark(imageID: number): Promise<void> {
+    try {
+      this.imageBookmark = await this.imageManagementService.getImageBookmark(
+        imageID
+      );
+    } catch (e) {
+      if (e instanceof UserHasNotBookmarkedImageError) {
+        this.imageBookmark = undefined;
+      } else {
+        throw e;
+      }
     }
   }
 
@@ -427,6 +449,53 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       'Updated image description successfully',
       ''
     );
+  }
+
+  public async onBookmarkImageClicked(): Promise<void> {
+    if (!this.imageID) {
+      return;
+    }
+    try {
+      this.imageBookmark =
+        await this.imageManagementService.createImageBookmark(this.imageID, '');
+    } catch (e) {
+      this.handleError('Failed to bookmark image', e);
+      return;
+    }
+    this.notificationService.success('Bookmarked image successfully', '');
+  }
+
+  public async onImageBookmarkDescriptionEdited(
+    newDescription: string
+  ): Promise<void> {
+    if (!this.imageID) {
+      return;
+    }
+    try {
+      this.imageBookmark =
+        await this.imageManagementService.updateImageBookmark(
+          this.imageID,
+          newDescription
+        );
+    } catch (e) {
+      this.handleError('Failed to update image bookmark', e);
+      return;
+    }
+    this.notificationService.success('Updated image bookmark successfully', '');
+  }
+
+  public async onDeleteBookmarkClicked(): Promise<void> {
+    if (!this.imageID) {
+      return;
+    }
+    try {
+      await this.imageManagementService.deleteImageBookmark(this.imageID);
+    } catch (e) {
+      this.handleError('Failed to delete image bookmark', e);
+      return;
+    }
+    this.notificationService.success('Deleted image bookmark successfully', '');
+    this.imageBookmark = undefined;
   }
 
   public async onShowRegionSnapshotAtPublishTimeClicked(): Promise<void> {
