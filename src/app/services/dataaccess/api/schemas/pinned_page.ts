@@ -10,10 +10,10 @@ export class PinnedPage {
   public static fromJSON(pinnedPageJSON: any): PinnedPage {
     return new PinnedPage(
       pinnedPageJSON.id || 0,
-      pinnedPageJSON.pinTime || 0,
+      pinnedPageJSON.pin_time || 0,
       pinnedPageJSON.url || '',
       pinnedPageJSON.description || '',
-      pinnedPageJSON.screenshotURL || ''
+      pinnedPageJSON.screenshot_url || ''
     );
   }
 }

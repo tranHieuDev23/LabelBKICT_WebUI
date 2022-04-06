@@ -112,6 +112,14 @@ const routes: Routes = [
       ),
     canActivate: [UserLoggedInGuard],
   },
+  {
+    path: 'pinned-pages',
+    loadChildren: () =>
+      import('./pages/pinned-pages/pinned-pages.module').then(
+        (m) => m.PinnedPagesModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
   { path: '**', pathMatch: 'full', redirectTo: '/welcome' },
 ];
 

@@ -119,6 +119,9 @@ export class AppComponent {
     // Settings menu
     const settingsSubmenuList: AppSubmenuItem[] = [];
     settingsSubmenuList.push(
+      new AppSubmenuItem('My pinned pages', '/pinned-pages', () => {})
+    );
+    settingsSubmenuList.push(
       new AppSubmenuItem('My profile', '/my-profile', () => {})
     );
     if (

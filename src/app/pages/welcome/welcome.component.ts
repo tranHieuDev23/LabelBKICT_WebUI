@@ -101,6 +101,13 @@ export class WelcomeComponent implements OnInit {
       );
     }
 
+    // Pinned pages
+    this.menuItemList.push(
+      new WelcomeMenuItem('Pinned pages', 'pushpin', [
+        new WelcomeSubmenuItem('My pinned pages', '/pinned-pages'),
+      ])
+    );
+
     // Image settings
     if (this.isImageSettingsMenuItemAvailable()) {
       const submenuItemList: WelcomeSubmenuItem[] = [];
