@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   Image,
+  ImageBookmark,
   ImagesService,
   ImageStatus,
   ImageTag,
@@ -124,5 +125,30 @@ export class ImageManagementService {
 
   public async createImageDetectionTask(id: number): Promise<void> {
     await this.imagesService.createImageDetectionTask(id);
+  }
+
+  public async createImageBookmark(
+    id: number,
+    description: string
+  ): Promise<ImageBookmark> {
+    return await this.imagesService.createImageBookmark(id, description.trim());
+  }
+
+  public async getImageBookmark(id: number): Promise<ImageBookmark> {
+    return await this.imagesService.getImageBookmark(id);
+  }
+
+  public async updateImageBookmark(
+    id: number,
+    description: string | undefined
+  ): Promise<ImageBookmark> {
+    return await this.imagesService.updateImageBookmark(
+      id,
+      description?.trim()
+    );
+  }
+
+  public async deleteImageBookmark(id: number): Promise<void> {
+    return await this.imagesService.deleteImageBookmark(id);
   }
 }

@@ -13,7 +13,7 @@ import {
   UploadImageBatchMessageType,
   UploadImageInput,
 } from './images.helper';
-import { Image, ImageStatus, ImageTag, Region } from './schemas';
+import { Image, ImageBookmark, ImageStatus, ImageTag, Region } from './schemas';
 
 export class ImageNotFoundError extends Error {
   constructor() {
@@ -66,6 +66,12 @@ export class ImageDoesNotHaveImageTagError extends Error {
 export class DetectionTaskAlreadyExistsError extends Error {
   constructor() {
     super('Detection task already exists');
+  }
+}
+
+export class UserHasNotBookmarkedImageError extends Error {
+  constructor() {
+    super('User has not bookmarked the image');
   }
 }
 
@@ -332,6 +338,105 @@ export class ImagesService {
           throw new ImageNotFoundError();
         case HttpStatusCode.Conflict:
           throw new DetectionTaskAlreadyExistsError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async createImageBookmark(
+    id: number,
+    description: string
+  ): Promise<ImageBookmark> {
+    try {
+      const response = await this.axios.post(`/api/images/${id}/bookmark`, {
+        description,
+      });
+      return ImageBookmark.fromJSON(response.data.image_bookmark);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getImageBookmark(id: number): Promise<ImageBookmark> {
+    try {
+      const response = await this.axios.get(`/api/images/${id}/bookmark`);
+      return ImageBookmark.fromJSON(response.data.image_bookmark);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserHasNotBookmarkedImageError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async updateImageBookmark(
+    id: number,
+    description: string | undefined
+  ): Promise<ImageBookmark> {
+    try {
+      const response = await this.axios.patch(`/api/images/${id}/bookmark`, {
+        description,
+      });
+      return ImageBookmark.fromJSON(response.data.image_bookmark);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserHasNotBookmarkedImageError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async deleteImageBookmark(id: number): Promise<void> {
+    try {
+      await this.axios.delete(`/api/images/${id}/bookmark`);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserHasNotBookmarkedImageError();
         default:
           throw new UnknownAPIError(e);
       }
