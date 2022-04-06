@@ -320,9 +320,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       case 'KeyP':
         if (event.ctrlKey && event.shiftKey) {
           event.preventDefault();
-          if (this.isImagePublishable()) {
-            this.onPublishImageClicked();
-          }
+          this.onPublishImageClicked();
         }
         break;
     }
@@ -340,19 +338,6 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
 
   public getImageStatusString(status: ImageStatus): string {
     return this.imageStatusService.getImageStatusString(status);
-  }
-
-  public isImagePublishable(): boolean {
-    if (this.isImagePublished()) {
-      return false;
-    }
-    if (this.regionList.length === 0) {
-      return false;
-    }
-    const unlabeledCount = this.regionList.filter(
-      (region) => region.label === null
-    ).length;
-    return unlabeledCount === 0;
   }
 
   public isImageExcludable(): boolean {
@@ -535,11 +520,13 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   }
 
   public onPublishImageClicked(): void {
+    if (this.isImagePublished()) {
+      return;
+    }
     this.modalService.create({
-      nzTitle: 'Include this image for labeling',
+      nzTitle: 'Publish this image',
       nzContent:
-        'Are you sure? Publishing this image will allow other people to see, ' +
-        'label and verify its regions. This action is <b>IRREVERSIBLE</b>.',
+        'Are you sure? Publishing this image will allow other people to see, label and verify its regions.',
       nzOnOk: async () => {
         if (!this.image) {
           return;
@@ -554,6 +541,58 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
           return;
         }
         this.notificationService.success('Published image successfully', '');
+      },
+    });
+  }
+
+  public onUnpublishImageClicked(): void {
+    if (!this.isImagePublished() || this.isImageVerified()) {
+      return;
+    }
+    this.modalService.create({
+      nzTitle: 'Unpublish this image',
+      nzContent:
+        'Are you sure? This will take this image back to UPLOADED status, and delete region snapshots of this image at publish time.',
+      nzOnOk: async () => {
+        if (!this.image) {
+          return;
+        }
+        try {
+          this.image = await this.imageManagementService.updateImageStatus(
+            this.image.id,
+            ImageStatus.UPLOADED
+          );
+        } catch (e) {
+          this.handleError('Failed to unpublish image', e);
+          return;
+        }
+        this.notificationService.success('Unpublished image successfully', '');
+      },
+    });
+  }
+
+  public onUnverifyImageClicked(): void {
+    if (!this.isImageVerified()) {
+      return;
+    }
+    this.modalService.create({
+      nzTitle: 'Unverify this image',
+      nzContent:
+        'Are you sure? This will take this image back to PUBLISHED status, and delete region snapshots of this image at verify time.',
+      nzOnOk: async () => {
+        if (!this.image) {
+          return;
+        }
+        try {
+          this.image = await this.imageManagementService.updateImageStatus(
+            this.image.id,
+            ImageStatus.PUBLISHED
+          );
+        } catch (e) {
+          this.handleError('Failed to unverify image', e);
+          return;
+        }
+        this.notificationService.success('Unverified image successfully', '');
       },
     });
   }

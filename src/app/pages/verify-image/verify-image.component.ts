@@ -416,7 +416,7 @@ export class VerifyImageComponent implements AfterContentInit {
   public onVerifyImageClicked(): void {
     this.modalService.create({
       nzTitle: 'Mark this image as verified',
-      nzContent: 'Are you sure? This action is <b>IRREVERSIBLE</b>.',
+      nzContent: 'Are you sure?',
       nzOnOk: async () => {
         if (!this.image) {
           return;

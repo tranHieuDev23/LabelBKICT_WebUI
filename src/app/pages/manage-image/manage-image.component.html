@@ -101,9 +101,16 @@
                 <button *ngIf="isImageExcluded()" nz-button nzType="primary" (click)="onIncludeImageClicked()">
                     <i nz-icon nzType="plus-circle"></i> Include for labeling
                 </button>
-                <button *ngIf="!isImageExcluded()" nz-button nzType="primary" [disabled]="!isImagePublishable()"
-                    (click)="onPublishImageClicked()">
+                <button *ngIf="!isImageExcluded() && !isImagePublished()" nz-button nzType="primary"
+                    (click)=" onPublishImageClicked()">
                     <i nz-icon nzType="check-circle"></i> Publish
+                </button>
+                <button *ngIf="isImagePublished() && !isImageVerified()" nz-button nzType="primary"
+                    (click)="onUnpublishImageClicked()">
+                    <i nz-icon nzType="close-circle"></i> Unpublish
+                </button>
+                <button *ngIf="isImageVerified()" nz-button nzType="primary" (click)="onUnverifyImageClicked()">
+                    <i nz-icon nzType="close-circle"></i> Unverify
                 </button>
                 <button nz-button (click)="onImageSettingsClicked()">
                     <i nz-icon nzType="setting"></i> Settings
