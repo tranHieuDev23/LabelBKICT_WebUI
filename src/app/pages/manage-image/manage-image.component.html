@@ -63,7 +63,7 @@
                             stored and can be viewed via this section.
                         </i>
                     </p>
-                    <nz-button-group>
+                    <nz-button-group *ngIf="isImagePublished()">
                         <button *ngIf="isImagePublished()" [disabled]="isShowingRegionSnapshot" nz-button
                             (click)="onShowRegionSnapshotAtPublishTimeClicked()">
                             Publish time
