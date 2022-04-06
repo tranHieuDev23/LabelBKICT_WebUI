@@ -154,7 +154,7 @@ export class MyImagesComponent implements OnInit {
       this.fromImageIndex = offset + 1;
       this.toImageIndex = offset + imageList.length;
     } catch (e) {
-      this.handleError('Failed to delete image(s)', e);
+      this.handleError('Failed to get image list', e);
     } finally {
       this.isLoadingImageList = false;
     }
