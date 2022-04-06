@@ -121,9 +121,6 @@ export class AppComponent {
     settingsSubmenuList.push(
       new AppSubmenuItem('My pinned pages', '/pinned-pages', () => {})
     );
-    settingsSubmenuList.push(
-      new AppSubmenuItem('My profile', '/my-profile', () => {})
-    );
     if (
       this.sessionManagementService.checkSessionUserHasPermission(
         'users.manage'
