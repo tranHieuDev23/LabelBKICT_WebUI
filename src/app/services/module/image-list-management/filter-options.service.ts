@@ -39,6 +39,7 @@ export class FilterOptionsService {
       filterOptionsWithMetadata.mustMatchAllImageTags;
     filterOptions.mustMatchAllRegionLabels =
       filterOptionsWithMetadata.mustMatchAllRegionLabels;
+    filterOptions.mustBeBookmarked = filterOptionsWithMetadata.mustBeBookmarked;
     return filterOptions;
   }
 }

@@ -164,6 +164,11 @@
     Image must have all selected region labels
 </label><br>
 
+<label *ngIf="selectorConfig.canFilterBookmarked" nz-checkbox class="and-mode-checkbox"
+    [(ngModel)]="filterOptions.mustBeBookmarked" (ngModelChange)="onFilterOptionsUpdated()">
+    Image must be bookmarked by me
+</label><br>
+
 <button class="reset-filter-button" nz-button (click)="resetFilterOptions()">
     Reset filter options
 </button>

@@ -17,4 +17,5 @@ export class ImageListFilterOptions {
   public imageStatusList: ImageStatus[] = [];
   public mustMatchAllImageTags = false;
   public mustMatchAllRegionLabels = false;
+  public mustBeBookmarked = false;
 }

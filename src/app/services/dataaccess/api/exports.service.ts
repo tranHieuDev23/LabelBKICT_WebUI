@@ -51,6 +51,7 @@ export class ExportsService {
           image_status_list: filterOptions.imageStatusList,
           must_match_all_image_tags: filterOptions.mustMatchAllImageTags,
           must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels,
+          must_be_bookmarked: filterOptions.mustBeBookmarked,
         },
       });
       return Export.fromJSON(response.data.export);

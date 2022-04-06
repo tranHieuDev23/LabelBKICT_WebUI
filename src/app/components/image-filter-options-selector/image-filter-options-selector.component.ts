@@ -35,6 +35,7 @@ export class ImageListFilterOptionsWithMetadata {
   public imageStatusList: ImageStatus[] = [];
   public mustMatchAllImageTags = false;
   public mustMatchAllRegionLabels = false;
+  public mustBeBookmarked = false;
 }
 
 export class ImageFilterOptionsSelectorConfig {
@@ -49,6 +50,7 @@ export class ImageFilterOptionsSelectorConfig {
   public canFilterImageTag = true;
   public canFilterRegionLabel = true;
   public canFilterOriginalFilename = true;
+  public canFilterBookmarked = true;
 }
 
 const UPLOAD_BY_USER_SEARCH_CALLBACK_ID = 'UPLOAD_BY_USER_SEARCH_CALLBACK_ID';

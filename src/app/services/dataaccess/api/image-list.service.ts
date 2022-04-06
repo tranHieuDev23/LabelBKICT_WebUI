@@ -450,6 +450,7 @@ export class ImageListService {
       must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
         ? 1
         : 0,
+      must_be_bookmarked: filterOptions.mustBeBookmarked ? 1 : 0,
     };
   }
 }
