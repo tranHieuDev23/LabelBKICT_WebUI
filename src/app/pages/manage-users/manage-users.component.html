@@ -230,6 +230,86 @@
                     <i nz-icon nzType="plus" nzTheme="outline"></i> Add user role
                 </button>
             </nz-collapse-panel>
+            <nz-collapse-panel nzHeader="Manage image permission"
+                (nzActiveChange)="onManageUserPermissionPanelActiveChange($event)">
+                <p nz-typography>
+                    If the user has <code>images.manage.all</code> permission, the following list is the list of users
+                    whose images this user can manage.
+                </p>
+                <p nz-typography>
+                    If no user is provided, by default the user can manage all users' images.
+                </p>
+                <nz-list [nzDataSource]="editUserUserCanManageUserImageList" nzBordered>
+                    <nz-list-item *ngFor="let userCanManageUserImage of editUserUserCanManageUserImageList">
+                        <nz-list-item-meta>
+                            <nz-list-item-meta-title>
+                                {{ userCanManageUserImage.user.displayName }}
+                            </nz-list-item-meta-title>
+                            <nz-list-item-meta-description>
+                                <label nz-checkbox [(ngModel)]="userCanManageUserImage.canEdit"
+                                    (ngModelChange)="onUserCanManageUserImageCanEditChanged(userCanManageUserImage, $event)">
+                                    Can edit image?
+                                </label>
+                            </nz-list-item-meta-description>
+                        </nz-list-item-meta>
+                        <ul nz-list-item-actions>
+                            <nz-list-item-action>
+                                <button nz-button nzType="text" nzDanger
+                                    (click)="onDeleteUserCanManageUserImageClicked(userCanManageUserImage)">
+                                    <i nz-icon nzType="delete" nzTheme="outline"></i>
+                                </button>
+                            </nz-list-item-action>
+                        </ul>
+                    </nz-list-item>
+                    <nz-list-pagination>
+                        <nz-pagination [nzPageIndex]="editUserUserCanManageUserImagePageIndex"
+                            [nzPageSize]="editUserUserCanManageUserImagePageSize"
+                            [nzTotal]="editUserUserCanManageUserImageCount"
+                            (nzPageIndexChange)="onUserCanManageUserImagePageIndexChanged($event)">
+                        </nz-pagination>
+                    </nz-list-pagination>
+                </nz-list>
+                <button nz-button class="add-user-btn" (click)="onAddUserCanManageUserImageClicked()">
+                    <i nz-icon nzType="user-add" nzTheme="outline"></i> Add user
+                </button>
+            </nz-collapse-panel>
+            <nz-collapse-panel nzHeader="Verify image permission"
+                (nzActiveChange)="onVerifyUserPermissionPanelActiveChange($event)">
+                <p nz-typography>
+                    If the user has <code>images.verify</code> permission, the following list is the list of users
+                    whose images this user can verify.
+                </p>
+                <p nz-typography>
+                    If no user is provided, by default the user can verify all users' images.
+                </p>
+                <nz-list [nzDataSource]="editUserUserCanVerifyUserImageList" nzBordered>
+                    <nz-list-item *ngFor="let userCanVerifyUserImage of editUserUserCanVerifyUserImageList">
+                        <nz-list-item-meta>
+                            <nz-list-item-meta-title>
+                                {{ userCanVerifyUserImage.user.displayName }}
+                            </nz-list-item-meta-title>
+                        </nz-list-item-meta>
+                        <ul nz-list-item-actions>
+                            <nz-list-item-action>
+                                <button nz-button nzType="text" nzDanger
+                                    (click)="onDeleteUserCanVerifyUserImageClicked(userCanVerifyUserImage)">
+                                    <i nz-icon nzType="delete" nzTheme="outline"></i>
+                                </button>
+                            </nz-list-item-action>
+                        </ul>
+                    </nz-list-item>
+                    <nz-list-pagination>
+                        <nz-pagination [nzPageIndex]="editUserUserCanVerifyUserImagePageIndex"
+                            [nzPageSize]="editUserUserCanVerifyUserImagePageSize"
+                            [nzTotal]="editUserUserCanVerifyUserImageCount"
+                            (nzPageIndexChange)="onUserCanVerifyUserImagePageIndexChanged($event)">
+                        </nz-pagination>
+                    </nz-list-pagination>
+                </nz-list>
+                <button nz-button class="add-user-btn" (click)="onAddUserCanVerifyUserImageClicked()">
+                    <i nz-icon nzType="user-add" nzTheme="outline"></i> Add user
+                </button>
+            </nz-collapse-panel>
         </nz-collapse>
     </ng-container>
 </nz-modal>
@@ -267,5 +347,25 @@
                 </nz-pagination>
             </nz-list-footer>
         </ul>
+    </ng-container>
+</nz-modal>
+
+<nz-modal [(nzVisible)]="isAddUserCanMangeUserImageModalVisible" nzTitle="Add user"
+    [nzOkDisabled]="!addUserCanMangeUserImageUser" (nzOnOk)="onUserCanManageUserImageAddUserModalOk()"
+    (nzOnCancel)="onUserCanManageUserImageAddUserModalCancel()">
+    <ng-container *nzModalContent>
+        <app-user-search-box (userSelected)="onUserCanManageUserImageAddUserModalUserSelected($event)">
+        </app-user-search-box>
+        <label style="margin-top: 8px;" nz-checkbox [(ngModel)]="addUserCanMangeUserImageCanEdit">Can edit
+            image?</label>
+    </ng-container>
+</nz-modal>
+
+<nz-modal [(nzVisible)]="isAddUserCanVerifyUserImageModalVisible" nzTitle="Add user"
+    [nzOkDisabled]="!addUserCanVerifyUserImageUser" (nzOnOk)="onUserCanVerifyUserImageAddUserModalOk()"
+    (nzOnCancel)="onUserCanVerifyUserImageAddUserModalCancel()">
+    <ng-container *nzModalContent>
+        <app-user-search-box (userSelected)="onUserCanVerifyUserImageAddUserModalUserSelected($event)">
+        </app-user-search-box>
     </ng-container>
 </nz-modal>

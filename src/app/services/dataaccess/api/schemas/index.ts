@@ -14,3 +14,5 @@ export * from './region_operator_log';
 export * from './image_list_sort_option';
 export * from './export';
 export * from './pinned_page';
+export * from './user_can_manage_user_image';
+export * from './user_can_verify_user_image';

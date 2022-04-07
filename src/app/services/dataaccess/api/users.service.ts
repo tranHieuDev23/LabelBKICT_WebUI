@@ -6,7 +6,12 @@ import {
   UnauthorizedError,
   UnknownAPIError,
 } from './errors';
-import { User, UserRole } from './schemas';
+import {
+  User,
+  UserCanManageUserImage,
+  UserCanVerifyUserImage,
+  UserRole,
+} from './schemas';
 
 export enum UserListSortOrder {
   ID_ASCENDING = 0,
@@ -29,7 +34,7 @@ export class UsernameTakenError extends Error {
   }
 }
 
-export class InvalidUserListArgument extends Error {
+export class InvalidUserListArgumentError extends Error {
   constructor() {
     super('Invalid argument to retrieve user list');
   }
@@ -62,6 +67,24 @@ export class UserDoesNotHaveUserRoleError extends Error {
 export class UserSearchArgumentsError extends Error {
   constructor() {
     super('Invalid user search arguments');
+  }
+}
+
+export class SameUserError extends Error {
+  constructor() {
+    super('Cannot assign to the same user');
+  }
+}
+
+export class UserAlreadyInListError extends Error {
+  constructor() {
+    super('User is already in user list');
+  }
+}
+
+export class UserNotInListError extends Error {
+  constructor() {
+    super('User is not in user list');
   }
 }
 
@@ -135,7 +158,7 @@ export class UsersService {
       }
       switch (e.response?.status) {
         case HttpStatusCode.BadRequest:
-          throw new InvalidUserListArgument();
+          throw new InvalidUserListArgumentError();
         case HttpStatusCode.Unauthorized:
           throw new UnauthenticatedError();
         case HttpStatusCode.Forbidden:
@@ -248,6 +271,227 @@ export class UsersService {
           throw new UserOrUserRoleNotFoundError();
         case HttpStatusCode.Conflict:
           throw new UserDoesNotHaveUserRoleError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async createUserCanManageUserImage(
+    userID: number,
+    imageOfUserID: number,
+    canEdit: boolean
+  ): Promise<UserCanManageUserImage> {
+    try {
+      const response = await this.axios.post(
+        `/api/users/${userID}/manageable-image-users`,
+        { image_of_user_id: imageOfUserID, can_edit: canEdit }
+      );
+      return UserCanManageUserImage.fromJSON(
+        response.data.user_can_manage_user_image
+      );
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new SameUserError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new UserNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserAlreadyInListError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getUserCanManageUserImageListOfUser(
+    userID: number,
+    offset: number,
+    limit: number
+  ): Promise<{ totalUserCount: number; userList: UserCanManageUserImage[] }> {
+    try {
+      const response = await this.axios.get(
+        `/api/users/${userID}/manageable-image-users`,
+        { params: { offset, limit } }
+      );
+      const totalUserCount = +response.data.total_user_count;
+      const userList = response.data.user_list.map(
+        UserCanManageUserImage.fromJSON
+      );
+      return { totalUserCount, userList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidUserListArgumentError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new UserNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async updateUserCanManageUserImage(
+    userID: number,
+    imageOfUserID: number,
+    canEdit: boolean | undefined
+  ): Promise<UserCanManageUserImage> {
+    try {
+      const response = await this.axios.patch(
+        `/api/users/${userID}/manageable-image-users/${imageOfUserID}`,
+        { can_edit: canEdit }
+      );
+      return UserCanManageUserImage.fromJSON(
+        response.data.user_can_manage_user_image
+      );
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new UserNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserNotInListError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async deleteUserCanManageUserImage(
+    userID: number,
+    imageOfUserID: number
+  ): Promise<void> {
+    try {
+      await this.axios.delete(
+        `/api/users/${userID}/manageable-image-users/${imageOfUserID}`
+      );
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new UserNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserNotInListError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async createUserCanVerifyUserImage(
+    userID: number,
+    imageOfUserID: number
+  ): Promise<UserCanVerifyUserImage> {
+    try {
+      const response = await this.axios.post(
+        `/api/users/${userID}/verifiable-image-users`,
+        { image_of_user_id: imageOfUserID }
+      );
+      return UserCanVerifyUserImage.fromJSON(
+        response.data.user_can_verify_user_image
+      );
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new SameUserError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new UserNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserAlreadyInListError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getUserCanVerifyUserImageListOfUser(
+    userID: number,
+    offset: number,
+    limit: number
+  ): Promise<{ totalUserCount: number; userList: UserCanVerifyUserImage[] }> {
+    try {
+      const response = await this.axios.get(
+        `/api/users/${userID}/verifiable-image-users`,
+        { params: { offset, limit } }
+      );
+      const totalUserCount = +response.data.total_user_count;
+      const userList = response.data.user_list.map(
+        UserCanVerifyUserImage.fromJSON
+      );
+      return { totalUserCount, userList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidUserListArgumentError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new UserNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async deleteUserCanVerifyUserImage(
+    userID: number,
+    imageOfUserID: number
+  ): Promise<void> {
+    try {
+      await this.axios.delete(
+        `/api/users/${userID}/verifiable-image-users/${imageOfUserID}`
+      );
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new UserNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserNotInListError();
         default:
           throw new UnknownAPIError(e);
       }
