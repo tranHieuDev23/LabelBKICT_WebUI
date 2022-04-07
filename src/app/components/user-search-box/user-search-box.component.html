@@ -1,6 +1,6 @@
-<nz-select [nzServerSearch]="true" nzMode="multiple" [nzMaxMultipleCount]="1"
-    nzPlaceHolder="Search by username or display name" class="search-box" [(ngModel)]="selectedUserList"
-    (nzOnSearch)="onSearch($event)" (ngModelChange)="onModelChange($event)">
+<nz-select [nzServerSearch]="true" [nzShowSearch]="true" nzPlaceHolder="Search by username or display name"
+    class="search-box" [(ngModel)]="selectedUser" (nzOnSearch)="onSearch($event)"
+    (ngModelChange)="onModelChange($event)">
     <nz-option *ngFor="let user of userOptionList" [nzLabel]="user.displayName" [nzValue]="user">
     </nz-option>
 </nz-select>

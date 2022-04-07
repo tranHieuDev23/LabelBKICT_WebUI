@@ -14,7 +14,7 @@ const USER_SEARCH_LIMIT = 10;
   styleUrls: ['./user-search-box.component.scss'],
 })
 export class UserSearchBoxComponent {
-  public selectedUserList: User[] = [];
+  public selectedUser: User | undefined;
   public userOptionList: User[] = [];
   @Output()
   public readonly userSelected = new EventEmitter<User | undefined>();
@@ -26,7 +26,7 @@ export class UserSearchBoxComponent {
   ) {}
 
   public onSearch(query: string): void {
-    if (query === '' || this.selectedUserList.length > 0) {
+    if (query === '' || this.selectedUser !== undefined) {
       return;
     }
     this.delayedCallbackService.scheduleDelayedCallback(
@@ -47,11 +47,9 @@ export class UserSearchBoxComponent {
     );
   }
 
-  public onModelChange(userList: User[]): void {
-    if (userList.length === 0) {
-      this.userSelected.emit(undefined);
-    } else {
-      this.userSelected.emit(userList[0]);
+  public onModelChange(user: User): void {
+    this.userSelected.emit(user);
+    if (user !== undefined) {
       this.userOptionList = [];
     }
   }
