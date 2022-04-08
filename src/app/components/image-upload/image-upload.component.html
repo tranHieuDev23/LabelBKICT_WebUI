@@ -18,12 +18,6 @@
     </nz-select>
 </div>
 
-<div class="should-use-predictive-model-checkbox">
-    <label nz-checkbox [nzDisabled]="!isShouldUsePredictiveModelToggleEnabled()" [(ngModel)]="shouldUsePredictiveModel">
-        Detect regions automatically using predictive model?
-    </label>
-</div>
-
 <div class="image-tag-list">
     Image tags for the uploaded images:
     <app-editable-tag-list [allImageTagGroupList]="allowedImageTagGroupListForImageType"

@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ImageUploadComponent } from './image-upload.component';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzUploadModule } from 'ng-zorro-antd/upload';
@@ -18,7 +17,6 @@ import { NzNotificationModule } from 'ng-zorro-antd/notification';
     NzButtonModule,
     NzUploadModule,
     NzIconModule,
-    NzCheckboxModule,
     NzSelectModule,
     NzInputModule,
     FormsModule,
