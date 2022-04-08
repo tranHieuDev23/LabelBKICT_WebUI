@@ -107,13 +107,15 @@ export class ImagesService {
     image: Image;
     imageTagList: ImageTag[];
     regionList: Region[];
+    canEdit: boolean;
   }> {
     try {
       const response = await this.axios.get(`/api/images/${id}`);
       const image = Image.fromJSON(response.data.image);
       const imageTagList = response.data.image_tag_list.map(ImageTag.fromJSON);
       const regionList = response.data.region_list.map(Region.fromJSON);
-      return { image, imageTagList, regionList };
+      const canEdit = response.data.can_edit || false;
+      return { image, imageTagList, regionList, canEdit };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

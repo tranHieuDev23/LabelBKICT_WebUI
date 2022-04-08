@@ -183,11 +183,12 @@ export class VerifyImageComponent implements AfterContentInit {
     this.allowedImageTagListForImageType = [];
 
     try {
-      const { image, imageTagList, regionList } =
+      const { image, imageTagList, regionList, canEdit } =
         await this.imageManagementService.getImage(imageID);
       this.image = image;
       this.imageTagList = imageTagList;
       this.regionList = regionList;
+      this.isImageEditable = canEdit;
 
       if (image.imageType) {
         const { regionLabelList } = await this.imageTypesService.getImageType(

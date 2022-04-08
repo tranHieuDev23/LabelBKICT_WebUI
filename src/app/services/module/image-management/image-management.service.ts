@@ -70,6 +70,7 @@ export class ImageManagementService {
     image: Image;
     imageTagList: ImageTag[];
     regionList: Region[];
+    canEdit: boolean;
   }> {
     return this.imagesService.getImage(id);
   }
