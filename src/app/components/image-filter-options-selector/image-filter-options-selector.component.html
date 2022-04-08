@@ -169,6 +169,11 @@
     Image must be bookmarked by me
 </label><br>
 
+<label *ngIf="selectorConfig.canFilterDescription" nz-checkbox class="and-mode-checkbox"
+    [(ngModel)]="filterOptions.mustHaveDescription" (ngModelChange)="onFilterOptionsUpdated()">
+    Image must have description
+</label><br>
+
 <button class="reset-filter-button" nz-button (click)="resetFilterOptions()">
     Reset filter options
 </button>

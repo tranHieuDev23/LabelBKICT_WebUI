@@ -52,6 +52,7 @@ export class ExportsService {
           must_match_all_image_tags: filterOptions.mustMatchAllImageTags,
           must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels,
           must_be_bookmarked: filterOptions.mustBeBookmarked,
+          must_have_description: filterOptions.mustHaveDescription,
         },
       });
       return Export.fromJSON(response.data.export);

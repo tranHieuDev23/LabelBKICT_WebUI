@@ -451,6 +451,7 @@ export class ImageListService {
         ? 1
         : 0,
       must_be_bookmarked: filterOptions.mustBeBookmarked ? 1 : 0,
+      must_have_description: filterOptions.mustHaveDescription ? 1 : 0,
     };
   }
 }

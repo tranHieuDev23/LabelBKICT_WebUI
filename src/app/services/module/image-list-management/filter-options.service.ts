@@ -40,6 +40,8 @@ export class FilterOptionsService {
     filterOptions.mustMatchAllRegionLabels =
       filterOptionsWithMetadata.mustMatchAllRegionLabels;
     filterOptions.mustBeBookmarked = filterOptionsWithMetadata.mustBeBookmarked;
+    filterOptions.mustHaveDescription =
+      filterOptionsWithMetadata.mustHaveDescription;
     return filterOptions;
   }
 }

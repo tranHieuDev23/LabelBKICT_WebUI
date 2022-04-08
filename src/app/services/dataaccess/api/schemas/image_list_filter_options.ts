@@ -18,4 +18,5 @@ export class ImageListFilterOptions {
   public mustMatchAllImageTags = false;
   public mustMatchAllRegionLabels = false;
   public mustBeBookmarked = false;
+  public mustHaveDescription = false;
 }
