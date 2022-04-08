@@ -8,7 +8,7 @@ server {
 
   location / {
     try_files $uri $uri/ /index.html;
-    root /var/www;
+    root /usr/app;
     expires 1y;
   }
 }
