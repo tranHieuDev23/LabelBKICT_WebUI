@@ -182,11 +182,6 @@ export class AppComponent {
     this.menuItemList.push(
       new AppMenuItem('Settings', 'setting', settingsSubmenuList)
     );
-
-    // Experimental features menu
-    this.menuItemList.push(
-      new AppMenuItem('Experimental features', 'experiment', [])
-    );
   }
 
   public async onLogOutClicked(): Promise<void> {
