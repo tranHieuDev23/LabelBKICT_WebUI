@@ -1,6 +1,7 @@
 server {
   listen       80;
   listen  [::]:80;
+  client_max_body_size 5M;
 
   location /api {
     proxy_pass http://${GATEWAY_HOST}:${GATEWAY_PORT}/api;
