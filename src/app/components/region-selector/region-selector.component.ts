@@ -58,7 +58,7 @@ export class RegionSelectorComponent {
       // HACK: This allows the DOM to initialize the image properly and fixes incorrect centering.
       setTimeout(() => {
         this.centerImage();
-      }, 50);
+      }, 0);
     };
     image.src = v;
   }
