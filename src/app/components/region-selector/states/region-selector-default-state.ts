@@ -61,7 +61,6 @@ export class DefaultState implements RegionSelectorState {
   }
 
   public onDraw(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
-    this.canvasGraphicService.resizeCanvasMatchParent(canvas);
     const ctx = canvas.getContext('2d');
     if (ctx === null) {
       return null;

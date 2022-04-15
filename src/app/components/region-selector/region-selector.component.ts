@@ -4,6 +4,7 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -41,7 +42,7 @@ const SCROLL_ZOOM_RATE = 0.025;
   templateUrl: './region-selector.component.html',
   styleUrls: ['./region-selector.component.scss'],
 })
-export class RegionSelectorComponent {
+export class RegionSelectorComponent implements OnInit {
   @ViewChild('canvas', { static: true }) canvas:
     | ElementRef<HTMLCanvasElement>
     | undefined;
@@ -102,6 +103,14 @@ export class RegionSelectorComponent {
   ) {
     this.state = this.getDefaultRegionSelectorState();
     this.onDraw();
+  }
+
+  ngOnInit(): void {
+    if (this.canvas) {
+      this.canvasGraphicService.resizeCanvasMatchParent(
+        this.canvas.nativeElement
+      );
+    }
   }
 
   private getDefaultRegionSelectorState(): RegionSelectorState {
@@ -637,6 +646,7 @@ export class RegionSelectorComponent {
       }
 
       const canvasElement = this.canvas.nativeElement;
+      this.canvasGraphicService.resizeCanvasMatchParent(canvasElement);
       const ctx = this.state.onDraw(canvasElement);
       if (ctx === null) {
         return;
