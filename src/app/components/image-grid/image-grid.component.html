@@ -25,14 +25,6 @@
                         Uploaded at {{ image.uploadTime | date:'short' }} by
                         <b>{{ image.uploadedByUser.displayName }}</b>
                     </p>
-                    <p *ngIf="image.publishedByUser" nz-typography>
-                        Published at {{ image.publishTime | date:'short' }} by
-                        <b>{{ image.publishedByUser.displayName }}</b>
-                    </p>
-                    <p *ngIf="image.verifiedByUser" nz-typography>
-                        Verified at {{ image.verifyTime | date:'short' }} by
-                        <b>{{ image.verifiedByUser.displayName }}</b>
-                    </p>
                 </nz-card>
                 <ng-template #coverTemplate>
                     <img class="thumbnail-image" [src]="image.thumbnailURL" />
