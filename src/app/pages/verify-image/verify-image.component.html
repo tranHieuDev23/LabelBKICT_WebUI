@@ -187,6 +187,9 @@
         <li *ngIf="isRegionSelectorIsInDrawState()" nz-menu-item (click)="regionSelector?.finishDrawing()">
             Finish drawing region
         </li>
+        <li *ngIf="isRegionSelectorIsInSelectedState()" nz-menu-item (click)="onContextMenuEditDrawnRegionClicked()">
+            Edit drawn region
+        </li>
         <li *ngIf="contextMenuRegion && isImageEditable" nz-menu-item
             (click)="onContextMenuEditRegionBoundaryClicked()">
             Edit region boundary

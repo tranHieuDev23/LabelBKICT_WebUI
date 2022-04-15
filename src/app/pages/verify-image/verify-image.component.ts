@@ -627,6 +627,13 @@ export class VerifyImageComponent implements AfterContentInit {
     return this.regionSelector?.isInSelectedState() || false;
   }
 
+  public onContextMenuEditDrawnRegionClicked(): void {
+    if (!this.regionSelector?.isInSelectedState()) {
+      return;
+    }
+    this.regionSelector.editSelectedRegion();
+  }
+
   public onContextMenuEditRegionBoundaryClicked(): void {
     if (this.contextMenuRegionID === undefined) {
       return;

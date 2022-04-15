@@ -416,6 +416,9 @@ export class DrawState implements RegionSelectorState {
         ) <= VERTICES_MAX_DISTANCE
       ) {
         // if cursor position is close enough to the next vertex, automatically connect to that vertex and stop drawing
+        this.snapshotService.storeSnapshot(
+          new RegionSelectorSnapshot(newContent.drawnPolygonList)
+        );
         return new DrawState(
           newContent,
           true,
@@ -495,7 +498,16 @@ export class DrawState implements RegionSelectorState {
     this.drawDrawnPolygonList(canvas, canvasWidth, canvasHeight, ctx);
 
     if (this.isAddingVertex) {
-      this.drawLastAddedVertex(canvas, canvasWidth, canvasHeight, ctx);
+      if (this.polygonIDToAddNewVertex === null) {
+        this.drawNearestVertexWithOpenNeighbor(
+          canvas,
+          canvasWidth,
+          canvasHeight,
+          ctx
+        );
+      } else {
+        this.drawLastAddedVertex(canvas, canvasWidth, canvasHeight, ctx);
+      }
     } else {
       this.drawDeleteCursor(canvas, canvasWidth, canvasHeight, ctx);
     }
@@ -559,6 +571,39 @@ export class DrawState implements RegionSelectorState {
         lastVertexCanvasPos = vertexCanvasPos;
       }
     }
+  }
+
+  private drawNearestVertexWithOpenNeighbor(
+    canvas: HTMLCanvasElement,
+    canvasWidth: number,
+    canvasHeight: number,
+    ctx: CanvasRenderingContext2D
+  ): void {
+    const nearestVertexWithOpenNeighborInfo =
+      this.getNearestVertexWithOpenNeighbor(this.content.cursorImagePosition);
+    if (nearestVertexWithOpenNeighborInfo === null) {
+      return;
+    }
+    const polygon =
+      this.content.drawnPolygonList[
+        nearestVertexWithOpenNeighborInfo.polygonID
+      ];
+    const vertex = polygon.vertices[nearestVertexWithOpenNeighborInfo.vertexID];
+    const vertexCanvasPos =
+      this.regionSelectorGeometryService.imageToCanvasPosition(
+        canvas,
+        this.content,
+        vertex
+      );
+    this.canvasGraphicService.drawCircle({
+      canvasWidth,
+      canvasHeight,
+      ctx,
+      center: vertexCanvasPos,
+      lineColor: '#f5222d',
+      fillColor: 'a8071a',
+      radius: 5,
+    });
   }
 
   private drawLastAddedVertex(
