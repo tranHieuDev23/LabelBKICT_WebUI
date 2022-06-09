@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ImageGridComponent } from './image-grid.component';
+import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzGridModule } from 'ng-zorro-antd/grid';
@@ -13,6 +14,7 @@ import { DragToSelectModule } from 'ngx-drag-to-select';
   declarations: [ImageGridComponent],
   imports: [
     CommonModule,
+    NzButtonModule,
     NzGridModule,
     NzTypographyModule,
     NzCardModule,
