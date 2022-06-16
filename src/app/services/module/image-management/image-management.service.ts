@@ -128,6 +128,10 @@ export class ImageManagementService {
     await this.imagesService.createImageDetectionTask(id);
   }
 
+  public async createDetectionTaskImageList(imageIDList: number[]): Promise<void> {
+    await this.imagesService.createDetectionTaskImageList(imageIDList);
+  }
+
   public async createImageBookmark(
     id: number,
     description: string

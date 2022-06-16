@@ -28,6 +28,7 @@ import {
   FilterOptionsService,
   ImageListManagementService,
 } from 'src/app/services/module/image-list-management';
+import { ImageManagementService } from 'src/app/services/module/image-management';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
@@ -77,6 +78,7 @@ export class MyImagesComponent implements OnInit {
   private selectedImageList: Image[] = [];
 
   constructor(
+    private readonly imageManagementService: ImageManagementService,
     private readonly imageListManagementService: ImageListManagementService,
     private readonly filterOptionsService: FilterOptionsService,
     private readonly userManagementService: UserManagementService,
@@ -263,6 +265,7 @@ export class MyImagesComponent implements OnInit {
           return;
         }
       }
+
       if (this.contextMenu) {
         this.contextMenuService.create(event, this.contextMenu);
       }
@@ -313,6 +316,34 @@ export class MyImagesComponent implements OnInit {
           this.notificationService.success('Delete image(s) successfully', '');
         } catch (e) {
           this.handleError('Failed to delete image(s)', e);
+        }
+      },
+    });
+  }
+
+  public async onSelectedImageRequestDetectionClicked() {
+    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    this.modalService.create({
+      nzTitle: 'Request for region detection for selected image(s)',
+      nzContent:
+        'Are you sure? This will also delete all previously region extracted from them and request for region detection again. ' +
+        'This action is <b>IRREVERSIBLE</b>.',
+      nzOkDanger: true,
+      nzOnOk: async () => {
+        try {
+          await this.imageManagementService.createDetectionTaskImageList(
+            selectedImageIDList
+          );
+          await this.getImageListFromPaginationInfo();
+          this.notificationService.success(
+            'Requested for region detection for image(s) successfully',
+            ''
+          );
+        } catch (e) {
+          this.handleError(
+            'Failed to requested for region detection for image(s)',
+            e
+          );
         }
       },
     });
