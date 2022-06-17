@@ -342,7 +342,7 @@ export class ExportImagesComponent implements OnInit {
 
   private async getExportListFromPaginationInfo(): Promise<void> {
     this.isLoadingExportList = true;
-    this.totalImageCount = 0;
+    this.totalExportCount = 0;
     this.exportList = [];
     const offset = this.paginationService.getPageOffset(
       this.exportPageIndex,
