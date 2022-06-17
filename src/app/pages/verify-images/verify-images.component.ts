@@ -110,10 +110,19 @@ export class VerifyImagesComponent implements OnInit {
       this.filterOptions = this.jsonCompressService.decompress(
         queryParams['filter']
       );
-      this.filterOptions.imageStatusList = [
-        ImageStatus.PUBLISHED,
-        ImageStatus.VERIFIED,
-      ];
+      this.filterOptions.imageStatusList =
+        this.filterOptions.imageStatusList.filter((imageStatus) => {
+          return (
+            imageStatus === ImageStatus.PUBLISHED ||
+            imageStatus === ImageStatus.VERIFIED
+          );
+        });
+      if (this.filterOptions.imageStatusList.length === 0) {
+        this.filterOptions.imageStatusList = [
+          ImageStatus.PUBLISHED,
+          ImageStatus.VERIFIED,
+        ];
+      }
     } else {
       this.filterOptions = this.getDefaultImageListFilterOptions();
     }
