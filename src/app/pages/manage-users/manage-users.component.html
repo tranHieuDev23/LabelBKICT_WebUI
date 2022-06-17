@@ -234,10 +234,10 @@
                 (nzActiveChange)="onManageUserPermissionPanelActiveChange($event)">
                 <p nz-typography>
                     If the user has <code>images.manage.all</code> permission, the following list is the list of users
-                    whose images this user can manage.
+                    whose images this user can manage and export.
                 </p>
                 <p nz-typography>
-                    If no user is provided, by default the user can manage all users' images.
+                    If no user is provided, by default the user can manage and export all users' images.
                 </p>
                 <nz-list [nzDataSource]="editUserUserCanManageUserImageList" nzBordered>
                     <nz-list-item *ngFor="let userCanManageUserImage of editUserUserCanManageUserImageList">
