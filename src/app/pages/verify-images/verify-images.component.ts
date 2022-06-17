@@ -77,9 +77,7 @@ export class VerifyImagesComponent implements OnInit {
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly notificationService: NzNotificationService
-  ) {
-    this.imageListFilterOptionsSelectorConfig.canFilterImageStatus = false;
-  }
+  ) {}
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(async (params) => {
