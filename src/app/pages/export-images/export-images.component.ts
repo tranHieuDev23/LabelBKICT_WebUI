@@ -17,6 +17,7 @@ import {
   InvalidExportListArgument,
   ExportNotFoundError,
   ExportStatus,
+  ImageStatus,
 } from 'src/app/services/dataaccess/api';
 import { ExportManagementService } from 'src/app/services/module/export-management/export-management.service';
 import {
@@ -70,6 +71,7 @@ export class ExportImagesComponent implements OnInit {
 
   private getDefaultImageListFilterOptions(): ImageListFilterOptionsWithMetadata {
     const filterOptions = new ImageListFilterOptionsWithMetadata();
+    filterOptions.imageStatusList = [ImageStatus.VERIFIED];
     return filterOptions;
   }
 
