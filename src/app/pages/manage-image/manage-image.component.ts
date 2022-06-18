@@ -684,11 +684,13 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     this.regionSelector?.cancelDrawing();
     const editedRegion = this.regionList[event.regionID];
     try {
+      const border = event.newHoles[0];
+      const holes = event.newHoles.slice(1);
       const region = await this.regionManagementService.updateRegionBoundary(
         this.image.id,
         editedRegion.id,
-        event.newBorder,
-        event.newHoles
+        border,
+        holes
       );
       this.regionList = [...this.regionList];
       this.regionList[event.regionID] = region;
@@ -923,11 +925,11 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       await this.imageManagementService.createImageDetectionTask(this.image.id);
     } catch (e) {
       console.log(e);
-      this.handleError('Failed to request for region detection', e);
+      this.handleError('Failed to request for lesion suggestion', e);
       return;
     }
     this.notificationService.success(
-      'Requested for region detection successfully',
+      'Requested for lesion suggestion successfully',
       ''
     );
   }

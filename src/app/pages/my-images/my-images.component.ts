@@ -324,9 +324,9 @@ export class MyImagesComponent implements OnInit {
   public async onSelectedImageRequestDetectionClicked() {
     const selectedImageIDList = this.selectedImageList.map((image) => image.id);
     this.modalService.create({
-      nzTitle: 'Request for region detection for selected image(s)',
+      nzTitle: 'Request for lesion suggestion for selected image(s)',
       nzContent:
-        'Are you sure? This will also delete all previously region extracted from them and request for region detection again. ' +
+        'Are you sure? This will also delete all previously region extracted from them and request for lesion suggestion again. ' +
         'This action is <b>IRREVERSIBLE</b>.',
       nzOkDanger: true,
       nzOnOk: async () => {
