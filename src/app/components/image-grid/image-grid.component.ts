@@ -46,7 +46,7 @@ export class ImageGridComponent {
     this.imageListSelected.emit(this.selectedImageList);
   }
 
-  public onAllImagesSelected(): void {
+  public onSelectAllClicked(): void {
     this.selectContainer?.selectAll();
   }
 
