@@ -684,13 +684,11 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     this.regionSelector?.cancelDrawing();
     const editedRegion = this.regionList[event.regionID];
     try {
-      const border = event.newHoles[0];
-      const holes = event.newHoles.slice(1);
       const region = await this.regionManagementService.updateRegionBoundary(
         this.image.id,
         editedRegion.id,
-        border,
-        holes
+        event.newBorder,
+        event.newHoles
       );
       this.regionList = [...this.regionList];
       this.regionList[event.regionID] = region;
