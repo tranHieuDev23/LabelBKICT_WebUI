@@ -262,13 +262,13 @@ export class AllImagesComponent implements OnInit {
           const { imageTypeList } =
             await this.imageTypesService.getImageTypeList(false);
           this.imageTypeList = imageTypeList;
-          if (this.contextMenu) {
-            this.contextMenuService.create(event, this.contextMenu);
-          }
         } catch (e) {
           this.handleError('Failed to get image type list', e);
           return;
         }
+      }
+      if (this.contextMenu) {
+        this.contextMenuService.create(event, this.contextMenu);
       }
     })().then();
     return false;

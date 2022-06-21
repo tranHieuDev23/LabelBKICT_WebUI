@@ -263,7 +263,6 @@ export class MyImagesComponent implements OnInit {
           return;
         }
       }
-
       if (this.contextMenu) {
         this.contextMenuService.create(event, this.contextMenu);
       }
