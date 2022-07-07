@@ -15,7 +15,9 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
 import { NzNotificationModule } from 'ng-zorro-antd/notification';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 import { UserSearchBoxModule } from 'src/app/components/user-search-box/user-search-box.module';
+import { UserFilterOptionsSelectorModule } from 'src/app/components/user-filter-options-selector/user-filter-options-selector.module';
 
 @NgModule({
   declarations: [ManageUsersComponent],
@@ -36,7 +38,9 @@ import { UserSearchBoxModule } from 'src/app/components/user-search-box/user-sea
     ReactiveFormsModule,
     NzNotificationModule,
     NzCheckboxModule,
+    NzTagModule,
     UserSearchBoxModule,
+    UserFilterOptionsSelectorModule
   ],
   exports: [ManageUsersComponent],
 })
