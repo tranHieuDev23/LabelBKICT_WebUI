@@ -15,6 +15,11 @@
   }
 }
 
+.active-user-btn, .disable-user-btn {
+  float: right;
+  margin-top: -60px;
+}
+
 nz-select {
   width: 200px;
 }

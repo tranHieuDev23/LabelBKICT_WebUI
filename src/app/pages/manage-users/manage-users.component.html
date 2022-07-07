@@ -2,6 +2,10 @@
     <h1 nz-typography>
         Manage users
     </h1>
+    <app-user-filter-options-selector 
+        [filterOptions]="filterOptions"
+        (filterOptionsUpdated)="onUserListFilterOptionsUpdated($event)">
+    </app-user-filter-options-selector>
     <button nz-button nzType="primary" class="create-new-user-btn" (click)="onCreateNewUserClicked()">
         <i nz-icon nzType="user-add" nzTheme="outline"></i> Create a new user
     </button>
@@ -23,6 +27,19 @@
                     {{ getUserRoleListString(userRoleList[i]) }}
                 </nz-list-item-meta-description>
             </nz-list-item-meta>
+            <button nz-button class="active-user-btn" nzType="primary"
+                *ngIf="getUserTagListString(userTagList[i]) != ''"
+                (click)="onActiveUserClicked(i)">
+                Active user
+            </button>
+            <button nz-button class="disable-user-btn" nzType="primary" nzDanger
+                *ngIf="getUserTagListString(userTagList[i]) == ''"
+                (click)="onDisableUserClicked(i)">
+                Disable user
+            </button>
+            <nz-tag nzColor="red" *ngIf="getUserTagListString(userTagList[i]) != ''">
+                {{ getUserTagListString(userTagList[i]) }}
+            </nz-tag>
             <ul nz-list-item-actions>
                 <nz-list-item-action>
                     <a (click)="onEditUserClicked(i)">Edit</a>
