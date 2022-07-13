@@ -14,6 +14,7 @@ import {
   InvalidUserListArgumentError,
   InvalidUserRoleListArgument,
   SameUserError,
+  TagsService,
   UnauthenticatedError,
   UnauthorizedError,
   User,
@@ -29,6 +30,7 @@ import {
   UserRole,
   UserRoleListSortOrder,
   UserTag,
+  UserTagListSortOrder,
 } from 'src/app/services/dataaccess/api';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { 
@@ -43,13 +45,18 @@ import { PaginationService } from 'src/app/services/utils/pagination/pagination.
 
 const DEFAULT_USER_LIST_PAGE_INDEX = 1;
 const DEFAULT_USER_LIST_PAGE_SIZE = 10;
+const DEFAULT_PAGE_INDEX = 1;
+const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_SORT_ORDER = UserListSortOrder.ID_ASCENDING;
+const DEFAULT_TAG_LIST_SORT_ORDER = UserTagListSortOrder.ID_ASCENDING;
 
 const DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_INDEX = 1;
 const DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_SIZE = 5;
 
 const DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_INDEX = 1;
 const DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_SIZE = 5;
+
+const DEFAULT_USER_TAG_DISPLAY_NAME_FOR_DISABLING_USER = "Disabled"
 
 @Component({
   selector: 'app-manage-users',
@@ -81,7 +88,8 @@ export class ManageUsersComponent implements OnInit {
   public totalUserCount: number = 0;
   public userList: User[] = [];
   public userRoleList: UserRole[][] = [];
-  public userTagList: UserTag[][] = [];
+  public hasUserTagList: UserTag[][] = [];
+  public userTagList: UserTag[] = [];
 
   public isCreateNewUserModalVisible: boolean = false;
   public createNewUserModalFormGroup: FormGroup;
@@ -150,6 +158,7 @@ export class ManageUsersComponent implements OnInit {
   constructor(
     private readonly userManagementService: UserManagementService,
     private readonly userTagManagementService: UserTagManagementService,
+    private readonly tagsService: TagsService,
     private readonly filterOptionsService: FilterOptionsService,
     private readonly sessionManagementService: SessionManagementService,
     private readonly userRoleManagementService: UserRoleManagementService,
@@ -218,7 +227,7 @@ export class ManageUsersComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.activatedRoute.queryParams.subscribe((params) => {
+    this.activatedRoute.queryParams.subscribe(async (params) => {
       this.getPaginationInfoFromQueryParams(params);
       this.loadPageUserList().then(
         () => {},
@@ -226,6 +235,17 @@ export class ManageUsersComponent implements OnInit {
           console.error(error);
         }
       );
+      const offset = this.paginationService.getPageOffset(
+        DEFAULT_PAGE_INDEX,
+        DEFAULT_PAGE_SIZE
+      );
+      const { totalUserTagCount, userTagList } =
+        await this.tagsService.getUserTagList(
+          offset,
+          DEFAULT_PAGE_SIZE,
+          DEFAULT_TAG_LIST_SORT_ORDER
+        );
+      this.userTagList = userTagList;
     });
   }
 
@@ -275,7 +295,7 @@ export class ManageUsersComponent implements OnInit {
       this.totalUserCount = totalUserCount;
       this.userList = userList;
       this.userRoleList = userRoleList || [];
-      this.userTagList = userTagList;
+      this.hasUserTagList = userTagList;
     } catch (e) {
       this.handleError('Failed to retrieve user list', e);
     }
@@ -737,7 +757,7 @@ export class ManageUsersComponent implements OnInit {
 
   public async onActiveUserClicked(index: number): Promise<void> {
     const userId = this.userList[index].id;
-    const userTagId = this.userTagList[index][0].id;
+    const userTagId = this.hasUserTagList[index][0].id;
     try {
       await this.userTagManagementService.removeUserTagFromUser(
         userId,
@@ -753,15 +773,24 @@ export class ManageUsersComponent implements OnInit {
 
   public async onDisableUserClicked(index: number): Promise<void> {
     const userId = this.userList[index].id;
-    const userTagId = this.userTagList[index][0].id;
-    try {
-      await this.userTagManagementService.addUserTagToUser(
-        userId,
-        userTagId
-      )
-    } catch (error) {
-      this.handleError('Failed to add user tag to user', error);
+    const userTagId = this.userTagList.find(obj => {
+      return obj.displayName === DEFAULT_USER_TAG_DISPLAY_NAME_FOR_DISABLING_USER;
+    })?.id;
+    
+    if (typeof userTagId === undefined) {
+      this.notificationService.error('Failed to disable user because the userTagId is undefined', '');
+      return;
+    } else {
+      try {
+        await this.userTagManagementService.addUserTagToUser(
+          userId,
+          userTagId
+        )
+      } catch (error) {
+        this.handleError('Failed to add user tag to user', error);
+      }
     }
+    await this.loadPageUserList();
   }
 
   private handleError(notificationTitle: string, e: any) {

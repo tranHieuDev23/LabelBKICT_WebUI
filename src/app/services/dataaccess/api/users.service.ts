@@ -309,7 +309,7 @@ export class UsersService {
 
   public async addUserTagToUser(
     userID: number,
-    userTagID: number
+    userTagID: number | undefined
   ): Promise<void> {
     try {
       await this.axios.post(`/api/users/${userID}/tags`, {
@@ -339,6 +339,7 @@ export class UsersService {
     userTagID: number
   ): Promise<void> {
     try {
+      console.log("vaoday");
       await this.axios.delete(`/api/users/${userID}/tags/${userTagID}`);
     } catch (e) {
       if (!axios.isAxiosError(e)) {

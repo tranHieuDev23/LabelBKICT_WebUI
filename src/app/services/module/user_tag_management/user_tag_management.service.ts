@@ -78,7 +78,7 @@ export class UserTagManagementService {
 
   public async addUserTagToUser(
     userID: number,
-    userTagID: number
+    userTagID: number | undefined
   ): Promise<void> {
     await this.usersDataAccessService.addUserTagToUser(userID, userTagID);
   }
