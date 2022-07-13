@@ -28,17 +28,17 @@
                 </nz-list-item-meta-description>
             </nz-list-item-meta>
             <button nz-button class="active-user-btn" nzType="primary"
-                *ngIf="getUserTagListString(userTagList[i]) != ''"
+                *ngIf="getUserTagListString(hasUserTagList[i]) != ''"
                 (click)="onActiveUserClicked(i)">
                 Active user
             </button>
             <button nz-button class="disable-user-btn" nzType="primary" nzDanger
-                *ngIf="getUserTagListString(userTagList[i]) == ''"
+                *ngIf="getUserTagListString(hasUserTagList[i]) == ''"
                 (click)="onDisableUserClicked(i)">
                 Disable user
             </button>
-            <nz-tag nzColor="red" *ngIf="getUserTagListString(userTagList[i]) != ''">
-                {{ getUserTagListString(userTagList[i]) }}
+            <nz-tag nzColor="red" *ngIf="getUserTagListString(hasUserTagList[i]) != ''">
+                {{ getUserTagListString(hasUserTagList[i]) }}
             </nz-tag>
             <ul nz-list-item-actions>
                 <nz-list-item-action>
