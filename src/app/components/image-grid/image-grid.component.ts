@@ -46,6 +46,10 @@ export class ImageGridComponent {
     this.imageListSelected.emit(this.selectedImageList);
   }
 
+  public onSelectAllClicked(): void {
+    this.selectContainer?.selectAll();
+  }
+
   public onImageContextMenu(selectedImage: Image): void {
     if (this.selectedImageList.length < 2) {
       this.selectContainer?.clearSelection();
