@@ -24,11 +24,11 @@ import {
   UnauthorizedError,
   User,
 } from 'src/app/services/dataaccess/api';
+import { ImageManagementService } from 'src/app/services/module/image-management';
 import {
   FilterOptionsService,
   ImageListManagementService,
 } from 'src/app/services/module/image-list-management';
-import { ImageManagementService } from 'src/app/services/module/image-management';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
@@ -321,7 +321,7 @@ export class MyImagesComponent implements OnInit {
     });
   }
 
-  public async onSelectedImageRequestDetectionClicked() {
+  public async onRequestRegionDetectionForSelectedImagesClicked() {
     const selectedImageIDList = this.selectedImageList.map((image) => image.id);
     this.modalService.create({
       nzTitle: 'Request for lesion suggestion for selected image(s)',
@@ -331,17 +331,17 @@ export class MyImagesComponent implements OnInit {
       nzOkDanger: true,
       nzOnOk: async () => {
         try {
-          await this.imageManagementService.createDetectionTaskImageList(
+          await this.imageManagementService.createImageDetectionTaskList(
             selectedImageIDList
           );
           await this.getImageListFromPaginationInfo();
           this.notificationService.success(
-            'Requested for region detection for image(s) successfully',
+            'Requested for lesion suggestion for image(s) successfully',
             ''
           );
         } catch (e) {
           this.handleError(
-            'Failed to requested for region detection for image(s)',
+            'Failed to requested for lesion suggestion for image(s)',
             e
           );
         }

@@ -324,33 +324,7 @@ export class ImagesService {
     }
   }
 
-  public async createImageDetectionTask(id: number): Promise<void> {
-    try {
-      let imageIdList: number[] = [];
-      imageIdList.push(id);
-      await this.axios.post(`/api/images/detection-task`,
-        {imageIdList}
-      );
-    } catch (e) {
-      if (!axios.isAxiosError(e)) {
-        throw e;
-      }
-      switch (e.response?.status) {
-        case HttpStatusCode.Unauthorized:
-          throw new UnauthenticatedError();
-        case HttpStatusCode.Forbidden:
-          throw new UnauthorizedError();
-        case HttpStatusCode.NotFound:
-          throw new ImageNotFoundError();
-        case HttpStatusCode.Conflict:
-          throw new DetectionTaskAlreadyExistsError();
-        default:
-          throw new UnknownAPIError(e);
-      }
-    }
-  }
-
-  public async createDetectionTaskImageList(imageIdList: number[]): Promise<void> {
+  public async createImageDetectionTaskList(imageIdList: number[]): Promise<void> {
     try {
       await this.axios.post(`/api/images/detection-task`,
         {imageIdList}
