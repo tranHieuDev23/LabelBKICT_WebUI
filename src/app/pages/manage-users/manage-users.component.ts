@@ -333,11 +333,11 @@ export class ManageUsersComponent implements OnInit {
   }
 
   public async onEditUserModalSubmitClicked(): Promise<void> {
-    const { displayName, username, formPassword } =
+    const { displayName, username, password } =
       this.editUserModalFormGroup.value;
     let newPassword: string | undefined = undefined;
-    if (formPassword !== '') {
-      newPassword = formPassword;
+    if (password !== '') {
+      newPassword = password;
     }
 
     try {
