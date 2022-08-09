@@ -327,7 +327,6 @@ export class AllImagesComponent implements OnInit {
     this.modalService.create({
       nzTitle: 'Request for lesion suggestion for selected image(s)',
       nzContent: 'Are you sure?',
-      nzOkDanger: true,
       nzOnOk: async () => {
         try {
           await this.imageListManagementService.createImageDetectionTaskList(
