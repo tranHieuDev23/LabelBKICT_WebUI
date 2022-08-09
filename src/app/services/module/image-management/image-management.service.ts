@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import {
   Image,
   ImageBookmark,
+  ImageListService,
   ImagesService,
   ImageStatus,
   ImageTag,
@@ -18,6 +19,7 @@ import { DescriptionFileService } from './description-file.service';
 export class ImageManagementService {
   constructor(
     private readonly imagesService: ImagesService,
+    private readonly imageListService: ImageListService,
     private readonly descriptionFileService: DescriptionFileService
   ) {}
 
@@ -125,7 +127,7 @@ export class ImageManagementService {
   }
 
   public async createImageDetectionTask(id: number): Promise<void> {
-    await this.imagesService.createImageDetectionTask(id);
+    await this.imageListService.createImageDetectionTaskList([id]);
   }
 
   public async createImageBookmark(

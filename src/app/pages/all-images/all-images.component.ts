@@ -322,6 +322,32 @@ export class AllImagesComponent implements OnInit {
     });
   }
 
+  public async onRequestRegionDetectionForSelectedImagesClicked() {
+    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    this.modalService.create({
+      nzTitle: 'Request for lesion suggestion for selected image(s)',
+      nzContent: 'Are you sure?',
+      nzOkDanger: true,
+      nzOnOk: async () => {
+        try {
+          await this.imageListManagementService.createImageDetectionTaskList(
+            selectedImageIDList
+          );
+          await this.getImageListFromPaginationInfo();
+          this.notificationService.success(
+            'Requested for lesion suggestion for image(s) successfully',
+            ''
+          );
+        } catch (e) {
+          this.handleError(
+            'Failed to requested for lesion suggestion for image(s)',
+            e
+          );
+        }
+      },
+    });
+  }
+
   public onImageDbClicked(imageIndex: number): void {
     const image = this.imageList[imageIndex];
     const filterOptions =

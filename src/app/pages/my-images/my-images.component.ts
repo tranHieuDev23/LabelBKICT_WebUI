@@ -263,6 +263,7 @@ export class MyImagesComponent implements OnInit {
           return;
         }
       }
+
       if (this.contextMenu) {
         this.contextMenuService.create(event, this.contextMenu);
       }
@@ -313,6 +314,34 @@ export class MyImagesComponent implements OnInit {
           this.notificationService.success('Delete image(s) successfully', '');
         } catch (e) {
           this.handleError('Failed to delete image(s)', e);
+        }
+      },
+    });
+  }
+
+  public async onRequestRegionDetectionForSelectedImagesClicked() {
+    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    this.modalService.create({
+      nzTitle: 'Request for lesion suggestion for selected image(s)',
+      nzContent:
+        'Are you sure? This will also delete all previously region extracted from them and request for lesion suggestion again. ' +
+        'This action is <b>IRREVERSIBLE</b>.',
+      nzOkDanger: true,
+      nzOnOk: async () => {
+        try {
+          await this.imageListManagementService.createImageDetectionTaskList(
+            selectedImageIDList
+          );
+          await this.getImageListFromPaginationInfo();
+          this.notificationService.success(
+            'Requested for lesion suggestion for image(s) successfully',
+            ''
+          );
+        } catch (e) {
+          this.handleError(
+            'Failed to requested for lesion suggestion for image(s)',
+            e
+          );
         }
       },
     });
