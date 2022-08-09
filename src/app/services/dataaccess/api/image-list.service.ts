@@ -28,6 +28,12 @@ export class OneOrMoreImagesNotFoundError extends Error {
   }
 }
 
+export class DetectionTaskAlreadyExistsError extends Error {
+  constructor() {
+    super('Detection task already exists');
+  }
+}
+
 export class ImageUserSearchArgumentsError extends Error {
   constructor() {
     super('Invalid user search arguments');
@@ -88,6 +94,32 @@ export class ImageListService {
           throw new UnauthorizedError();
         case HttpStatusCode.NotFound:
           throw new OneOrMoreImagesNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async createImageDetectionTaskList(
+    imageIdList: number[]
+  ): Promise<void> {
+    try {
+      await this.axios.post(`/api/images/detection-task`, {
+        image_id_list: imageIdList,
+      });
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new OneOrMoreImagesNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new DetectionTaskAlreadyExistsError();
         default:
           throw new UnknownAPIError(e);
       }

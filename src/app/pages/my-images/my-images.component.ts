@@ -24,7 +24,6 @@ import {
   UnauthorizedError,
   User,
 } from 'src/app/services/dataaccess/api';
-import { ImageManagementService } from 'src/app/services/module/image-management';
 import {
   FilterOptionsService,
   ImageListManagementService,
@@ -78,7 +77,6 @@ export class MyImagesComponent implements OnInit {
   private selectedImageList: Image[] = [];
 
   constructor(
-    private readonly imageManagementService: ImageManagementService,
     private readonly imageListManagementService: ImageListManagementService,
     private readonly filterOptionsService: FilterOptionsService,
     private readonly userManagementService: UserManagementService,
@@ -331,7 +329,7 @@ export class MyImagesComponent implements OnInit {
       nzOkDanger: true,
       nzOnOk: async () => {
         try {
-          await this.imageManagementService.createImageDetectionTaskList(
+          await this.imageListManagementService.createImageDetectionTaskList(
             selectedImageIDList
           );
           await this.getImageListFromPaginationInfo();
