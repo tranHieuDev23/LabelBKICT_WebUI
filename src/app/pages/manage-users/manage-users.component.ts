@@ -643,7 +643,6 @@ export class ManageUsersComponent implements OnInit {
       return;
     }
     const imageOfUserID = this.addUserCanMangeUserImageUser.id;
-    console.log(this.addUserCanMangeUserImageUser, imageOfUserID);
     this.isAddUserCanMangeUserImageModalVisible = false;
     try {
       await this.userManagementService.createUserCanManageUserImage(
