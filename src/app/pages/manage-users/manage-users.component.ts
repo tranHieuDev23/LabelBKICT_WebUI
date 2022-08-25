@@ -38,7 +38,7 @@ import {
   UserManagementService
  } from 'src/app/services/module/user-management';
 import { UserRoleManagementService } from 'src/app/services/module/user-role-management';
-import { UserTagManagementService } from 'src/app/services/module/user_tag_management';
+import { UserTagManagementService } from 'src/app/services/module/user-tag-management';
 import { ConfirmedValidator } from 'src/app/services/utils/confirmed-validator/confirmed-validator';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
@@ -88,8 +88,7 @@ export class ManageUsersComponent implements OnInit {
   public totalUserCount: number = 0;
   public userList: User[] = [];
   public userRoleList: UserRole[][] = [];
-  public hasUserTagList: UserTag[][] = [];
-  public userTagList: UserTag[] = [];
+  public userTagList: UserTag[][] = [];
 
   public isCreateNewUserModalVisible: boolean = false;
   public createNewUserModalFormGroup: FormGroup;
@@ -149,6 +148,36 @@ export class ManageUsersComponent implements OnInit {
   public addUserRoleModalSortOrder: UserRoleListSortOrder =
     UserRoleListSortOrder.ID_ASCENDING;
   public addUserRoleModalUserRoleList: UserRole[] = [];
+
+  public isAddUserTagModalVisible: boolean = false;
+  public addUserTagModalSortOrderOptions: {
+    value: UserTagListSortOrder;
+    title: string;
+  }[] = [
+    {
+      value: UserTagListSortOrder.ID_ASCENDING,
+      title: 'User tag ID (Asc.)',
+    },
+    {
+      value: UserTagListSortOrder.ID_DESCENDING,
+      title: 'User tag ID (Desc.)',
+    },
+    {
+      value: UserTagListSortOrder.DISPLAY_NAME_ASCENDING,
+      title: 'Display name (A-Z)',
+    },
+    {
+      value: UserTagListSortOrder.DISPLAY_NAME_DESCENDING,
+      title: 'Display name (Z-A)',
+    },
+  ];
+  public addUserTagModalPageSizeOptions: number[] = [10, 20, 50, 100];
+  public addUserTagModalPageIndex: number = 0;
+  public addUserTagModalPageSize: number = 10;
+  public addUserTagModalTotalUserTagCount: number = 0;
+  public addUserTagModalSortOrder: UserTagListSortOrder =
+    UserTagListSortOrder.ID_ASCENDING;
+  public addUserTagModalUserTagList: UserTag[] = [];
 
   private getDefaultUserListFilterOptions(): UserListFilterOptionsWithMetadata {
     const filterOptions = new UserListFilterOptionsWithMetadata();
@@ -227,7 +256,7 @@ export class ManageUsersComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.activatedRoute.queryParams.subscribe(async (params) => {
+    this.activatedRoute.queryParams.subscribe((params) => {
       this.getPaginationInfoFromQueryParams(params);
       this.loadPageUserList().then(
         () => {},
@@ -235,17 +264,6 @@ export class ManageUsersComponent implements OnInit {
           console.error(error);
         }
       );
-      const offset = this.paginationService.getPageOffset(
-        DEFAULT_PAGE_INDEX,
-        DEFAULT_PAGE_SIZE
-      );
-      const { totalUserTagCount, userTagList } =
-        await this.tagsService.getUserTagList(
-          offset,
-          DEFAULT_PAGE_SIZE,
-          DEFAULT_TAG_LIST_SORT_ORDER
-        );
-      this.userTagList = userTagList;
     });
   }
 
@@ -295,7 +313,7 @@ export class ManageUsersComponent implements OnInit {
       this.totalUserCount = totalUserCount;
       this.userList = userList;
       this.userRoleList = userRoleList || [];
-      this.hasUserTagList = userTagList;
+      this.userTagList = userTagList;
     } catch (e) {
       this.handleError('Failed to retrieve user list', e);
     }
@@ -547,6 +565,103 @@ export class ManageUsersComponent implements OnInit {
     this.isAddUserRoleModalVisible = false;
   }
 
+  public async onEditUserModalUserTagListDeleteClicked(
+    userTag: UserTag
+  ): Promise<void> {
+    try {
+      await this.userTagManagementService.removeUserTagFromUser(
+        this.editUserModalUserID,
+        userTag.id
+      );
+    } catch (e) {
+      this.handleError('Failed to remove user tag from user', e);
+      return;
+    }
+
+    this.notificationService.success(
+      'Successfully remove user tag from user',
+      ''
+    );
+    this.userTagList[this.editUserModalUserListItemIndex] = this.userTagList[
+      this.editUserModalUserListItemIndex
+    ].filter((userTagItem) => userTagItem.id != userTag.id);
+  }
+
+  public async onAddUserTagClicked(): Promise<void> {
+    this.addUserTagModalPageIndex = 1;
+    this.addUserTagModalPageSize = 10;
+    this.addUserTagModalSortOrder = UserTagListSortOrder.ID_ASCENDING;
+    await this.loadUserTagList();
+    this.isAddUserTagModalVisible = true;
+  }
+
+  public onAddUserTagModalCancel(): void {
+    this.isAddUserTagModalVisible = false;
+  }
+
+  public async onAddUserTagModalSortOrderChanged(
+    newSortOrder: UserTagListSortOrder
+  ): Promise<void> {
+    this.addUserTagModalSortOrder = newSortOrder;
+    await this.loadUserTagList();
+  }
+
+  public async onAddUserTagModalPageIndexChanged(
+    newPageIndex: number
+  ): Promise<void> {
+    this.addUserTagModalPageIndex = newPageIndex;
+    await this.loadUserTagList();
+  }
+
+  public async onAddUserTagModalPageSizeChanged(
+    newPageSize: number
+  ): Promise<void> {
+    this.addUserTagModalPageSize = newPageSize;
+    await this.loadUserTagList();
+  }
+
+  private async loadUserTagList(): Promise<void> {
+    const offset = this.paginationService.getPageOffset(
+      this.addUserTagModalPageIndex,
+      this.addUserTagModalPageSize
+    );
+    try {
+      const { totalUserTagCount, userTagList } =
+        await this.userTagManagementService.getUserTagList(
+          offset,
+          this.addUserTagModalPageSize,
+          this.addUserTagModalSortOrder
+        );
+      this.addUserTagModalTotalUserTagCount = totalUserTagCount;
+      this.addUserTagModalUserTagList = userTagList;
+    } catch (e) {
+      this.handleError('Failed to retrieve user tag list', e);
+    }
+  }
+
+  public async onAddUserTagModalItemClicked(
+    userTag: UserTag
+  ): Promise<void> {
+    try {
+      await this.userTagManagementService.addUserTagToUser(
+        this.editUserModalUserID,
+        userTag.id
+      );
+    } catch (e) {
+      this.handleError('Failed to add user tag to user', e);
+      return;
+    }
+    this.notificationService.success(
+      'Successfully added user tag to user',
+      ''
+    );
+    this.userTagList[this.editUserModalUserListItemIndex] = [
+      ...this.userTagList[this.editUserModalUserListItemIndex],
+      userTag,
+    ];
+    this.isAddUserTagModalVisible = false;
+  }
+
   public async onManageUserPermissionPanelActiveChange(
     isActive: boolean
   ): Promise<void> {
@@ -753,44 +868,6 @@ export class ManageUsersComponent implements OnInit {
 
   public onUserCanVerifyUserImageAddUserModalCancel(): void {
     this.isAddUserCanVerifyUserImageModalVisible = false;
-  }
-
-  public async onActiveUserClicked(index: number): Promise<void> {
-    const userId = this.userList[index].id;
-    const userTagId = this.hasUserTagList[index][0].id;
-    try {
-      await this.userTagManagementService.removeUserTagFromUser(
-        userId,
-        userTagId
-      )
-    } catch (error) {
-      this.handleError('Failed to remove user tag from user', error);
-    }
-    
-    this.notificationService.success('Successfully active user', '');
-    await this.loadPageUserList();
-  }
-
-  public async onDisableUserClicked(index: number): Promise<void> {
-    const userId = this.userList[index].id;
-    const userTagId = this.userTagList.find(obj => {
-      return obj.displayName === DEFAULT_USER_TAG_DISPLAY_NAME_FOR_DISABLING_USER;
-    })?.id;
-    
-    if (typeof userTagId === undefined) {
-      this.notificationService.error('Failed to disable user because the userTagId is undefined', '');
-      return;
-    } else {
-      try {
-        await this.userTagManagementService.addUserTagToUser(
-          userId,
-          userTagId
-        )
-      } catch (error) {
-        this.handleError('Failed to add user tag to user', error);
-      }
-    }
-    await this.loadPageUserList();
   }
 
   private handleError(notificationTitle: string, e: any) {

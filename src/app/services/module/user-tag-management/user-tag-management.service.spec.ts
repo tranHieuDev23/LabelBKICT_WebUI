@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { UserTagManagementService } from './user_tag_management.service';
+import { UserTagManagementService } from './user-tag-management.service';
 
 describe('UserTagManagementService', () => {
   let service: UserTagManagementService;

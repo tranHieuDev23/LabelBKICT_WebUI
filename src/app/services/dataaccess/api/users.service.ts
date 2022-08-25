@@ -339,7 +339,6 @@ export class UsersService {
     userTagID: number
   ): Promise<void> {
     try {
-      console.log("vaoday");
       await this.axios.delete(`/api/users/${userID}/tags/${userTagID}`);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
