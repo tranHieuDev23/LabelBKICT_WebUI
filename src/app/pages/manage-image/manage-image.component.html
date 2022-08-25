@@ -207,9 +207,9 @@
             </nz-select>
         </div>
         <span *ngIf="image?.imageType?.hasPredictiveModel">
-            <h4 nz-typography style="margin-top: 8px;">Request for region detection</h4>
+            <h4 nz-typography style="margin-top: 8px;">Request for AI-based lesion suggestion</h4>
             <p nz-typography>
-                The image will be sent to AI model for automatic region detection.
+                The image will be sent to AI model for automatic lesion segmentation.
             </p>
             <button nz-button nzType="primary" (click)="onImageSettingsModalRequestDetectionClicked()">
                 <i nz-icon nzType="reload"></i> Request

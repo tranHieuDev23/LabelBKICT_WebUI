@@ -35,10 +35,6 @@ const MAX_SEARCH_USER_RESULT = 10;
   styleUrls: ['./verify-images.component.scss'],
 })
 export class VerifyImagesComponent implements OnInit {
-  @ViewChild('contextMenu') public contextMenu:
-    | NzDropdownMenuComponent
-    | undefined;
-
   public pageIndex: number = DEFAULT_PAGE_INDEX;
   public pageSize: number = DEFAULT_PAGE_SIZE;
   public filterOptions: ImageListFilterOptionsWithMetadata =

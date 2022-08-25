@@ -327,7 +327,7 @@ export class DrawState implements RegionSelectorState {
       );
     }
 
-    let { polygonID, vertexID, openVertexID, isOpenVertexPrevious } =
+    const { polygonID, vertexID, openVertexID, isOpenVertexPrevious } =
       nearestVertexWithOpenNeighborInfo;
     const polygonToAdd = this.content.drawnPolygonList[polygonID];
     const vertexToConnect = polygonToAdd.vertices[vertexID];
@@ -339,7 +339,7 @@ export class DrawState implements RegionSelectorState {
     if (isOpenVertexPrevious) {
       newContent.drawnPolygonList[polygonID] = {
         vertices: [
-          ...polygonToAdd.vertices.slice(0, openVertexID).reverse(),
+          ...polygonToAdd.vertices.slice(0, vertexID).reverse(),
           ...polygonToAdd.vertices.slice(vertexID).reverse(),
           ...inBetweenPointList,
           cursorImagePosition,
@@ -349,7 +349,7 @@ export class DrawState implements RegionSelectorState {
       newContent.drawnPolygonList[polygonID] = {
         vertices: [
           ...polygonToAdd.vertices.slice(openVertexID),
-          ...polygonToAdd.vertices.slice(0, vertexID),
+          ...polygonToAdd.vertices.slice(0, openVertexID),
           ...inBetweenPointList,
           cursorImagePosition,
         ],

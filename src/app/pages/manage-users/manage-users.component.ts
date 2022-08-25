@@ -256,7 +256,7 @@ export class ManageUsersComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.activatedRoute.queryParams.subscribe((params) => {
+    this.activatedRoute.queryParams.subscribe(async (params) => {
       this.getPaginationInfoFromQueryParams(params);
       this.loadPageUserList().then(
         () => {},
@@ -264,6 +264,17 @@ export class ManageUsersComponent implements OnInit {
           console.error(error);
         }
       );
+      const offset = this.paginationService.getPageOffset(
+        DEFAULT_PAGE_INDEX,
+        DEFAULT_PAGE_SIZE
+      );
+      const { totalUserTagCount, userTagList } =
+        await this.tagsService.getUserTagList(
+          offset,
+          DEFAULT_PAGE_SIZE,
+          DEFAULT_TAG_LIST_SORT_ORDER
+        );
+      this.userTagList = userTagList;
     });
   }
 
@@ -443,11 +454,11 @@ export class ManageUsersComponent implements OnInit {
   }
 
   public async onEditUserModalSubmitClicked(): Promise<void> {
-    const { displayName, username, formPassword } =
+    const { displayName, username, password } =
       this.editUserModalFormGroup.value;
     let newPassword: string | undefined = undefined;
-    if (formPassword !== '') {
-      newPassword = formPassword;
+    if (password !== '') {
+      newPassword = password;
     }
 
     try {
@@ -758,7 +769,6 @@ export class ManageUsersComponent implements OnInit {
       return;
     }
     const imageOfUserID = this.addUserCanMangeUserImageUser.id;
-    console.log(this.addUserCanMangeUserImageUser, imageOfUserID);
     this.isAddUserCanMangeUserImageModalVisible = false;
     try {
       await this.userManagementService.createUserCanManageUserImage(
@@ -868,6 +878,44 @@ export class ManageUsersComponent implements OnInit {
 
   public onUserCanVerifyUserImageAddUserModalCancel(): void {
     this.isAddUserCanVerifyUserImageModalVisible = false;
+  }
+
+  public async onActiveUserClicked(index: number): Promise<void> {
+    const userId = this.userList[index].id;
+    const userTagId = this.hasUserTagList[index][0].id;
+    try {
+      await this.userTagManagementService.removeUserTagFromUser(
+        userId,
+        userTagId
+      )
+    } catch (error) {
+      this.handleError('Failed to remove user tag from user', error);
+    }
+    
+    this.notificationService.success('Successfully active user', '');
+    await this.loadPageUserList();
+  }
+
+  public async onDisableUserClicked(index: number): Promise<void> {
+    const userId = this.userList[index].id;
+    const userTagId = this.userTagList.find(obj => {
+      return obj.displayName === DEFAULT_USER_TAG_DISPLAY_NAME_FOR_DISABLING_USER;
+    })?.id;
+    
+    if (typeof userTagId === undefined) {
+      this.notificationService.error('Failed to disable user because the userTagId is undefined', '');
+      return;
+    } else {
+      try {
+        await this.userTagManagementService.addUserTagToUser(
+          userId,
+          userTagId
+        )
+      } catch (error) {
+        this.handleError('Failed to add user tag to user', error);
+      }
+    }
+    await this.loadPageUserList();
   }
 
   private handleError(notificationTitle: string, e: any) {
