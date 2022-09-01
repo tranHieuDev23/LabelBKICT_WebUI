@@ -53,7 +53,7 @@
                             <nz-list-item-meta-title *ngIf="exportRequest.status !== 2 && exportRequest.type === 0">
                                 Dataset Zip Export by {{ exportRequest.requestedByUser.displayName }}
                             </nz-list-item-meta-title>
-                            <nz-list-item-meta-title *ngIf="exportRequest.status !== 2 && exportRequest.type === 0">
+                            <nz-list-item-meta-title *ngIf="exportRequest.status !== 2 && exportRequest.type === 1">
                                 Dataset Information Excel Export by {{ exportRequest.requestedByUser.displayName }}
                             </nz-list-item-meta-title>
                             <nz-list-item-meta-title *ngIf="exportRequest.status === 2">
