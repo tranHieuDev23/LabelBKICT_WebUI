@@ -27,8 +27,8 @@
                     {{ getUserRoleListString(userRoleList[i]) }}
                 </nz-list-item-meta-description>
             </nz-list-item-meta>
-            <nz-tag nzColor="red" *ngIf="getUserTagListString(userTagList[i]) != ''">
-                {{ getUserTagListString(userTagList[i]) }}
+            <nz-tag nzColor="red" *ngFor="let userTag of userTagList[i]">
+                {{ userTag.displayName }}
             </nz-tag>
             <ul nz-list-item-actions>
                 <nz-list-item-action>

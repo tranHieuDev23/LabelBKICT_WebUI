@@ -268,13 +268,6 @@ export class ManageUsersComponent implements OnInit {
         DEFAULT_PAGE_INDEX,
         DEFAULT_PAGE_SIZE
       );
-      const { totalUserTagCount, userTagList } =
-        await this.tagsService.getUserTagList(
-          offset,
-          DEFAULT_PAGE_SIZE,
-          DEFAULT_TAG_LIST_SORT_ORDER
-        );
-      this.userTagList = userTagList;
     });
   }
 
@@ -346,13 +339,6 @@ export class ManageUsersComponent implements OnInit {
       return 'No role assigned';
     }
     return userRoleList.map((userRole) => userRole.displayName).join(', ');
-  }
-
-  public getUserTagListString(userTagList: UserTag[]): string {
-    if (userTagList.length === 0) {
-      return '';
-    }
-    return userTagList.map((userTag) => userTag.displayName).join(', ');
   }
 
   public onSortOrderChanged(newSortOrder: UserListSortOrder): void {
@@ -878,44 +864,6 @@ export class ManageUsersComponent implements OnInit {
 
   public onUserCanVerifyUserImageAddUserModalCancel(): void {
     this.isAddUserCanVerifyUserImageModalVisible = false;
-  }
-
-  public async onActiveUserClicked(index: number): Promise<void> {
-    const userId = this.userList[index].id;
-    const userTagId = this.hasUserTagList[index][0].id;
-    try {
-      await this.userTagManagementService.removeUserTagFromUser(
-        userId,
-        userTagId
-      )
-    } catch (error) {
-      this.handleError('Failed to remove user tag from user', error);
-    }
-    
-    this.notificationService.success('Successfully active user', '');
-    await this.loadPageUserList();
-  }
-
-  public async onDisableUserClicked(index: number): Promise<void> {
-    const userId = this.userList[index].id;
-    const userTagId = this.userTagList.find(obj => {
-      return obj.displayName === DEFAULT_USER_TAG_DISPLAY_NAME_FOR_DISABLING_USER;
-    })?.id;
-    
-    if (typeof userTagId === undefined) {
-      this.notificationService.error('Failed to disable user because the userTagId is undefined', '');
-      return;
-    } else {
-      try {
-        await this.userTagManagementService.addUserTagToUser(
-          userId,
-          userTagId
-        )
-      } catch (error) {
-        this.handleError('Failed to add user tag to user', error);
-      }
-    }
-    await this.loadPageUserList();
   }
 
   private handleError(notificationTitle: string, e: any) {
