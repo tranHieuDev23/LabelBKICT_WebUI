@@ -67,6 +67,26 @@ export class RegionsService {
     }
   }
 
+  public async deleteRegionOfImage(imageID: number): Promise<void> {
+    try {
+      await this.axios.delete(`/api/images/${imageID}/regions`);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
   public async deleteRegion(imageID: number, regionID: number): Promise<void> {
     try {
       await this.axios.delete(`/api/images/${imageID}/regions/${regionID}`);

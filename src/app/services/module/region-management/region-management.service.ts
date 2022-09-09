@@ -26,6 +26,10 @@ export class RegionManagementService {
     );
   }
 
+  public async deleteRegionOfImage(imageID: number): Promise<void> {
+    return await this.regionsService.deleteRegionOfImage(imageID);
+  }
+
   public async deleteRegion(imageID: number, regionID: number): Promise<void> {
     return await this.regionsService.deleteRegion(imageID, regionID);
   }

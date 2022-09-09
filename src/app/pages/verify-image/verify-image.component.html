@@ -210,8 +210,8 @@
             (click)="onContextMenuDeleteRegionClicked()">
             Delete region
         </li>
-        <!-- <li *ngIf="editable" nz-menu-item nzDanger (click)="onDeleteAllRegionsClicked()">
+        <li *ngIf="isImageEditable" nz-menu-item nzDanger (click)="onContextMenuDeleteAllRegionClicked()">
             Delete all regions
-        </li> -->
+        </li>
     </ul>
 </nz-dropdown-menu>

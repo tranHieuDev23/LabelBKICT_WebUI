@@ -848,6 +848,30 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     await this.handleDeleteRegion(this.contextMenuRegion);
   }
 
+  public onContextMenuDeleteAllRegionClicked(): void {
+    this.modalService.create({
+      nzTitle: 'Delete all regions of image',
+      nzContent: '<p>Are you sure? This action is <b>IRREVERSIBLE</b>.</p>',
+      nzOkDanger: true,
+      nzOnOk: async () => {
+        if (!this.image) {
+          return;
+        }
+        try {
+          await this.regionManagementService.deleteRegionOfImage(this.image.id);
+        } catch (e) {
+          this.handleError('Failed to delete all regions of image', e);
+          return;
+        }
+        this.notificationService.success(
+          'Deleted all regions of image successfully',
+          ''
+        );
+        this.regionList = [];
+      },
+    });
+  }
+
   private async openRegionInfoModal(region: Region): Promise<void> {
     if (!this.image) {
       return;
