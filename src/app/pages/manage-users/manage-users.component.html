@@ -2,6 +2,10 @@
     <h1 nz-typography>
         Manage users
     </h1>
+    <app-user-filter-options-selector 
+        [filterOptions]="filterOptions"
+        (filterOptionsUpdated)="onUserListFilterOptionsUpdated($event)">
+    </app-user-filter-options-selector>
     <button nz-button nzType="primary" class="create-new-user-btn" (click)="onCreateNewUserClicked()">
         <i nz-icon nzType="user-add" nzTheme="outline"></i> Create a new user
     </button>
@@ -23,6 +27,9 @@
                     {{ getUserRoleListString(userRoleList[i]) }}
                 </nz-list-item-meta-description>
             </nz-list-item-meta>
+            <nz-tag nzColor="red" *ngFor="let userTag of userTagList[i]">
+                {{ userTag.displayName }}
+            </nz-tag>
             <ul nz-list-item-actions>
                 <nz-list-item-action>
                     <a (click)="onEditUserClicked(i)">Edit</a>
@@ -230,6 +237,31 @@
                     <i nz-icon nzType="plus" nzTheme="outline"></i> Add user role
                 </button>
             </nz-collapse-panel>
+            <nz-collapse-panel nzHeader="Assigned tags">
+                <nz-list [nzDataSource]="userTagList[editUserModalUserListItemIndex]" nzBordered>
+                    <nz-list-item *ngFor="let userTag of userTagList[editUserModalUserListItemIndex]">
+                        <nz-list-item-meta>
+                            <nz-list-item-meta-title>
+                                {{ userTag.displayName }}
+                            </nz-list-item-meta-title>
+                            <nz-list-item-meta-description>
+                                {{ userTag.description }}
+                            </nz-list-item-meta-description>
+                        </nz-list-item-meta>
+                        <ul nz-list-item-actions>
+                            <nz-list-item-action>
+                                <a nz-typography nzType="danger"
+                                    (click)="onEditUserModalUserTagListDeleteClicked(userTag)">
+                                    <i nz-icon nzType="delete" nzTheme="outline"></i>
+                                </a>
+                            </nz-list-item-action>
+                        </ul>
+                    </nz-list-item>
+                </nz-list>
+                <button nz-button nzType="primary" class="add-user-tag-btn" (click)="onAddUserTagClicked()">
+                    <i nz-icon nzType="plus" nzTheme="outline"></i> Add user tag
+                </button>
+            </nz-collapse-panel>
             <nz-collapse-panel nzHeader="Manage image permission"
                 (nzActiveChange)="onManageUserPermissionPanelActiveChange($event)">
                 <p nz-typography>
@@ -345,6 +377,42 @@
                     [nzPageSizeOptions]="addUserRoleModalPageSizeOptions"
                     (nzPageIndexChange)="onAddUserRoleModalPageIndexChanged($event)"
                     (nzPageSizeChange)="onAddUserRoleModalPageSizeChanged($event)">
+                </nz-pagination>
+            </nz-list-footer>
+        </ul>
+    </ng-container>
+</nz-modal>
+
+<nz-modal [(nzVisible)]="isAddUserTagModalVisible" nzTitle="Add user tag" [nzFooter]="null"
+    (nzOnCancel)="onAddUserTagModalCancel()">
+    <ng-container *nzModalContent>
+        <ul nz-list [nzDataSource]="addUserTagModalUserTagList" nzBordered nzItemLayout="vertical">
+            <nz-list-header>
+                Sort by:
+                <nz-select [(ngModel)]="addUserTagModalSortOrder"
+                    (ngModelChange)="onAddUserTagModalSortOrderChanged($event)">
+                    <nz-option *ngFor="let sortOrderOption of addUserTagModalSortOrderOptions"
+                        [nzValue]="sortOrderOption.value" [nzLabel]="sortOrderOption.title">
+                    </nz-option>
+                </nz-select>
+            </nz-list-header>
+            <li nz-list-item *ngFor="let userTag of addUserTagModalUserTagList" nzNoFlex
+                class="add-user-tag-list-item" (click)="onAddUserTagModalItemClicked(userTag)">
+                <nz-list-item-meta>
+                    <nz-list-item-meta-title>
+                        {{ userTag.displayName }}
+                    </nz-list-item-meta-title>
+                    <nz-list-item-meta-description>
+                        {{ userTag.description }}
+                    </nz-list-item-meta-description>
+                </nz-list-item-meta>
+            </li>
+            <nz-list-footer>
+                <nz-pagination [nzPageIndex]="addUserTagModalPageIndex" [nzPageSize]="addUserTagModalPageSize"
+                    [nzTotal]="addUserTagModalTotalUserTagCount" nzShowSizeChanger
+                    [nzPageSizeOptions]="addUserTagModalPageSizeOptions"
+                    (nzPageIndexChange)="onAddUserTagModalPageIndexChanged($event)"
+                    (nzPageSizeChange)="onAddUserTagModalPageSizeChanged($event)">
                 </nz-pagination>
             </nz-list-footer>
         </ul>

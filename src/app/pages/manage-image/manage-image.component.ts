@@ -948,7 +948,6 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     try {
       await this.imageManagementService.createImageDetectionTask(this.image.id);
     } catch (e) {
-      console.log(e);
       this.handleError('Failed to request for lesion suggestion', e);
       return;
     }
