@@ -59,12 +59,13 @@ export class UserManagementService {
     limit: number,
     sortOrder: UserListSortOrder,
     withUserRole: boolean,
+    withUserTag: boolean,
     filterOptions: UserListFilterOptions
   ): Promise<{
     totalUserCount: number;
     userList: User[];
     userRoleList: UserRole[][] | undefined;
-    userTagList: UserTag[][];
+    userTagList: UserTag[][] | undefined;
   }> {
     filterOptions.userNameQuery =
       filterOptions.userNameQuery.trim();
@@ -73,6 +74,7 @@ export class UserManagementService {
       limit,
       sortOrder,
       withUserRole,
+      withUserTag,
       filterOptions
     );
   }

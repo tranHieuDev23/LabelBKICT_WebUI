@@ -147,12 +147,13 @@ export class UsersService {
     limit: number,
     sortOrder: UserListSortOrder,
     withUserRole: boolean,
+    withUserTag: boolean,
     filterOptions: UserListFilterOptions
   ): Promise<{
     totalUserCount: number;
     userList: User[];
     userRoleList: UserRole[][] | undefined;
-    userTagList: UserTag[][];
+    userTagList: UserTag[][] | undefined;
   }> {
     try {
       const filterOptionsQueryParams =
@@ -163,25 +164,29 @@ export class UsersService {
           limit: limit,
           sort_order: sortOrder,
           with_user_role: withUserRole ? 1 : 0,
+          with_user_tag: withUserTag ? 1 : 0,
           ...filterOptionsQueryParams
         },
       });
 
       const totalUserCount = +response.data.total_user_count;
       const userList = response.data.user_list.map(User.fromJSON);
+      
       const userTagJSONList = response.data.user_tag_list as any[];
       const userTagList = userTagJSONList.map((list) =>
         list.map(UserTag.fromJSON)
       );
-      if (!withUserRole) {
-        return { totalUserCount, userList, userRoleList: undefined, userTagList };
-      }
 
       const userRoleJSONList = response.data.user_role_list as any[];
       const userRoleList = userRoleJSONList.map((list) =>
         list.map(UserRole.fromJSON)
       );
-      return { totalUserCount, userList, userRoleList, userTagList };
+      return { 
+          totalUserCount, 
+          userList, 
+          userRoleList: withUserRole ? userRoleList : undefined, 
+          userTagList : withUserTag ? userTagList : undefined
+      };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

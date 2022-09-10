@@ -312,12 +312,13 @@ export class ManageUsersComponent implements OnInit {
           this.pageSize,
           this.sortOrder,
           true,
+          true,
           filterOptions
         );
       this.totalUserCount = totalUserCount;
       this.userList = userList;
       this.userRoleList = userRoleList || [];
-      this.userTagList = userTagList;
+      this.userTagList = userTagList || [];
     } catch (e) {
       this.handleError('Failed to retrieve user list', e);
     }
