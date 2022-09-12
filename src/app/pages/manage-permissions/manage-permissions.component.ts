@@ -196,6 +196,7 @@ export class ManagePermissionsComponent implements OnInit {
       nzTitle: 'Delete user permission',
       nzContent: 'Are you sure? This action <b>CANNOT</b> be undone.',
       nzCancelText: 'Cancel',
+      nzOkDanger: true,
       nzOnOk: async () => {
         try {
           await this.userPermissionManagementService.deleteUserPermission(

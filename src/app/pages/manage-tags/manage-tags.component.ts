@@ -318,6 +318,7 @@ export class ManageTagsComponent implements OnInit {
       nzTitle: 'Delete user tag',
       nzContent: 'Are you sure? This action <b>CANNOT</b> be undone.',
       nzCancelText: 'Cancel',
+      nzOkDanger: true,
       nzOnOk: async () => {
         try {
           await this.userTagManagementService.deleteUserTag(
