@@ -372,7 +372,7 @@ export class ManageUsersComponent implements OnInit {
   ): void {
     const queryParams: any = {};
     if (pageIndex !== DEFAULT_USER_LIST_PAGE_INDEX) {
-      queryParams['index'] = pageIndex;
+      queryParams['page'] = pageIndex;
     }
     if (pageSize !== DEFAULT_USER_LIST_PAGE_SIZE) {
       queryParams['size'] = pageSize;
