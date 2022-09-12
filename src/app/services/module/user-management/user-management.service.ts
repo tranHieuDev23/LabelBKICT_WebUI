@@ -67,8 +67,7 @@ export class UserManagementService {
     userRoleList: UserRole[][] | undefined;
     userTagList: UserTag[][] | undefined;
   }> {
-    filterOptions.userNameQuery =
-      filterOptions.userNameQuery.trim();
+    filterOptions.usernameQuery = filterOptions.usernameQuery.trim();
     return await this.userDataAccessService.getUserList(
       offset,
       limit,

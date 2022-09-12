@@ -1,9 +1,18 @@
-import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { RolesService, TagsService, UnauthenticatedError, UnauthorizedError, UserRole, UserRoleListSortOrder, UserTag, UserTagListSortOrder } from "src/app/services/dataaccess/api";
+import {
+  RolesService,
+  TagsService,
+  UnauthenticatedError,
+  UnauthorizedError,
+  UserRole,
+  UserRoleListSortOrder,
+  UserTag,
+  UserTagListSortOrder,
+} from 'src/app/services/dataaccess/api';
 import { DelayedCallbackService } from 'src/app/services/utils/delayed-callback/delayed-callback.service';
-import { PaginationService } from "src/app/services/utils/pagination/pagination.service";
+import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
 
 export class UserListFilterOptionsWithMetadata {
   public userNameQuery = '';
@@ -23,7 +32,6 @@ const DEFAULT_TAG_LIST_SORT_ORDER = UserTagListSortOrder.ID_ASCENDING;
   templateUrl: './user-filter-options-selector.component.html',
   styleUrls: ['./user-filter-options-selector.component.scss'],
 })
-
 export class UserFilterOptionsSelectorComponent implements OnInit {
   private _filterOptions = new UserListFilterOptionsWithMetadata();
 
@@ -34,7 +42,7 @@ export class UserFilterOptionsSelectorComponent implements OnInit {
   public get filterOptions(): UserListFilterOptionsWithMetadata {
     return this._filterOptions;
   }
-  
+
   @Output() public filterOptionsUpdated =
     new EventEmitter<UserListFilterOptionsWithMetadata>();
 
@@ -44,7 +52,7 @@ export class UserFilterOptionsSelectorComponent implements OnInit {
   public sameIDCompareFunc = (o1: any, o2: any) => {
     return o1?.id === o2?.id;
   };
-  
+
   constructor(
     private readonly rolesService: RolesService,
     private readonly tagsService: TagsService,
@@ -61,21 +69,19 @@ export class UserFilterOptionsSelectorComponent implements OnInit {
           DEFAULT_PAGE_INDEX,
           DEFAULT_PAGE_SIZE
         );
-        const { totalUserRoleCount, userRoleList, userPermissionList } =
-          await this.rolesService.getUserRoleList(
-            offset,
-            DEFAULT_PAGE_SIZE,
-            DEFAULT_ROLE_LIST_SORT_ORDER,
-            false
-          );
+        const { userRoleList } = await this.rolesService.getUserRoleList(
+          offset,
+          DEFAULT_PAGE_SIZE,
+          DEFAULT_ROLE_LIST_SORT_ORDER,
+          false
+        );
         this.userRoleList = userRoleList;
 
-        const { totalUserTagCount, userTagList } =
-          await this.tagsService.getUserTagList(
-            offset,
-            DEFAULT_PAGE_SIZE,
-            DEFAULT_TAG_LIST_SORT_ORDER
-          );
+        const { userTagList } = await this.tagsService.getUserTagList(
+          offset,
+          DEFAULT_PAGE_SIZE,
+          DEFAULT_TAG_LIST_SORT_ORDER
+        );
         this.userTagList = userTagList;
       } catch (e) {
         if (e instanceof UnauthenticatedError) {
@@ -104,7 +110,7 @@ export class UserFilterOptionsSelectorComponent implements OnInit {
   public onFilterOptionsUpdated(): void {
     this.filterOptionsUpdated.emit(this._filterOptions);
   }
-  
+
   public resetFilterOptions(): void {
     this._filterOptions = new UserListFilterOptionsWithMetadata();
     this.onFilterOptionsUpdated();
@@ -114,12 +120,9 @@ export class UserFilterOptionsSelectorComponent implements OnInit {
     this.delayedCallbackService.scheduleDelayedCallback(
       USER_SEARCH_INPUT_CALLBACK_ID,
       () => {
-      this.onFilterOptionsUpdated();
+        this.onFilterOptionsUpdated();
       },
       USER_SEARCH_INPUT_CALLBACK_DELAY
     );
   }
 }
-
-
-

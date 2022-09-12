@@ -1,5 +1,5 @@
 export class UserListFilterOptions {
-  public userNameQuery = '';
+  public usernameQuery = '';
   public userTagList: number[] = [];
   public userRoleList: number[] = [];
 }

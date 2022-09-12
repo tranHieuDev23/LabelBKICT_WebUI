@@ -14,7 +14,6 @@ import {
   InvalidUserListArgumentError,
   InvalidUserRoleListArgument,
   SameUserError,
-  TagsService,
   UnauthenticatedError,
   UnauthorizedError,
   User,
@@ -33,10 +32,10 @@ import {
   UserTagListSortOrder,
 } from 'src/app/services/dataaccess/api';
 import { SessionManagementService } from 'src/app/services/module/session-management';
-import { 
+import {
   FilterOptionsService,
-  UserManagementService
- } from 'src/app/services/module/user-management';
+  UserManagementService,
+} from 'src/app/services/module/user-management';
 import { UserRoleManagementService } from 'src/app/services/module/user-role-management';
 import { UserTagManagementService } from 'src/app/services/module/user-tag-management';
 import { ConfirmedValidator } from 'src/app/services/utils/confirmed-validator/confirmed-validator';
@@ -48,15 +47,12 @@ const DEFAULT_USER_LIST_PAGE_SIZE = 10;
 const DEFAULT_PAGE_INDEX = 1;
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_SORT_ORDER = UserListSortOrder.ID_ASCENDING;
-const DEFAULT_TAG_LIST_SORT_ORDER = UserTagListSortOrder.ID_ASCENDING;
 
 const DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_INDEX = 1;
 const DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_SIZE = 5;
 
 const DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_INDEX = 1;
 const DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_SIZE = 5;
-
-const DEFAULT_USER_TAG_DISPLAY_NAME_FOR_DISABLING_USER = "Disabled"
 
 @Component({
   selector: 'app-manage-users',
@@ -82,7 +78,7 @@ export class ManageUsersComponent implements OnInit {
 
   public pageIndex: number = DEFAULT_USER_LIST_PAGE_INDEX;
   public pageSize: number = DEFAULT_USER_LIST_PAGE_SIZE;
-  public filterOptions: UserListFilterOptionsWithMetadata = 
+  public filterOptions: UserListFilterOptionsWithMetadata =
     this.getDefaultUserListFilterOptions();
   public sortOrder: UserListSortOrder = DEFAULT_SORT_ORDER;
   public totalUserCount: number = 0;
@@ -187,7 +183,6 @@ export class ManageUsersComponent implements OnInit {
   constructor(
     private readonly userManagementService: UserManagementService,
     private readonly userTagManagementService: UserTagManagementService,
-    private readonly tagsService: TagsService,
     private readonly filterOptionsService: FilterOptionsService,
     private readonly sessionManagementService: SessionManagementService,
     private readonly userRoleManagementService: UserRoleManagementService,
@@ -344,29 +339,29 @@ export class ManageUsersComponent implements OnInit {
 
   public onSortOrderChanged(newSortOrder: UserListSortOrder): void {
     this.navigateToPage(
-      this.pageIndex, 
-      this.pageSize, 
-      newSortOrder, 
+      this.pageIndex,
+      this.pageSize,
+      newSortOrder,
       this.filterOptions
-      );
+    );
   }
 
   public onPageIndexChanged(newPageIndex: number): void {
     this.navigateToPage(
-      newPageIndex, 
-      this.pageSize, 
-      this.sortOrder, 
+      newPageIndex,
+      this.pageSize,
+      this.sortOrder,
       this.filterOptions
-      );
+    );
   }
 
   public onPageSizeChanged(newPageSize: number): void {
     this.navigateToPage(
-      this.pageIndex, 
-      newPageSize, 
+      this.pageIndex,
+      newPageSize,
       this.sortOrder,
       this.filterOptions
-      );
+    );
   }
 
   private navigateToPage(
@@ -387,7 +382,7 @@ export class ManageUsersComponent implements OnInit {
     }
     queryParams['filter'] = this.jsonCompressService.compress(filterOptions);
     this.router.navigate(['/manage-users'], {
-      queryParams
+      queryParams,
     });
   }
 
@@ -637,9 +632,7 @@ export class ManageUsersComponent implements OnInit {
     }
   }
 
-  public async onAddUserTagModalItemClicked(
-    userTag: UserTag
-  ): Promise<void> {
+  public async onAddUserTagModalItemClicked(userTag: UserTag): Promise<void> {
     try {
       await this.userTagManagementService.addUserTagToUser(
         this.editUserModalUserID,
@@ -649,10 +642,7 @@ export class ManageUsersComponent implements OnInit {
       this.handleError('Failed to add user tag to user', e);
       return;
     }
-    this.notificationService.success(
-      'Successfully added user tag to user',
-      ''
-    );
+    this.notificationService.success('Successfully added user tag to user', '');
     this.userTagList[this.editUserModalUserListItemIndex] = [
       ...this.userTagList[this.editUserModalUserListItemIndex],
       userTag,

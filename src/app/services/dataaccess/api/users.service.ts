@@ -54,7 +54,6 @@ export class UserOrUserRoleNotFoundError extends Error {
   }
 }
 
-
 export class UserAlreadyHasUserRoleError extends Error {
   constructor() {
     super('User already has user role');
@@ -165,13 +164,13 @@ export class UsersService {
           sort_order: sortOrder,
           with_user_role: withUserRole ? 1 : 0,
           with_user_tag: withUserTag ? 1 : 0,
-          ...filterOptionsQueryParams
+          ...filterOptionsQueryParams,
         },
       });
 
       const totalUserCount = +response.data.total_user_count;
       const userList = response.data.user_list.map(User.fromJSON);
-      
+
       const userTagJSONList = response.data.user_tag_list as any[];
       const userTagList = userTagJSONList.map((list) =>
         list.map(UserTag.fromJSON)
@@ -181,11 +180,11 @@ export class UsersService {
       const userRoleList = userRoleJSONList.map((list) =>
         list.map(UserRole.fromJSON)
       );
-      return { 
-          totalUserCount, 
-          userList, 
-          userRoleList: withUserRole ? userRoleList : undefined, 
-          userTagList : withUserTag ? userTagList : undefined
+      return {
+        totalUserCount,
+        userList,
+        userRoleList: withUserRole ? userRoleList : undefined,
+        userTagList: withUserTag ? userTagList : undefined,
       };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -589,9 +588,9 @@ export class UsersService {
     filterOptions: UserListFilterOptions
   ): any {
     return {
-      username_query: filterOptions.userNameQuery,
+      username_query: filterOptions.usernameQuery,
       filter_user_tags: filterOptions.userTagList,
-      filter_user_roles: filterOptions.userRoleList
+      filter_user_roles: filterOptions.userRoleList,
     };
   }
 }

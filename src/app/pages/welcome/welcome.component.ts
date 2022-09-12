@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { UserPermission } from 'src/app/services/dataaccess/api';
 import {
   SessionManagementService,
   SessionUserInfo,
