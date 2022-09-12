@@ -136,7 +136,7 @@ export class AppComponent {
       )
     ) {
       settingsSubmenuList.push(
-        new AppSubmenuItem('Manage roles', '/manage-roles', () => {})
+        new AppSubmenuItem('Manage user roles', '/manage-roles', () => {})
       );
     }
     if (
@@ -146,10 +146,19 @@ export class AppComponent {
     ) {
       settingsSubmenuList.push(
         new AppSubmenuItem(
-          'Manage permissions',
+          'Manage user permissions',
           '/manage-permissions',
           () => {}
         )
+      );
+    }
+    if (
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'user_tags.manage'
+      )
+    ) {
+      settingsSubmenuList.push(
+        new AppSubmenuItem('Manage user tags', '/manage-tags', () => {})
       );
     }
     if (

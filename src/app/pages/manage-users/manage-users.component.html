@@ -2,8 +2,7 @@
     <h1 nz-typography>
         Manage users
     </h1>
-    <app-user-filter-options-selector 
-        [filterOptions]="filterOptions"
+    <app-user-filter-options-selector [filterOptions]="filterOptions"
         (filterOptionsUpdated)="onUserListFilterOptionsUpdated($event)">
     </app-user-filter-options-selector>
     <button nz-button nzType="primary" class="create-new-user-btn" (click)="onCreateNewUserClicked()">
@@ -27,7 +26,7 @@
                     {{ getUserRoleListString(userRoleList[i]) }}
                 </nz-list-item-meta-description>
             </nz-list-item-meta>
-            <nz-tag nzColor="red" *ngFor="let userTag of userTagList[i]">
+            <nz-tag *ngFor="let userTag of userTagList[i]">
                 {{ userTag.displayName }}
             </nz-tag>
             <ul nz-list-item-actions>
@@ -396,8 +395,8 @@
                     </nz-option>
                 </nz-select>
             </nz-list-header>
-            <li nz-list-item *ngFor="let userTag of addUserTagModalUserTagList" nzNoFlex
-                class="add-user-tag-list-item" (click)="onAddUserTagModalItemClicked(userTag)">
+            <li nz-list-item *ngFor="let userTag of addUserTagModalUserTagList" nzNoFlex class="add-user-tag-list-item"
+                (click)="onAddUserTagModalItemClicked(userTag)">
                 <nz-list-item-meta>
                     <nz-list-item-meta-title>
                         {{ userTag.displayName }}

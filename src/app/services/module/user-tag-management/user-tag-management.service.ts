@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
-  TagsService,
+  UserTagsService,
   UsersService,
   UserTag,
   UserTagListSortOrder,
@@ -11,7 +11,7 @@ import {
 })
 export class UserTagManagementService {
   constructor(
-    private readonly tagsDataAccessService: TagsService,
+    private readonly tagsDataAccessService: UserTagsService,
     private readonly usersDataAccessService: UsersService
   ) {}
 
@@ -87,9 +87,6 @@ export class UserTagManagementService {
     userID: number,
     userTagID: number
   ): Promise<void> {
-    await this.usersDataAccessService.removeUserTagFromUser(
-      userID,
-      userTagID
-    );
+    await this.usersDataAccessService.removeUserTagFromUser(userID, userTagID);
   }
 }

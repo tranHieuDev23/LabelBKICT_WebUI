@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
   RolesService,
-  TagsService,
+  UserTagsService,
   UnauthenticatedError,
   UnauthorizedError,
   UserRole,
@@ -55,7 +55,7 @@ export class UserFilterOptionsSelectorComponent implements OnInit {
 
   constructor(
     private readonly rolesService: RolesService,
-    private readonly tagsService: TagsService,
+    private readonly tagsService: UserTagsService,
     private readonly notificationService: NzNotificationService,
     private readonly paginationService: PaginationService,
     private readonly delayedCallbackService: DelayedCallbackService,

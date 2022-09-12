@@ -36,7 +36,7 @@ export class UserTagNotFoundError extends Error {
 @Injectable({
   providedIn: 'root',
 })
-export class TagsService {
+export class UserTagsService {
   constructor(private readonly axios: Axios) {}
 
   public async createUserTag(
@@ -44,7 +44,7 @@ export class TagsService {
     description: string
   ): Promise<UserTag> {
     try {
-      const response = await this.axios.post('/api/tags', {
+      const response = await this.axios.post('/api/user-tags', {
         display_name: displayName,
         description: description,
       });
@@ -75,7 +75,7 @@ export class TagsService {
     userTagList: UserTag[];
   }> {
     try {
-      const response = await this.axios.get('/api/tags', {
+      const response = await this.axios.get('/api/user-tags', {
         params: {
           offset: offset,
           limit: limit,
@@ -110,7 +110,7 @@ export class TagsService {
     description: string | undefined
   ): Promise<UserTag> {
     try {
-      const response = await this.axios.patch(`/api/tags/${id}`, {
+      const response = await this.axios.patch(`/api/user-tags/${id}`, {
         display_name: displayName,
         description: description,
       });
@@ -136,7 +136,7 @@ export class TagsService {
 
   public async deleteUserTag(id: number): Promise<void> {
     try {
-      await this.axios.delete(`/api/tags/${id}`);
+      await this.axios.delete(`/api/user-tags/${id}`);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
