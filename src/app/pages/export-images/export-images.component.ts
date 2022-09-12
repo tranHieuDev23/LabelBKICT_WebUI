@@ -290,7 +290,6 @@ export class ExportImagesComponent implements OnInit {
     try {
       await this.exportManagementService.createExport(type, filterOptions);
     } catch (e) {
-      console.log(e);
       if (e instanceof InvalidImageListFilterOptionsError) {
         this.notificationService.error(
           'Failed to request export',

@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { UserPermission } from 'src/app/services/dataaccess/api';
 import {
   SessionManagementService,
   SessionUserInfo,
@@ -141,6 +140,15 @@ export class WelcomeComponent implements OnInit {
           )
         );
       }
+      if (
+        this.sessionManagementService.checkSessionUserHasPermission(
+          'user_tags.manage'
+        )
+      ) {
+        submenuItemList.push(
+          new WelcomeSubmenuItem('Manage user tags', '/manage-tags')
+        );
+      }
       this.menuItemList.push(
         new WelcomeMenuItem('User settings', 'user', submenuItemList)
       );
@@ -214,6 +222,9 @@ export class WelcomeComponent implements OnInit {
       ) ||
       this.sessionManagementService.checkSessionUserHasPermission(
         'user_permissions.manage'
+      ) ||
+      this.sessionManagementService.checkSessionUserHasPermission(
+        'user_tags.manage'
       )
     );
   }

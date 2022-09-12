@@ -6,6 +6,8 @@ import {
   UsersService,
   UserCanVerifyUserImage,
   UserCanManageUserImage,
+  UserListFilterOptions,
+  UserTag,
 } from '../../dataaccess/api';
 import { SessionManagementService } from '../session-management';
 
@@ -56,17 +58,23 @@ export class UserManagementService {
     offset: number,
     limit: number,
     sortOrder: UserListSortOrder,
-    withUserRole: boolean
+    withUserRole: boolean,
+    withUserTag: boolean,
+    filterOptions: UserListFilterOptions
   ): Promise<{
     totalUserCount: number;
     userList: User[];
     userRoleList: UserRole[][] | undefined;
+    userTagList: UserTag[][] | undefined;
   }> {
+    filterOptions.usernameQuery = filterOptions.usernameQuery.trim();
     return await this.userDataAccessService.getUserList(
       offset,
       limit,
       sortOrder,
-      withUserRole
+      withUserRole,
+      withUserTag,
+      filterOptions
     );
   }
 

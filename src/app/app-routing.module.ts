@@ -41,6 +41,14 @@ const routes: Routes = [
     canActivate: [UserLoggedInGuard],
   },
   {
+    path: 'manage-tags',
+    loadChildren: () =>
+      import('./pages/manage-tags/manage-tags.module').then(
+        (m) => m.ManageRolesModule
+      ),
+    canActivate: [UserLoggedInGuard],
+  },
+  {
     path: 'manage-image-types',
     loadChildren: () =>
       import('./pages/manage-image-types/manage-image-types.module').then(

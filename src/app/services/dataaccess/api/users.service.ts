@@ -10,7 +10,9 @@ import {
   User,
   UserCanManageUserImage,
   UserCanVerifyUserImage,
+  UserListFilterOptions,
   UserRole,
+  UserTag,
 } from './schemas';
 
 export enum UserListSortOrder {
@@ -61,6 +63,24 @@ export class UserAlreadyHasUserRoleError extends Error {
 export class UserDoesNotHaveUserRoleError extends Error {
   constructor() {
     super('User does not have user role');
+  }
+}
+
+export class UserOrUserTagNotFoundError extends Error {
+  constructor() {
+    super('Cannot find user or user tag');
+  }
+}
+
+export class UserAlreadyHasUserTagError extends Error {
+  constructor() {
+    super('User already has user tag');
+  }
+}
+
+export class UserDoesNotHaveUserTagError extends Error {
+  constructor() {
+    super('User does not have user tag');
   }
 }
 
@@ -125,33 +145,47 @@ export class UsersService {
     offset: number,
     limit: number,
     sortOrder: UserListSortOrder,
-    withUserRole: boolean
+    withUserRole: boolean,
+    withUserTag: boolean,
+    filterOptions: UserListFilterOptions
   ): Promise<{
     totalUserCount: number;
     userList: User[];
     userRoleList: UserRole[][] | undefined;
+    userTagList: UserTag[][] | undefined;
   }> {
     try {
+      const filterOptionsQueryParams =
+        this.getQueryParamsFromFilterOptions(filterOptions);
       const response = await this.axios.get('/api/users', {
         params: {
           offset: offset,
           limit: limit,
           sort_order: sortOrder,
           with_user_role: withUserRole ? 1 : 0,
+          with_user_tag: withUserTag ? 1 : 0,
+          ...filterOptionsQueryParams,
         },
       });
 
       const totalUserCount = +response.data.total_user_count;
       const userList = response.data.user_list.map(User.fromJSON);
-      if (!withUserRole) {
-        return { totalUserCount, userList, userRoleList: undefined };
-      }
+
+      const userTagJSONList = response.data.user_tag_list as any[];
+      const userTagList = userTagJSONList.map((list) =>
+        list.map(UserTag.fromJSON)
+      );
 
       const userRoleJSONList = response.data.user_role_list as any[];
       const userRoleList = userRoleJSONList.map((list) =>
         list.map(UserRole.fromJSON)
       );
-      return { totalUserCount, userList, userRoleList };
+      return {
+        totalUserCount,
+        userList,
+        userRoleList: withUserRole ? userRoleList : undefined,
+        userTagList: withUserTag ? userTagList : undefined,
+      };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -271,6 +305,58 @@ export class UsersService {
           throw new UserOrUserRoleNotFoundError();
         case HttpStatusCode.Conflict:
           throw new UserDoesNotHaveUserRoleError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async addUserTagToUser(
+    userID: number,
+    userTagID: number | undefined
+  ): Promise<void> {
+    try {
+      await this.axios.post(`/api/users/${userID}/tags`, {
+        user_tag_id: userTagID,
+      });
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new UserOrUserTagNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserAlreadyHasUserTagError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async removeUserTagFromUser(
+    userID: number,
+    userTagID: number
+  ): Promise<void> {
+    try {
+      await this.axios.delete(`/api/users/${userID}/tags/${userTagID}`);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new UserOrUserTagNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserDoesNotHaveUserTagError();
         default:
           throw new UnknownAPIError(e);
       }
@@ -496,5 +582,15 @@ export class UsersService {
           throw new UnknownAPIError(e);
       }
     }
+  }
+
+  private getQueryParamsFromFilterOptions(
+    filterOptions: UserListFilterOptions
+  ): any {
+    return {
+      username_query: filterOptions.usernameQuery,
+      filter_user_tags: filterOptions.userTagList,
+      filter_user_roles: filterOptions.userRoleList,
+    };
   }
 }

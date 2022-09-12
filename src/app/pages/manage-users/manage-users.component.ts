@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { UserListFilterOptionsWithMetadata } from 'src/app/components/user-filter-options-selector/user-filter-options-selector.component';
 import {
   InvalidUserInformationError,
   InvalidUserListArgumentError,
@@ -27,15 +28,24 @@ import {
   UserOrUserRoleNotFoundError,
   UserRole,
   UserRoleListSortOrder,
+  UserTag,
+  UserTagListSortOrder,
 } from 'src/app/services/dataaccess/api';
 import { SessionManagementService } from 'src/app/services/module/session-management';
-import { UserManagementService } from 'src/app/services/module/user-management';
+import {
+  FilterOptionsService,
+  UserManagementService,
+} from 'src/app/services/module/user-management';
 import { UserRoleManagementService } from 'src/app/services/module/user-role-management';
+import { UserTagManagementService } from 'src/app/services/module/user-tag-management';
 import { ConfirmedValidator } from 'src/app/services/utils/confirmed-validator/confirmed-validator';
+import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
 
 const DEFAULT_USER_LIST_PAGE_INDEX = 1;
 const DEFAULT_USER_LIST_PAGE_SIZE = 10;
+const DEFAULT_PAGE_INDEX = 1;
+const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_SORT_ORDER = UserListSortOrder.ID_ASCENDING;
 
 const DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_INDEX = 1;
@@ -68,10 +78,13 @@ export class ManageUsersComponent implements OnInit {
 
   public pageIndex: number = DEFAULT_USER_LIST_PAGE_INDEX;
   public pageSize: number = DEFAULT_USER_LIST_PAGE_SIZE;
+  public filterOptions: UserListFilterOptionsWithMetadata =
+    this.getDefaultUserListFilterOptions();
   public sortOrder: UserListSortOrder = DEFAULT_SORT_ORDER;
   public totalUserCount: number = 0;
   public userList: User[] = [];
   public userRoleList: UserRole[][] = [];
+  public userTagList: UserTag[][] = [];
 
   public isCreateNewUserModalVisible: boolean = false;
   public createNewUserModalFormGroup: FormGroup;
@@ -132,11 +145,49 @@ export class ManageUsersComponent implements OnInit {
     UserRoleListSortOrder.ID_ASCENDING;
   public addUserRoleModalUserRoleList: UserRole[] = [];
 
+  public isAddUserTagModalVisible: boolean = false;
+  public addUserTagModalSortOrderOptions: {
+    value: UserTagListSortOrder;
+    title: string;
+  }[] = [
+    {
+      value: UserTagListSortOrder.ID_ASCENDING,
+      title: 'User tag ID (Asc.)',
+    },
+    {
+      value: UserTagListSortOrder.ID_DESCENDING,
+      title: 'User tag ID (Desc.)',
+    },
+    {
+      value: UserTagListSortOrder.DISPLAY_NAME_ASCENDING,
+      title: 'Display name (A-Z)',
+    },
+    {
+      value: UserTagListSortOrder.DISPLAY_NAME_DESCENDING,
+      title: 'Display name (Z-A)',
+    },
+  ];
+  public addUserTagModalPageSizeOptions: number[] = [10, 20, 50, 100];
+  public addUserTagModalPageIndex: number = 0;
+  public addUserTagModalPageSize: number = 10;
+  public addUserTagModalTotalUserTagCount: number = 0;
+  public addUserTagModalSortOrder: UserTagListSortOrder =
+    UserTagListSortOrder.ID_ASCENDING;
+  public addUserTagModalUserTagList: UserTag[] = [];
+
+  private getDefaultUserListFilterOptions(): UserListFilterOptionsWithMetadata {
+    const filterOptions = new UserListFilterOptionsWithMetadata();
+    return filterOptions;
+  }
+
   constructor(
     private readonly userManagementService: UserManagementService,
+    private readonly userTagManagementService: UserTagManagementService,
+    private readonly filterOptionsService: FilterOptionsService,
     private readonly sessionManagementService: SessionManagementService,
     private readonly userRoleManagementService: UserRoleManagementService,
     private readonly paginationService: PaginationService,
+    private readonly jsonCompressService: JSONCompressService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly notificationService: NzNotificationService,
@@ -200,13 +251,17 @@ export class ManageUsersComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.activatedRoute.queryParams.subscribe((params) => {
+    this.activatedRoute.queryParams.subscribe(async (params) => {
       this.getPaginationInfoFromQueryParams(params);
       this.loadPageUserList().then(
         () => {},
         (error) => {
           console.error(error);
         }
+      );
+      const offset = this.paginationService.getPageOffset(
+        DEFAULT_PAGE_INDEX,
+        DEFAULT_PAGE_SIZE
       );
     });
   }
@@ -227,6 +282,13 @@ export class ManageUsersComponent implements OnInit {
     } else {
       this.sortOrder = DEFAULT_SORT_ORDER;
     }
+    if (params['filter'] !== undefined) {
+      this.filterOptions = this.jsonCompressService.decompress(
+        params['filter']
+      );
+    } else {
+      this.filterOptions = this.getDefaultUserListFilterOptions();
+    }
   }
 
   private async loadPageUserList(): Promise<void> {
@@ -234,20 +296,38 @@ export class ManageUsersComponent implements OnInit {
       this.pageIndex,
       this.pageSize
     );
+    const filterOptions =
+      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
+        this.filterOptions
+      );
     try {
-      const { totalUserCount, userList, userRoleList } =
+      const { totalUserCount, userList, userRoleList, userTagList } =
         await this.userManagementService.getUserList(
           offset,
           this.pageSize,
           this.sortOrder,
-          true
+          true,
+          true,
+          filterOptions
         );
       this.totalUserCount = totalUserCount;
       this.userList = userList;
       this.userRoleList = userRoleList || [];
+      this.userTagList = userTagList || [];
     } catch (e) {
       this.handleError('Failed to retrieve user list', e);
     }
+  }
+
+  public onUserListFilterOptionsUpdated(
+    filterOptions: UserListFilterOptionsWithMetadata
+  ): void {
+    this.navigateToPage(
+      this.pageIndex,
+      this.pageSize,
+      this.sortOrder,
+      filterOptions
+    );
   }
 
   public getUserRoleListString(userRoleList: UserRole[]): string {
@@ -258,28 +338,51 @@ export class ManageUsersComponent implements OnInit {
   }
 
   public onSortOrderChanged(newSortOrder: UserListSortOrder): void {
-    this.navigateToPage(this.pageIndex, this.pageSize, newSortOrder);
+    this.navigateToPage(
+      this.pageIndex,
+      this.pageSize,
+      newSortOrder,
+      this.filterOptions
+    );
   }
 
   public onPageIndexChanged(newPageIndex: number): void {
-    this.navigateToPage(newPageIndex, this.pageSize, this.sortOrder);
+    this.navigateToPage(
+      newPageIndex,
+      this.pageSize,
+      this.sortOrder,
+      this.filterOptions
+    );
   }
 
   public onPageSizeChanged(newPageSize: number): void {
-    this.navigateToPage(this.pageIndex, newPageSize, this.sortOrder);
+    this.navigateToPage(
+      this.pageIndex,
+      newPageSize,
+      this.sortOrder,
+      this.filterOptions
+    );
   }
 
   private navigateToPage(
     pageIndex: number,
     pageSize: number,
-    sortOrder: UserListSortOrder
+    sortOrder: UserListSortOrder,
+    filterOptions: UserListFilterOptionsWithMetadata
   ): void {
+    const queryParams: any = {};
+    if (pageIndex !== DEFAULT_USER_LIST_PAGE_INDEX) {
+      queryParams['index'] = pageIndex;
+    }
+    if (pageSize !== DEFAULT_USER_LIST_PAGE_SIZE) {
+      queryParams['size'] = pageSize;
+    }
+    if (sortOrder !== DEFAULT_SORT_ORDER) {
+      queryParams['sort'] = sortOrder;
+    }
+    queryParams['filter'] = this.jsonCompressService.compress(filterOptions);
     this.router.navigate(['/manage-users'], {
-      queryParams: {
-        page: pageIndex,
-        size: pageSize,
-        sort: sortOrder,
-      },
+      queryParams,
     });
   }
 
@@ -455,6 +558,98 @@ export class ManageUsersComponent implements OnInit {
     this.isAddUserRoleModalVisible = false;
   }
 
+  public async onEditUserModalUserTagListDeleteClicked(
+    userTag: UserTag
+  ): Promise<void> {
+    try {
+      await this.userTagManagementService.removeUserTagFromUser(
+        this.editUserModalUserID,
+        userTag.id
+      );
+    } catch (e) {
+      this.handleError('Failed to remove user tag from user', e);
+      return;
+    }
+
+    this.notificationService.success(
+      'Successfully remove user tag from user',
+      ''
+    );
+    this.userTagList[this.editUserModalUserListItemIndex] = this.userTagList[
+      this.editUserModalUserListItemIndex
+    ].filter((userTagItem) => userTagItem.id != userTag.id);
+  }
+
+  public async onAddUserTagClicked(): Promise<void> {
+    this.addUserTagModalPageIndex = 1;
+    this.addUserTagModalPageSize = 10;
+    this.addUserTagModalSortOrder = UserTagListSortOrder.ID_ASCENDING;
+    await this.loadUserTagList();
+    this.isAddUserTagModalVisible = true;
+  }
+
+  public onAddUserTagModalCancel(): void {
+    this.isAddUserTagModalVisible = false;
+  }
+
+  public async onAddUserTagModalSortOrderChanged(
+    newSortOrder: UserTagListSortOrder
+  ): Promise<void> {
+    this.addUserTagModalSortOrder = newSortOrder;
+    await this.loadUserTagList();
+  }
+
+  public async onAddUserTagModalPageIndexChanged(
+    newPageIndex: number
+  ): Promise<void> {
+    this.addUserTagModalPageIndex = newPageIndex;
+    await this.loadUserTagList();
+  }
+
+  public async onAddUserTagModalPageSizeChanged(
+    newPageSize: number
+  ): Promise<void> {
+    this.addUserTagModalPageSize = newPageSize;
+    await this.loadUserTagList();
+  }
+
+  private async loadUserTagList(): Promise<void> {
+    const offset = this.paginationService.getPageOffset(
+      this.addUserTagModalPageIndex,
+      this.addUserTagModalPageSize
+    );
+    try {
+      const { totalUserTagCount, userTagList } =
+        await this.userTagManagementService.getUserTagList(
+          offset,
+          this.addUserTagModalPageSize,
+          this.addUserTagModalSortOrder
+        );
+      this.addUserTagModalTotalUserTagCount = totalUserTagCount;
+      this.addUserTagModalUserTagList = userTagList;
+    } catch (e) {
+      this.handleError('Failed to retrieve user tag list', e);
+    }
+  }
+
+  public async onAddUserTagModalItemClicked(userTag: UserTag): Promise<void> {
+    try {
+      await this.userTagManagementService.addUserTagToUser(
+        this.editUserModalUserID,
+        userTag.id
+      );
+    } catch (e) {
+      this.handleError('Failed to add user tag to user', e);
+      return;
+    }
+    this.notificationService.success('Successfully added user tag to user', '');
+    this.userTagList[this.editUserModalUserListItemIndex] = [
+      ...this.userTagList[this.editUserModalUserListItemIndex],
+      userTag,
+    ];
+    this.isAddUserTagModalVisible = false;
+  }
+
   public async onManageUserPermissionPanelActiveChange(
     isActive: boolean
   ): Promise<void> {
@@ -551,7 +746,6 @@ export class ManageUsersComponent implements OnInit {
       return;
     }
     const imageOfUserID = this.addUserCanMangeUserImageUser.id;
-    console.log(this.addUserCanMangeUserImageUser, imageOfUserID);
     this.isAddUserCanMangeUserImageModalVisible = false;
     try {
       await this.userManagementService.createUserCanManageUserImage(

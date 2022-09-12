@@ -328,6 +328,7 @@ export class ManageImageTagsComponent implements OnInit {
       nzTitle: 'Delete image tag',
       nzContent: 'Are you sure? This action <b>CANNOT</b> be undone.',
       nzCancelText: 'Cancel',
+      nzOkDanger: true,
       nzOnOk: async () => {
         try {
           await this.imageTagManagementService.removeImageTagFromImageTagGroup(
