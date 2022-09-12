@@ -15,7 +15,7 @@ import { DelayedCallbackService } from 'src/app/services/utils/delayed-callback/
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
 
 export class UserListFilterOptionsWithMetadata {
-  public userNameQuery = '';
+  public usernameQuery = '';
   public userTagList: UserTag[] = [];
   public userRoleList: UserRole[] = [];
 }

@@ -16,7 +16,7 @@ export class FilterOptionsService {
     filterOptions.userTagList = filterOptionsWithMetadata.userTagList.map(
       (userTag) => userTag?.id || 0
     );
-    filterOptions.usernameQuery = filterOptionsWithMetadata.userNameQuery;
+    filterOptions.usernameQuery = filterOptionsWithMetadata.usernameQuery;
     return filterOptions;
   }
 }
