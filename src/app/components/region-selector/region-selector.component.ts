@@ -618,16 +618,25 @@ export class RegionSelectorComponent implements OnInit {
       return;
     }
 
-    // Check region list
-    const insideRegionID = regionList.findIndex((region, index) => {
-      if (index === this.mouseOverRegionID) {
-        return false;
+    // Check region list, prioritize the smallest region first
+    let insideRegionID = -1;
+    let insideRegionArea = Infinity;
+    for (let i = 0; i < regionList.length; i++) {
+      if (i === this.mouseOverRegionID) {
+        continue;
       }
-      return this.geometryService.isPointInPolygon(
-        mouseImagePos,
-        region.border
-      );
-    });
+      const region = regionList[i];
+      if (
+        !this.geometryService.isPointInPolygon(mouseImagePos, region.border)
+      ) {
+        continue;
+      }
+      const regionArea = this.geometryService.getArea(region.border);
+      if (regionArea < insideRegionArea) {
+        insideRegionID = i;
+        insideRegionArea = insideRegionArea;
+      }
+    }
     if (insideRegionID >= 0) {
       this.mouseOverRegionID = insideRegionID;
       this.isMouseOverDrawnPolygonList = false;

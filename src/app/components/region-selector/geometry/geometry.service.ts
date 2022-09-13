@@ -179,6 +179,11 @@ export class GeometryService {
     };
   }
 
+  public getArea(polygon: Polygon): number {
+    const turfPolygon = this.convertPolygonToTurfPolygon(polygon);
+    return area(turfPolygon);
+  }
+
   private fixSelfIntersectedTurfPolygon(polygon: TurfPolygon): TurfPolygon {
     const kinkPointList = kinks(polygon).features.map((point) => {
       return point.geometry.coordinates;
