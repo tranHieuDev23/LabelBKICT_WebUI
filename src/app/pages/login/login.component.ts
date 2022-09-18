@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import {
   AbstractControl,
-  FormBuilder,
-  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormGroup,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
@@ -24,15 +24,15 @@ import { ConfirmedValidator } from 'src/app/services/utils/confirmed-validator/c
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  public loginForm: FormGroup;
-  public registerForm: FormGroup;
+  public loginForm: UntypedFormGroup;
+  public registerForm: UntypedFormGroup;
 
   constructor(
     private readonly userManagementService: UserManagementService,
     private readonly sessionManagementService: SessionManagementService,
     private readonly notificationService: NzNotificationService,
     private readonly router: Router,
-    formBuilder: FormBuilder
+    formBuilder: UntypedFormBuilder
   ) {
     this.loginForm = formBuilder.group({
       username: ['', [Validators.required]],

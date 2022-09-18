@@ -11,8 +11,8 @@ import {
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
   AbstractControl,
-  FormBuilder,
-  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormGroup,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
@@ -33,11 +33,11 @@ export class ManagePermissionsComponent implements OnInit {
   public permissionTreeRootList: PermissionTreeNode[] = [];
 
   public isCreateNewUserPermissionModalVisible: boolean = false;
-  public createNewUserPermissionModalFormGroup: FormGroup;
+  public createNewUserPermissionModalFormGroup: UntypedFormGroup;
 
   public isUpdateUserPermissionModalVisible: boolean = false;
   public updateUserPermissionUserPermissionID: number = 0;
-  public updateUserPermissionModalFormGroup: FormGroup;
+  public updateUserPermissionModalFormGroup: UntypedFormGroup;
 
   constructor(
     private readonly userPermissionManagementService: UserPermissionManagementService,
@@ -45,7 +45,7 @@ export class ManagePermissionsComponent implements OnInit {
     private readonly permissionTreeService: PermissionTreeService,
     private readonly router: Router,
     private readonly modalService: NzModalService,
-    formBuilder: FormBuilder
+    formBuilder: UntypedFormBuilder
   ) {
     this.createNewUserPermissionModalFormGroup = formBuilder.group({
       permissionName: [

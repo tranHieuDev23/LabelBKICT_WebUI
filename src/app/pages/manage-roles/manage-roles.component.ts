@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {
-  FormGroup,
-  FormBuilder,
+  UntypedFormGroup,
+  UntypedFormBuilder,
   Validators,
   ValidatorFn,
   AbstractControl,
@@ -69,12 +69,12 @@ export class ManageRolesComponent implements OnInit {
   public userPermissionList: UserPermission[][] = [];
 
   public isCreateNewUserRoleModalVisible: boolean = false;
-  public createNewUserRoleModalFormGroup: FormGroup;
+  public createNewUserRoleModalFormGroup: UntypedFormGroup;
 
   public isEditUserRoleModalVisible: boolean = false;
   public editUserRoleModalUserListItemIndex: number = 0;
   public editUserRoleModalUserRoleID: number = 0;
-  public editUserRoleModalFormGroup: FormGroup;
+  public editUserRoleModalFormGroup: UntypedFormGroup;
 
   public isAddUserPermissionModalVisible: boolean = false;
   public addUserPermissionModalUserPermissionList: UserPermission[] = [];
@@ -90,7 +90,7 @@ export class ManageRolesComponent implements OnInit {
     private readonly router: Router,
     private readonly notificationService: NzNotificationService,
     private readonly modalService: NzModalService,
-    formBuilder: FormBuilder
+    formBuilder: UntypedFormBuilder
   ) {
     this.createNewUserRoleModalFormGroup = formBuilder.group({
       displayName: ['', [Validators.required, this.displayNameValidator()]],

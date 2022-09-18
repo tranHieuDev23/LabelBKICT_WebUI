@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {
-  FormGroup,
-  FormBuilder,
+  UntypedFormGroup,
+  UntypedFormBuilder,
   Validators,
   ValidatorFn,
   AbstractControl,
@@ -58,12 +58,12 @@ export class ManageTagsComponent implements OnInit {
   public userTagList: UserTag[] = [];
 
   public isCreateNewUserTagModalVisible: boolean = false;
-  public createNewUserTagModalFormGroup: FormGroup;
+  public createNewUserTagModalFormGroup: UntypedFormGroup;
 
   public isEditUserTagModalVisible: boolean = false;
   public editUserTagModalUserListItemIndex: number = 0;
   public editUserTagModalUserTagID: number = 0;
-  public editUserTagModalFormGroup: FormGroup;
+  public editUserTagModalFormGroup: UntypedFormGroup;
 
   constructor(
     private readonly userTagManagementService: UserTagManagementService,
@@ -72,7 +72,7 @@ export class ManageTagsComponent implements OnInit {
     private readonly router: Router,
     private readonly notificationService: NzNotificationService,
     private readonly modalService: NzModalService,
-    formBuilder: FormBuilder
+    formBuilder: UntypedFormBuilder
   ) {
     this.createNewUserTagModalFormGroup = formBuilder.group({
       displayName: ['', [Validators.required, this.displayNameValidator()]],

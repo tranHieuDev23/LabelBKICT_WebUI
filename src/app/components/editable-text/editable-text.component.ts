@@ -6,7 +6,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { FocusableDirective } from './focusable.directive';
 
 @Component({
@@ -44,10 +44,10 @@ export class EditableTextComponent {
   @Output() public textEdited = new EventEmitter<string>();
   @Output() public editingEnd = new EventEmitter<void>();
 
-  public formGroup: FormGroup;
+  public formGroup: UntypedFormGroup;
 
   constructor(
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     private changeDetector: ChangeDetectorRef
   ) {
     this.formGroup = formBuilder.group({

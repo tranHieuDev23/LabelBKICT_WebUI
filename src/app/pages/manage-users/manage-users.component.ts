@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {
   AbstractControl,
-  FormBuilder,
-  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormGroup,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
@@ -87,12 +87,12 @@ export class ManageUsersComponent implements OnInit {
   public userTagList: UserTag[][] = [];
 
   public isCreateNewUserModalVisible: boolean = false;
-  public createNewUserModalFormGroup: FormGroup;
+  public createNewUserModalFormGroup: UntypedFormGroup;
 
   public isEditUserModalVisible: boolean = false;
   public editUserModalUserListItemIndex: number = 0;
   public editUserModalUserID: number = 0;
-  public editUserModalFormGroup: FormGroup;
+  public editUserModalFormGroup: UntypedFormGroup;
 
   public editUserUserCanManageUserImagePageIndex =
     DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_INDEX;
@@ -191,7 +191,7 @@ export class ManageUsersComponent implements OnInit {
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly notificationService: NzNotificationService,
-    formBuilder: FormBuilder
+    formBuilder: UntypedFormBuilder
   ) {
     this.createNewUserModalFormGroup = formBuilder.group(
       {

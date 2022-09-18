@@ -125,8 +125,9 @@
       }
     }
   },
-  "defaultProject": "label_bkict_org",
   "cli": {
-    "defaultCollection": "@angular-eslint/schematics"
+    "schematicCollections": [
+      "@angular-eslint/schematics"
+    ]
   }
 }
