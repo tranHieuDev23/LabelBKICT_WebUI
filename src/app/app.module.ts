@@ -51,6 +51,7 @@ import {
   UserAddOutline,
   LockOutline,
   InfoCircleOutline,
+  PictureOutline,
 } from '@ant-design/icons-angular/icons';
 
 registerLocaleData(en);
@@ -82,6 +83,7 @@ const icons: IconDefinition[] = [
   UserAddOutline,
   LockOutline,
   InfoCircleOutline,
+  PictureOutline,
 ];
 
 @NgModule({
