@@ -23,7 +23,7 @@
     "axios": "^0.26.0",
     "html2canvas": "^1.4.1",
     "lz-string": "^1.4.4",
-    "ng-zorro-antd": "^13.1.1",
+    "ng-zorro-antd": "^14.0.0",
     "ngx-color": "^7.3.3",
     "ngx-drag-to-select": "^5.0.1",
     "p-limit": "^4.0.0",

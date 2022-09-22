@@ -23,8 +23,66 @@ import { NzPopoverModule } from 'ng-zorro-antd/popover';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzNotificationModule } from 'ng-zorro-antd/notification';
+import { IconDefinition } from '@ant-design/icons-angular';
+import {
+  UserOutline,
+  SettingOutline,
+  DeleteOutline,
+  PushpinOutline,
+  HighlightOutline,
+  PlusOutline,
+  EditOutline,
+  CloseOutline,
+  CheckOutline,
+  InboxOutline,
+  ZoomInOutline,
+  ZoomOutOutline,
+  UndoOutline,
+  RedoOutline,
+  ExportOutline,
+  FileExcelOutline,
+  ReloadOutline,
+  MinusCircleOutline,
+  PlusCircleOutline,
+  CheckCircleOutline,
+  CloseCircleOutline,
+  LeftOutline,
+  RightOutline,
+  UserAddOutline,
+  LockOutline,
+  InfoCircleOutline,
+} from '@ant-design/icons-angular/icons';
 
 registerLocaleData(en);
+
+const icons: IconDefinition[] = [
+  UserOutline,
+  SettingOutline,
+  DeleteOutline,
+  PushpinOutline,
+  HighlightOutline,
+  PlusOutline,
+  EditOutline,
+  CloseOutline,
+  CheckOutline,
+  InboxOutline,
+  ZoomInOutline,
+  ZoomOutOutline,
+  UndoOutline,
+  RedoOutline,
+  ExportOutline,
+  FileExcelOutline,
+  ReloadOutline,
+  MinusCircleOutline,
+  PlusCircleOutline,
+  CheckCircleOutline,
+  CloseCircleOutline,
+  LeftOutline,
+  RightOutline,
+  UserAddOutline,
+  LockOutline,
+  InfoCircleOutline,
+];
 
 @NgModule({
   declarations: [AppComponent],
@@ -34,7 +92,7 @@ registerLocaleData(en);
     FormsModule,
     HttpClientModule,
     BrowserAnimationsModule,
-    NzIconModule.forRoot([]),
+    NzIconModule.forRoot(icons),
     NzLayoutModule,
     NzMenuModule,
     NzBackTopModule,
