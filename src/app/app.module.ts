@@ -34,7 +34,7 @@ registerLocaleData(en);
     FormsModule,
     HttpClientModule,
     BrowserAnimationsModule,
-    NzIconModule,
+    NzIconModule.forRoot([]),
     NzLayoutModule,
     NzMenuModule,
     NzBackTopModule,
