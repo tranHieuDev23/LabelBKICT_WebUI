@@ -7,6 +7,10 @@ server {
     proxy_pass http://${GATEWAY_HOST}:${GATEWAY_PORT}/api;
   }
 
+  location /kibana {
+    proxy_pass http://${KIBANA_HOST}:${KIBANA_PORT}/kibana;
+  }
+
   location / {
     try_files $uri $uri/ /index.html;
     root /usr/app;
