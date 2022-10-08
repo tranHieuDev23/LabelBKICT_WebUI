@@ -115,7 +115,7 @@
             </nz-collapse>
 
             <div *ngIf="isImageEditable" class="action-buttons">
-                <button *ngIf="!isImageExcluded() && !isImagePublished()" nz-button nzType="primary"
+                <button *ngIf="!isImageExcluded() && !isImageVerified()" nz-button nzType="primary"
                     (click)="onExcludeImageClicked()">
                     <i nz-icon nzType="minus-circle"></i> Exclude from labeling
                 </button>
