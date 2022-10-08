@@ -482,14 +482,14 @@ export class VerifyImageComponent implements AfterContentInit {
     this.isShowingRegionSnapshot = false;
   }
 
-  public onUnpublishImageClicked(): void {
-    if (this.isImageVerified()) {
-      return;
-    }
+  public onExcludeImageClicked(): void {
     this.modalService.create({
-      nzTitle: 'Unpublish this image',
+      nzTitle: 'Exclude this image from labeling',
       nzContent:
-        'Are you sure? This will take this image back to UPLOADED status, and delete region snapshots of this image at publish time.',
+        '<p>Are you sure? Excluded images are not shown to other users, ' +
+        'except for those with Manage All Image privilege. Use this if you ' +
+        'only want to keep this image on the system for managing, not for ' +
+        'labeling image data.</p><p>You can undo this action later.</p>',
       nzOnOk: async () => {
         if (!this.image) {
           return;
@@ -497,14 +497,13 @@ export class VerifyImageComponent implements AfterContentInit {
         try {
           this.image = await this.imageManagementService.updateImageStatus(
             this.image.id,
-            ImageStatus.UPLOADED
+            ImageStatus.EXCLUDED
           );
         } catch (e) {
-          this.handleError('Failed to unpublish image', e);
+          this.handleError('Failed to exclude image', e);
           return;
         }
-        this.notificationService.success('Unpublished image successfully', '');
-        this.location.back();
+        this.notificationService.success('Excluded image successfully', '');
       },
     });
   }
