@@ -482,6 +482,33 @@ export class VerifyImageComponent implements AfterContentInit {
     this.isShowingRegionSnapshot = false;
   }
 
+  public onUnverifyImageClicked(): void {
+    if (!this.isImageVerified()) {
+      return;
+    }
+    this.modalService.create({
+      nzTitle: 'Unverify this image',
+      nzContent:
+        'Are you sure? This will take this image back to PUBLISHED status, and delete region snapshots of this image at verify time.',
+      nzOnOk: async () => {
+        if (!this.image) {
+          return;
+        }
+        try {
+          this.image = await this.imageManagementService.updateImageStatus(
+            this.image.id,
+            ImageStatus.PUBLISHED
+          );
+        } catch (e) {
+          this.handleError('Failed to unverify image', e);
+          return;
+        }
+        this.notificationService.success('Unverified image successfully', '');
+        this.location.back();
+      },
+    });
+  }
+
   public onVerifyImageClicked(): void {
     this.modalService.create({
       nzTitle: 'Mark this image as verified',

@@ -112,6 +112,9 @@
                 <button nz-button nzType="primary" [disabled]="isImageVerified()" (click)="onVerifyImageClicked()">
                     <i nz-icon nzType="check-circle"></i> Verify
                 </button>
+                <button nz-button nzType="primary" [disabled]="isImageVerified()" (click)="onUnverifyImageClicked()">
+                    <i nz-icon nzType="close-circle"></i> Unverify
+                </button>
             </div>
 
             <div nz-row nzJustify="space-between" class="action-buttons">
