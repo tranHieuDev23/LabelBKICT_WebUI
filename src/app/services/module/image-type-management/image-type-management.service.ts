@@ -4,12 +4,13 @@ import {
   ImageTypesService,
   RegionLabel,
 } from '../../dataaccess/api';
+import { ImageTagGroupAndTagList } from '../../dataaccess/api/schemas/image_tag_group_and_tag_list';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ImageTypeManagementService {
-  constructor(private readonly imageTypesService: ImageTypesService) {}
+  constructor(private readonly imageTypesService: ImageTypesService) { }
 
   public async createImageType(
     displayName: string,
@@ -86,5 +87,11 @@ export class ImageTypeManagementService {
       imageTypeID,
       regionLabelID
     );
+  }
+
+  public async getImageTagGroupListOfImageTypeList(
+    imageTypeIdList: number[]
+  ): Promise<ImageTagGroupAndTagList[]> {
+    return await this.imageTypesService.getImageTagGroupListOfImageTypeList(imageTypeIdList);
   }
 }

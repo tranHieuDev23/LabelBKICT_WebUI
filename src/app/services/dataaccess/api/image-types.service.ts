@@ -7,6 +7,7 @@ import {
   UnknownAPIError,
 } from './errors';
 import { ImageTag, ImageTagGroup, ImageType, RegionLabel } from './schemas';
+import { ImageTagGroupAndTagList } from './schemas/image_tag_group_and_tag_list';
 
 export class InvalidImageTypeInformationError extends Error {
   constructor() {
@@ -36,7 +37,7 @@ export class RegionLabelNotFoundError extends Error {
   providedIn: 'root',
 })
 export class ImageTypesService {
-  constructor(private readonly axios: Axios) {}
+  constructor(private readonly axios: Axios) { }
 
   public async createImageType(
     displayName: string,
@@ -288,6 +289,47 @@ export class ImageTypesService {
         (ImageTagSublist: any[]) => ImageTagSublist.map(ImageTag.fromJSON)
       );
       return { imageTagGroupList, imageTagList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getImageTagGroupListOfImageTypeList(imageTypeIdList: number[]): Promise<
+    ImageTagGroupAndTagList[]
+  > {
+    try {
+      const response = await this.axios.post(
+        '/api/image-types/image-tag-groups',
+        {
+          image_type_id_list: imageTypeIdList
+        }
+      );
+
+      const imageTagGroupAndTagList: ImageTagGroupAndTagList[] = response.data.image_tag_group_and_tag_list;
+      for (const imageTagGroupAndTag of imageTagGroupAndTagList) {
+        imageTagGroupAndTag.imageTagGroupList = imageTagGroupAndTag.imageTagGroupList.map(ImageTagGroup.fromJSON);
+
+        imageTagGroupAndTag.imageTagListOfImageTagGroupList
+          = imageTagGroupAndTag.imageTagListOfImageTagGroupList.map(
+            (imageTagListOfImageTagGroup: any[]) => {
+              if (imageTagListOfImageTagGroup.length === 0) return [];
+              return imageTagListOfImageTagGroup.map(
+                ImageTag.fromJSON
+              ) || [];
+            });
+      }
+
+      return imageTagGroupAndTagList;
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
