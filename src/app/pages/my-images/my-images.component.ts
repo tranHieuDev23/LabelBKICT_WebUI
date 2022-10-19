@@ -28,6 +28,8 @@ import {
   FilterOptionsService,
   ImageListManagementService,
 } from 'src/app/services/module/image-list-management';
+import { ImageManagementService } from 'src/app/services/module/image-management';
+import { ImageTypeManagementService } from 'src/app/services/module/image-type-management';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
@@ -57,6 +59,13 @@ export class MyImagesComponent implements OnInit {
   public publishedByUserOptionList: User[] = [];
   public verifiedByUserOptionList: User[] = [];
 
+  public isAddImageTagToSelectedImageListModalVisible: boolean = false;
+  public addImageTagModalImageTagList: any[] = [];
+  public selectedImageTagIdList: number[] = [];
+  public isEmptyImageTagListModal = false;
+  public indeterminate = true;
+  public isSelectAllChecked = false;
+
   public fromImageIndex: number = 0;
   public toImageIndex: number = 0;
   public totalImageCount: number = 0;
@@ -77,7 +86,9 @@ export class MyImagesComponent implements OnInit {
   private selectedImageList: Image[] = [];
 
   constructor(
+    private readonly imageManagementService: ImageManagementService,
     private readonly imageListManagementService: ImageListManagementService,
+    private readonly imageTypeManagementService: ImageTypeManagementService,
     private readonly filterOptionsService: FilterOptionsService,
     private readonly userManagementService: UserManagementService,
     private readonly sessionManagementService: SessionManagementService,
@@ -295,6 +306,100 @@ export class MyImagesComponent implements OnInit {
         }
       },
     });
+  }
+
+  public onSetImageTagOfSelectedImagesClicked(): void {
+    const selectedImageTypeIdList = this.selectedImageList.map((image) => image.imageType?.id || 0);
+    this.modalService.create({
+      nzTitle: 'Set image tag of image(s)',
+      nzContent:
+        'Are you sure? This will also remove all image tags from these images, and ' +
+        'mark all region extracted from them as not labeled. This action is <b>IRREVERSIBLE</b>.',
+      nzOkDanger: true,
+
+      nzOnOk: async () => {
+        const imageTagGroupAndTagList = await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(selectedImageTypeIdList);
+        const imageTagListOfImageTagGroupList = imageTagGroupAndTagList.map(
+          imageTagGroupAndTag => imageTagGroupAndTag.imageTagListOfImageTagGroupList
+        ).flat(2);
+        const uniqueImageTagList = [...new Map(imageTagListOfImageTagGroupList.map(
+          (m) => [m.id, m])).values()];
+        if (uniqueImageTagList.length === 0) {
+          this.isEmptyImageTagListModal = true;
+        }
+
+        this.addImageTagModalImageTagList = uniqueImageTagList.map(
+          imageTag => ({ ...imageTag, checked: false })
+        );
+        this.isAddImageTagToSelectedImageListModalVisible = true;
+      },
+    })
+  }
+
+  public async onAddImageTagToSelectedImageListModalSubmit(): Promise<void> {
+    try {
+      if (this.isEmptyImageTagListModal) {
+        this.isAddImageTagToSelectedImageListModalVisible = false;
+        this.isEmptyImageTagListModal = false;
+        return;
+      }
+      await this.imageManagementService.addImageTagListToImageList(this.selectedImageList.map((image) => image.id), this.selectedImageTagIdList);
+      this.isAddImageTagToSelectedImageListModalVisible = false;
+      
+      await this.getImageListFromPaginationInfo();
+      this.notificationService.success(
+        `Added image's tag for selected image(s) successfully`,
+        ''
+      );
+    } catch (e) {
+      this.handleError(`Failed to add image's tag for selected image(s)`, e);
+    }
+  }
+
+  public onAddImageTagToSelectedImageListModalCancel(): void {
+    this.isAddImageTagToSelectedImageListModalVisible = false;
+    this.isEmptyImageTagListModal = false;
+    this.indeterminate = true;
+    this.isSelectAllChecked = false;
+  }
+
+  public onChooseImageTagToSelectedImageListModal(value: string[]): void {
+    this.selectedImageTagIdList = value.filter(ele => ele !== null).map(ele => +ele);
+    if (this.isSelectAllChecked && !this.indeterminate) {
+      this.selectedImageTagIdList = this.addImageTagModalImageTagList.map(imageTag => (
+        imageTag.id
+      ));
+    }
+    if (!this.isSelectAllChecked && !this.indeterminate) {
+      this.selectedImageTagIdList = [];
+    }
+  }
+
+  public onUpdateImageTagListModalAllChecked(): void {
+    this.indeterminate = false;
+    if (this.isSelectAllChecked) {
+      this.addImageTagModalImageTagList = this.addImageTagModalImageTagList.map(imageTag => ({
+        ...imageTag,
+        checked: true
+      }));
+    } else {
+      this.addImageTagModalImageTagList = this.addImageTagModalImageTagList.map(imageTag => ({
+        ...imageTag,
+        checked: false
+      }));
+    }
+  }
+
+  public onUpdateSingleImageTagChecked(): void {
+    if (this.addImageTagModalImageTagList.every(imageTag => !imageTag.checked)) {
+      this.isSelectAllChecked = false;
+      this.indeterminate = false;
+    } else if (this.addImageTagModalImageTagList.every(imageTag => imageTag.checked)) {
+      this.isSelectAllChecked = true;
+      this.indeterminate = false;
+    } else {
+      this.indeterminate = true;
+    }
   }
 
   public onDeleteSelectedImagesClicked(): void {
