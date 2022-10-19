@@ -270,7 +270,37 @@ export class ImagesService {
   ): Promise<void> {
     try {
       await this.axios.post(`/api/images/${id}/tags`, {
-        image_tag_id: imageTagID,
+        image_tag_id_list: imageTagID,
+      });
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new ImageCannotBeAssignedWithImageTagError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageOrImageTagNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new ImageAlreadyHasImageTagError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async addImageTagListToImageList(
+    imageIdList: number[],
+    imageTagIdList: number[]
+  ): Promise<void> {
+    try {
+      await this.axios.post(`/api/images/tags`, {
+        image_id_list: imageIdList,
+        image_tag_id_list: imageTagIdList
       });
     } catch (e) {
       if (!axios.isAxiosError(e)) {
