@@ -69,6 +69,12 @@ export class UserHasNotBookmarkedImageError extends Error {
   }
 }
 
+export class ImageHasUnlabeledRegionError extends Error {
+  constructor() {
+    super('Image has unlabeled region');
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -258,6 +264,8 @@ export class ImagesService {
           throw new UnauthorizedError();
         case HttpStatusCode.NotFound:
           throw new ImageNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new ImageHasUnlabeledRegionError();
         default:
           throw new UnknownAPIError(e);
       }

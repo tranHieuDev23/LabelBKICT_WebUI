@@ -28,6 +28,7 @@ import {
   ImageBookmark,
   ImageCannotBeAssignedWithImageTagError,
   ImageDoesNotHaveImageTagError,
+  ImageHasUnlabeledRegionError,
   ImageListFilterOptions,
   ImageListSortOption,
   ImageNotFoundError,
@@ -1092,6 +1093,13 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       this.notificationService.error(
         notificationTitle,
         'A detection task has already been created for this image'
+      );
+      return;
+    }
+    if (e instanceof ImageHasUnlabeledRegionError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Image has at least one unlabeled region'
       );
       return;
     }

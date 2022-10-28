@@ -26,6 +26,7 @@ import {
   ImageBookmark,
   ImageCannotBeAssignedWithImageTagError,
   ImageDoesNotHaveImageTagError,
+  ImageHasUnlabeledRegionError,
   ImageListFilterOptions,
   ImageListSortOption,
   ImageNotFoundError,
@@ -879,6 +880,13 @@ export class VerifyImageComponent implements AfterContentInit {
       this.notificationService.error(
         notificationTitle,
         'Region cannot be found'
+      );
+      return;
+    }
+    if (e instanceof ImageHasUnlabeledRegionError) {
+      this.notificationService.error(
+        notificationTitle,
+        'Image has at least one unlabeled region'
       );
       return;
     }
