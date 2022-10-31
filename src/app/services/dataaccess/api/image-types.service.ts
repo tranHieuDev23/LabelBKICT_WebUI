@@ -308,12 +308,11 @@ export class ImageTypesService {
     ImageTagGroupAndTagList[]
   > {
     try {
-      const response = await this.axios.post(
-        '/api/image-types/image-tag-groups',
-        {
+      const response = await this.axios.get('/api/image-types/image-tag-groups', {
+        params: {
           image_type_id_list: imageTypeIdList
         }
-      );
+      });
 
       const imageTagGroupAndTagList: ImageTagGroupAndTagList[] = response.data.image_tag_group_and_tag_list;
       for (const imageTagGroupAndTag of imageTagGroupAndTagList) {
