@@ -81,17 +81,36 @@
 >
   <ng-container *nzModalContent>
     <div class="modal-content-header">
-      <label for="" *ngIf="!isEmptyImageTagListModal">Choose image's tag add to image:</label>
-      <label for="" *ngIf="isEmptyImageTagListModal">No image's tag with selected image list.</label>
+      <label for="" *ngIf="!isEmptyImageTagListModal && !isEmptyImageTypeListModal">
+        Choose image's tag add to image:
+      </label>
+      <label for="" *ngIf="isEmptyImageTagListModal">
+        No image's tag with selected images.
+      </label>
+      <label for="" *ngIf="isEmptyImageTypeListModal">
+        No image's type with selected images.
+      </label>
     </div>
-    <nz-checkbox-wrapper style="width: 100%;" (nzOnChange)="onChooseImageTagToSelectedImageListModal($event)"
-      *ngIf="!isEmptyImageTagListModal"> 
+    <nz-checkbox-wrapper
+      style="width: 100%"
+      (nzOnChange)="onChooseImageTagToSelectedImageListModal($event)"
+      *ngIf="!isEmptyImageTagListModal && !isEmptyImageTypeListModal && isAddImageTagToSelectedImageListModalVisible"
+    >
       <div nz-row>
-          <div nz-col nzSpan="8" *ngFor="let imageTag of addImageTagModalImageTagList">
-            <label nz-checkbox nzValue="{{imageTag.id}}" [(ngModel)]="imageTag.checked"
+        <div
+          nz-col
+          nzSpan="8"
+          *ngFor="let imageTag of addImageTagModalImageTagList"
+        >
+          <label
+            nz-checkbox
+            nzValue="{{ imageTag.id }}"
+            [(ngModel)]="imageTag.checked"
             (ngModelChange)="onUpdateSingleImageTagChecked()"
-            >{{imageTag.displayName}}</label>
-          </div>
+          >
+            {{ imageTag.displayName }}
+          </label>
+        </div>
       </div>
       <label
         nz-checkbox
@@ -99,8 +118,8 @@
         (ngModelChange)="onUpdateImageTagListModalAllChecked()"
         [nzIndeterminate]="indeterminate"
       >
-      Select all
-    </label>
+        Select all
+      </label>
     </nz-checkbox-wrapper>
   </ng-container>
 </nz-modal>

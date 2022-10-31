@@ -63,6 +63,7 @@ export class MyImagesComponent implements OnInit {
   public addImageTagModalImageTagList: any[] = [];
   public selectedImageTagIdList: number[] = [];
   public isEmptyImageTagListModal = false;
+  public isEmptyImageTypeListModal = false;
   public indeterminate = true;
   public isSelectAllChecked = false;
 
@@ -309,7 +310,8 @@ export class MyImagesComponent implements OnInit {
   }
 
   public onSetImageTagOfSelectedImagesClicked(): void {
-    const selectedImageTypeIdList = this.selectedImageList.map((image) => image.imageType?.id || 0);
+    const selectedImageTypeIdList = this.selectedImageList.map((image) => image.imageType?.id || 0)
+      .filter((imageTypeId) => imageTypeId !== 0);
     this.modalService.create({
       nzTitle: 'Set image tag of image(s)',
       nzContent:
@@ -318,20 +320,25 @@ export class MyImagesComponent implements OnInit {
       nzOkDanger: true,
 
       nzOnOk: async () => {
-        const imageTagGroupAndTagList = await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(selectedImageTypeIdList);
-        const imageTagListOfImageTagGroupList = imageTagGroupAndTagList.map(
-          imageTagGroupAndTag => imageTagGroupAndTag.imageTagListOfImageTagGroupList
-        ).flat(2);
-        const uniqueImageTagList = [...new Map(imageTagListOfImageTagGroupList.map(
-          (m) => [m.id, m])).values()];
-        if (uniqueImageTagList.length === 0) {
-          this.isEmptyImageTagListModal = true;
+        if (selectedImageTypeIdList.length === 0) {
+          this.isEmptyImageTypeListModal = true;
+          this.isAddImageTagToSelectedImageListModalVisible = true;
+        } else {
+          const imageTagGroupAndTagList = await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(selectedImageTypeIdList);
+          const imageTagListOfImageTagGroupList = imageTagGroupAndTagList.map(
+            imageTagGroupAndTag => imageTagGroupAndTag.imageTagListOfImageTagGroupList
+          ).flat(2);
+          const uniqueImageTagList = [...new Map(imageTagListOfImageTagGroupList.map(
+            (m) => [m.id, m])).values()];
+          if (uniqueImageTagList.length === 0) {
+            this.isEmptyImageTagListModal = true;
+          }
+  
+          this.addImageTagModalImageTagList = uniqueImageTagList.map(
+            imageTag => ({ ...imageTag, checked: false })
+          );
+          this.isAddImageTagToSelectedImageListModalVisible = true;
         }
-
-        this.addImageTagModalImageTagList = uniqueImageTagList.map(
-          imageTag => ({ ...imageTag, checked: false })
-        );
-        this.isAddImageTagToSelectedImageListModalVisible = true;
       },
     })
   }
@@ -341,6 +348,11 @@ export class MyImagesComponent implements OnInit {
       if (this.isEmptyImageTagListModal) {
         this.isAddImageTagToSelectedImageListModalVisible = false;
         this.isEmptyImageTagListModal = false;
+        return;
+      }
+      if (this.isEmptyImageTypeListModal) {
+        this.isAddImageTagToSelectedImageListModalVisible = false;
+        this.isEmptyImageTypeListModal = false;
         return;
       }
       await this.imageManagementService.addImageTagListToImageList(this.selectedImageList.map((image) => image.id), this.selectedImageTagIdList);
@@ -359,6 +371,7 @@ export class MyImagesComponent implements OnInit {
   public onAddImageTagToSelectedImageListModalCancel(): void {
     this.isAddImageTagToSelectedImageListModalVisible = false;
     this.isEmptyImageTagListModal = false;
+    this.isEmptyImageTypeListModal = false;
     this.indeterminate = true;
     this.isSelectAllChecked = false;
   }
