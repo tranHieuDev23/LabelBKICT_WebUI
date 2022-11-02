@@ -1,0 +1,25 @@
+.upload-button {
+  display: block;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.image-type-select {
+  margin-top: 8px;
+
+  nz-select {
+    width: 200px;
+  }
+}
+
+.should-use-predictive-model-checkbox,
+.image-tag-list,
+.description-file-input {
+  margin-top: 8px;
+}
+
+.description-file-input {
+  input {
+    max-width: 240px;
+  }
+}

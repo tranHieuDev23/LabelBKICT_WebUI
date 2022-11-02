@@ -1,0 +1,63 @@
+:host {
+  display: flex;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app-layout {
+  min-height: 100vh;
+}
+
+.header-logo,
+.header-pin {
+  height: 64px;
+  line-height: 64px;
+  background: #001529 !important;
+}
+
+.header-logo img {
+  display: inline-block;
+  height: 32px;
+  vertical-align: middle;
+}
+
+.header-logo h1 {
+  display: inline-block;
+  margin: 0 0 0 20px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
+  vertical-align: middle;
+
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+.header-pin {
+  float: right;
+}
+
+nz-header {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  height: 64px;
+  padding: 0;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+}
+
+nz-footer {
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  .header-item {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}

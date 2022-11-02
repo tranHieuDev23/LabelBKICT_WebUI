@@ -1,0 +1,24 @@
+.form {
+  display: inline-block;
+}
+
+.text-display {
+  cursor: pointer;
+}
+
+.single-line .text-input {
+  display: inline-block;
+  width: 200px;
+}
+
+.form.multiline {
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+@media (max-width: 575px) {
+  .text-display,
+  .single-line .text-input {
+    width: 160px;
+  }
+}

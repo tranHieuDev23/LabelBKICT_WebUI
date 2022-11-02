@@ -1,0 +1,23 @@
+.create-new-user-role-btn {
+  margin-bottom: 8px;
+}
+
+.add-user-permission-btn {
+  margin-top: 8px;
+}
+
+.permission-tree-node {
+  &-title {
+    margin-left: 4px;
+  }
+}
+
+nz-select {
+  width: 200px;
+}
+
+nz-pagination {
+  margin-left: auto;
+  margin-right: auto;
+  display: table;
+}

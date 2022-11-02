@@ -1,0 +1,33 @@
+<nz-row class="filter-options" nzJustify="start" [nzGutter]="{ md: 8 }">
+    <nz-col nzSpan="24" [nzMd]="12" [nzLg]="8">
+        <span nz-typography>Filter username or display name</span> <br />
+        <input nz-input placeholder="Username" [(ngModel)]="filterOptions.usernameQuery"
+            (keyup)="onUsernameInputChanged()" />
+    </nz-col>
+
+    <nz-col nzSpan="24" [nzMd]="12" [nzLg]="8">
+        <span nz-typography>Filter user tag</span> <br />
+        <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple"
+            nzPlaceHolder="Filter user tag" [compareWith]="sameIDCompareFunc" [(ngModel)]="filterOptions.userTagList"
+            class="filter-options-select" (ngModelChange)="onFilterOptionsUpdated()">
+            <nz-option *ngFor="let userTag of userTagList" [nzLabel]="userTag?.displayName || 'No type'"
+                [nzValue]="userTag">
+            </nz-option>
+        </nz-select>
+    </nz-col>
+
+    <nz-col nzSpan="24" [nzMd]="12" [nzLg]="8">
+        <span nz-typography>Filter user role</span> <br />
+        <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple"
+            nzPlaceHolder="Filter user role" [compareWith]="sameIDCompareFunc" [(ngModel)]="filterOptions.userRoleList"
+            class="filter-options-select" (ngModelChange)="onFilterOptionsUpdated()">
+            <nz-option *ngFor="let userRole of userRoleList" [nzLabel]="userRole?.displayName || 'No type'"
+                [nzValue]="userRole">
+            </nz-option>
+        </nz-select>
+    </nz-col>
+</nz-row>
+
+<ng-template #maxTagPlaceHolder let-selectedList>
+    and {{ selectedList.length }} more
+</ng-template>

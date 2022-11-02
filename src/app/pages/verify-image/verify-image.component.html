@@ -1,0 +1,220 @@
+<div nz-row>
+    <div nz-col class="region-selector-col" [nzSpan]="24" [nzMd]="16" [nzXl]="18">
+        <app-region-selector #regionSelector *ngIf="image" [editable]="isImageEditable && !isShowingRegionSnapshot"
+            [imageSrc]="image.originalImageURL" [regionList]="isShowingRegionSnapshot? regionSnapshotList : regionList"
+            (regionSelected)="onRegionSelected($event)" (regionEdited)="onRegionEdited($event)"
+            (regionDbClicked)="onRegionDbClicked($event)" (contextMenu)="onContextMenu($event)">
+        </app-region-selector>
+    </div>
+    <div nz-col class="sidebar-col" [nzSpan]="24" [nzMd]="8" [nzXl]="6">
+        <nz-skeleton *ngIf="!image"></nz-skeleton>
+        <div *ngIf="image">
+            <h1 nz-typography>Verify image</h1>
+
+            <p>
+                <nz-tag nzColor="magenta">
+                    {{ image.imageType?.displayName || 'No type' }}
+                </nz-tag>
+                <nz-tag [nzColor]="getImageStatusColor(image.status)">
+                    {{ getImageStatusString(image.status) }}
+                </nz-tag>
+            </p>
+
+            <p>
+                <app-editable-tag-list [editable]="isImageEditable"
+                    [allImageTagGroupList]="allowedImageTagGroupListForImageType"
+                    [allImageTagList]="allowedImageTagListForImageType" [imageTagList]="imageTagList"
+                    (imageTagAdded)="onImageTagAdded($event)" (imageTagDeleted)="onImageTagDeleted($event)">
+                </app-editable-tag-list>
+            </p>
+
+            <p>Original file name: <b>{{ image.originalFileName }}</b></p>
+
+            <p>
+                Uploaded at {{ image.uploadTime | date:'short' }} by
+                <b>{{ image.uploadedByUser.displayName }}</b>
+            </p>
+
+            <p *ngIf="position !== undefined && totalImageCount !== undefined" nz-typography>
+                Image {{ position }} of {{ totalImageCount }}
+            </p>
+
+            <nz-collapse nzAccordion>
+                <nz-collapse-panel nzHeader="Description" nzActive="true">
+                    <app-editable-text #descriptionEditableText [text]="image.description" [editable]="isImageEditable"
+                        [placeholder]="isImageEditable? 'Add image description...' : 'No description'"
+                        [multiline]="true" (textEdited)="onImageDescriptionUpdated($event)">
+                    </app-editable-text>
+                </nz-collapse-panel>
+
+                <nz-collapse-panel nzHeader="Bookmark">
+                    <div *ngIf="!imageBookmark">
+                        <p nz-typography><i>Bookmark this image to manage it later.</i></p>
+                        <button nz-button [disabled]="isCreatingImageBookmark" [nzLoading]="isCreatingImageBookmark"
+                            (click)="onBookmarkImageClicked()" title="Bookmark image">
+                            <i nz-icon>
+                                <svg t="1629125520980" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg" p-id="2065" width="16" height="16">
+                                    <path
+                                        d="M219.721143 972.068571c22.272 0 35.126857-11.154286 78.427428-54.418285L506.002286 710.217143c2.139429-1.718857 4.278857-3.437714 5.997714-3.437714 2.139429 0 3.84 1.718857 5.997714 3.437714l208.274286 207.433143c42.441143 42.422857 56.155429 54.418286 78.006857 54.418285 27.008 0 47.579429-16.274286 47.579429-55.277714V186.075429c0-89.142857-44.141714-134.144-132.864-134.144H305.005714c-88.283429 0-132.864 44.982857-132.864 134.144v730.697142c0 39.021714 21.010286 55.296 47.579429 55.296z m32.128-104.137142c-5.997714 5.997714-10.697143 4.278857-10.697143-3.858286V187.355429c0-42.861714 23.131429-66.432 67.712-66.432h406.710857c44.562286 0 67.291429 23.588571 67.291429 66.432v676.717714c0 8.137143-4.717714 9.435429-10.733715 3.84L533.430857 631.808c-7.296-7.716571-14.994286-9.874286-21.430857-9.874286-5.997714 0-13.714286 2.157714-21.430857 9.874286z"
+                                        p-id="2066"></path>
+                                </svg>
+                            </i> Bookmark image
+                        </button>
+                    </div>
+
+                    <div *ngIf="imageBookmark">
+                        <app-editable-text #imageBookmarkEditableText [text]="imageBookmark.description"
+                            placeholder="No description" [multiline]="true"
+                            (textEdited)="onImageBookmarkDescriptionEdited($event)">
+                        </app-editable-text>
+                        <div style="margin-top: 8px">
+                            <button nz-button [disabled]="isDeletingImageBookmark" [nzLoading]="isDeletingImageBookmark"
+                                nzDanger="true" (click)="onDeleteBookmarkClicked()">
+                                <i nz-icon nzType="delete"></i> Delete bookmark
+                            </button>
+                        </div>
+                    </div>
+                </nz-collapse-panel>
+
+                <nz-collapse-panel nzHeader="Region snapshots">
+                    <nz-button-group>
+                        <button [disabled]="isShowingRegionSnapshot" nz-button
+                            (click)="onShowRegionSnapshotAtPublishTimeClicked()">
+                            Publish time
+                        </button>
+                        <button *ngIf="isImageVerified()" [disabled]="isShowingRegionSnapshot" nz-button
+                            (click)="onShowRegionSnapshotAtVerifyTimeClicked()">
+                            Verify time
+                        </button>
+                        <button [disabled]="!isShowingRegionSnapshot" nz-button
+                            (click)="onRestoreCurrentRegionListClicked()">
+                            Restore current state
+                        </button>
+                    </nz-button-group>
+                </nz-collapse-panel>
+
+                <nz-collapse-panel nzHeader="Shortcuts">
+                    <ul>
+                        <li *ngIf="isImageEditable">Ctrl + Z/Ctrl + Shift + Z: Undo/Redo</li>
+                        <li *ngIf="isImageEditable">Ctrl + Enter: Finish drawing</li>
+                        <li *ngIf="isImageEditable">Escape: Clear selection</li>
+                        <li>Ctrl + Middle mouse scroll: Zoom</li>
+                        <li>Ctrl + Left mouse drag: Move image</li>
+                        <li>Ctrl + Shift + P: Publish image</li>
+                        <li>Left/right arrow: Next/previous image</li>
+                        <li>Right click: Menu</li>
+                    </ul>
+                </nz-collapse-panel>
+            </nz-collapse>
+
+            <div *ngIf="isImageEditable" class="action-buttons">
+                <button nz-button nzType="primary" [disabled]="isImageVerified()" (click)="onVerifyImageClicked()">
+                    <i nz-icon nzType="check-circle"></i> Verify
+                </button>
+                <button nz-button nzType="primary" [disabled]="isImageVerified()" (click)="onExcludeImageClicked()">
+                    <i nz-icon nzType="minus-circle"></i> Exclude from labeling
+                </button>
+            </div>
+
+            <div nz-row nzJustify="space-between" class="action-buttons">
+                <button [disabled]="prevImageID === undefined" nz-col nz-button (click)="onPreviousClicked()">
+                    <i nz-icon nzType="left"></i>Previous
+                </button>
+                <button [disabled]="nextImageID === undefined" nz-col nz-button (click)="onNextClicked()">
+                    Next<i nz-icon nzType="right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<nz-modal *ngIf="isLabelRegionModalVisible" nzTitle="Label region" [nzVisible]="isLabelRegionModalVisible"
+    [nzClosable]="false" nzCancelText="Close" (nzOnCancel)="onCloseLabelRegionModal()" [nzOkText]="null">
+    <div *nzModalContent>
+        <nz-list [nzDataSource]="regionLabelList" nzBordered>
+            <nz-list-item *ngFor="let regionLabel of regionLabelList" class="label-region-modal-item"
+                (click)="onLabelRegionModalItemClicked(regionLabel)">
+                <span nz-typography>{{ regionLabel.displayName }}</span>
+            </nz-list-item>
+        </nz-list>
+    </div>
+</nz-modal>
+
+<nz-modal *ngIf="isRegionInformationModalVisible" nzTitle="Region information"
+    [nzVisible]="isRegionInformationModalVisible" [nzClosable]="false" nzCancelText="Close"
+    (nzOnCancel)="onRegionInformationModalClose()" [nzOkText]="null">
+    <div *nzModalContent>
+        <nz-collapse nzAccordion>
+            <nz-collapse-panel nzHeader="Region information" nzActive="true">
+                <img class="modal-image" [src]="regionInformationModalImage" />
+                <p *ngIf="regionInformationModalRegion?.label" nz-typography>
+                    Labeled by <b>{{ regionInformationModalRegion?.labeledByUser?.displayName }}</b> as <b>{{
+                        regionInformationModalRegion?.label?.displayName }}</b>
+                </p>
+                <p *ngIf="!(regionInformationModalRegion?.label)" nz-typography>
+                    Not yet labeled
+                </p>
+            </nz-collapse-panel>
+            <nz-collapse-panel nzHeader="Operation history">
+                <app-region-operation-log-list [operationLogList]="regionInformationModalOperationLogList">
+                </app-region-operation-log-list>
+            </nz-collapse-panel>
+        </nz-collapse>
+        <button *ngIf="isImageEditable" nz-button nzDanger nzType="primary"
+            (click)="onRegionInformationModalDeleteRegionClicked()" style="margin-top: 8px">
+            <i nz-icon nzType="delete"></i> Delete region
+        </button>
+    </div>
+</nz-modal>
+
+<nz-dropdown-menu #contextMenu>
+    <ul nz-menu oncontextmenu="() => false;">
+        <li nz-menu-item (click)="onContextMenuResetZoomClicked()">Reset zoom</li>
+        <li *ngIf="isRegionListVisible()" nz-menu-item (click)="onContextMenuHideRegionsClicked()">
+            Hide regions
+        </li>
+        <li *ngIf="!isRegionListVisible()" nz-menu-item (click)="onContextMenuShowRegionsClicked()">
+            Show regions
+        </li>
+        <li *ngIf="isRegionSelectorIsInDrawState()" nz-menu-item (click)="regionSelector?.finishDrawing()">
+            Finish drawing region
+        </li>
+        <li *ngIf="isRegionSelectorIsInSelectedState()" nz-menu-item (click)="onContextMenuEditDrawnRegionClicked()">
+            Edit drawn region
+        </li>
+        <li *ngIf="contextMenuRegion && isImageEditable" nz-menu-item
+            (click)="onContextMenuEditRegionBoundaryClicked()">
+            Edit region boundary
+        </li>
+        <li *ngIf="isRegionSelectorIsInSelectedState()" nz-submenu nzTitle="Add region as...">
+            <ul>
+                <li *ngFor="let regionLabel of regionLabelList" nz-menu-item (click)="addSelectedRegion(regionLabel)">
+                    {{ regionLabel.displayName }}
+                </li>
+            </ul>
+        </li>
+        <li *ngIf="contextMenuRegion && isImageEditable" nz-submenu nzTitle="Relabel region as...">
+            <ul>
+                <li *ngFor="let regionLabel of regionLabelList" nz-menu-item
+                    [nzDisabled]="regionLabel.id === contextMenuRegion.label?.id"
+                    (click)="onContextMenuRelabelRegionLabelClicked(regionLabel)">
+                    {{ regionLabel.displayName }}
+                </li>
+            </ul>
+        </li>
+        <li *ngIf="isRegionSelectorIsInSelectedState()" nz-menu-item (click)="regionSelector?.cancelDrawing()">
+            Clear selection
+        </li>
+        <li *ngIf="contextMenuRegion" nz-menu-item (click)="onContextMenuShowRegionInfoClicked()">
+            Show region info
+        </li>
+        <li *ngIf="contextMenuRegion && isImageEditable" nz-menu-item nzDanger
+            (click)="onContextMenuDeleteRegionClicked()">
+            Delete region
+        </li>
+        <li *ngIf="isImageEditable" nz-menu-item nzDanger (click)="onContextMenuDeleteAllRegionClicked()">
+            Delete all regions
+        </li>
+    </ul>
+</nz-dropdown-menu>
