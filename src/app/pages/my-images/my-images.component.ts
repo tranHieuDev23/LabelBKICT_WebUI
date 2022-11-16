@@ -310,7 +310,8 @@ export class MyImagesComponent implements OnInit {
   }
 
   public onSetImageTagOfSelectedImagesClicked(): void {
-    const selectedImageTypeIdList = this.selectedImageList.map((image) => image.imageType?.id || 0)
+    const selectedImageTypeIdList = this.selectedImageList
+      .map((image) => image.imageType?.id || 0)
       .filter((imageTypeId) => imageTypeId !== 0);
     this.modalService.create({
       nzTitle: 'Set image tag of image(s)',
@@ -324,23 +325,29 @@ export class MyImagesComponent implements OnInit {
           this.isEmptyImageTypeListModal = true;
           this.isAddImageTagToSelectedImageListModalVisible = true;
         } else {
-          const imageTagGroupAndTagList = await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(selectedImageTypeIdList);
-          const imageTagListOfImageTagGroupList = imageTagGroupAndTagList.map(
-            imageTagGroupAndTag => imageTagGroupAndTag.imageTagListOfImageTagGroupList
-          ).flat(2);
-          const uniqueImageTagList = [...new Map(imageTagListOfImageTagGroupList.map(
-            (m) => [m.id, m])).values()];
+          const imageTagGroupAndTagList =
+            await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(
+              selectedImageTypeIdList
+            );
+          const imageTagListOfImageTagGroupList = imageTagGroupAndTagList
+            .map((imageTagGroupAndTag) => imageTagGroupAndTag.imageTagList)
+            .flat(2);
+          const uniqueImageTagList = [
+            ...new Map(
+              imageTagListOfImageTagGroupList.map((m) => [m.id, m])
+            ).values(),
+          ];
           if (uniqueImageTagList.length === 0) {
             this.isEmptyImageTagListModal = true;
           }
-  
+
           this.addImageTagModalImageTagList = uniqueImageTagList.map(
-            imageTag => ({ ...imageTag, checked: false })
+            (imageTag) => ({ ...imageTag, checked: false })
           );
           this.isAddImageTagToSelectedImageListModalVisible = true;
         }
       },
-    })
+    });
   }
 
   public async onAddImageTagToSelectedImageListModalSubmit(): Promise<void> {
@@ -355,9 +362,12 @@ export class MyImagesComponent implements OnInit {
         this.isEmptyImageTypeListModal = false;
         return;
       }
-      await this.imageManagementService.addImageTagListToImageList(this.selectedImageList.map((image) => image.id), this.selectedImageTagIdList);
+      await this.imageManagementService.addImageTagListToImageList(
+        this.selectedImageList.map((image) => image.id),
+        this.selectedImageTagIdList
+      );
       this.isAddImageTagToSelectedImageListModalVisible = false;
-      
+
       await this.getImageListFromPaginationInfo();
       this.notificationService.success(
         `Added image's tag for selected image(s) successfully`,
@@ -377,11 +387,13 @@ export class MyImagesComponent implements OnInit {
   }
 
   public onChooseImageTagToSelectedImageListModal(value: string[]): void {
-    this.selectedImageTagIdList = value.filter(ele => ele !== null).map(ele => +ele);
+    this.selectedImageTagIdList = value
+      .filter((ele) => ele !== null)
+      .map((ele) => +ele);
     if (this.isSelectAllChecked && !this.indeterminate) {
-      this.selectedImageTagIdList = this.addImageTagModalImageTagList.map(imageTag => (
-        imageTag.id
-      ));
+      this.selectedImageTagIdList = this.addImageTagModalImageTagList.map(
+        (imageTag) => imageTag.id
+      );
     }
     if (!this.isSelectAllChecked && !this.indeterminate) {
       this.selectedImageTagIdList = [];
@@ -391,23 +403,31 @@ export class MyImagesComponent implements OnInit {
   public onUpdateImageTagListModalAllChecked(): void {
     this.indeterminate = false;
     if (this.isSelectAllChecked) {
-      this.addImageTagModalImageTagList = this.addImageTagModalImageTagList.map(imageTag => ({
-        ...imageTag,
-        checked: true
-      }));
+      this.addImageTagModalImageTagList = this.addImageTagModalImageTagList.map(
+        (imageTag) => ({
+          ...imageTag,
+          checked: true,
+        })
+      );
     } else {
-      this.addImageTagModalImageTagList = this.addImageTagModalImageTagList.map(imageTag => ({
-        ...imageTag,
-        checked: false
-      }));
+      this.addImageTagModalImageTagList = this.addImageTagModalImageTagList.map(
+        (imageTag) => ({
+          ...imageTag,
+          checked: false,
+        })
+      );
     }
   }
 
   public onUpdateSingleImageTagChecked(): void {
-    if (this.addImageTagModalImageTagList.every(imageTag => !imageTag.checked)) {
+    if (
+      this.addImageTagModalImageTagList.every((imageTag) => !imageTag.checked)
+    ) {
       this.isSelectAllChecked = false;
       this.indeterminate = false;
-    } else if (this.addImageTagModalImageTagList.every(imageTag => imageTag.checked)) {
+    } else if (
+      this.addImageTagModalImageTagList.every((imageTag) => imageTag.checked)
+    ) {
       this.isSelectAllChecked = true;
       this.indeterminate = false;
     } else {

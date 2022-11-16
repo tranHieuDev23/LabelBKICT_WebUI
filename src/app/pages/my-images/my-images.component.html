@@ -1,17 +1,12 @@
 <div class="carded-content">
   <h1 nz-typography>My images</h1>
 
-  <app-image-filter-options-selector
-    [filterOptions]="filterOptions"
-    [sortOption]="imageListSortOption"
-    [selectorConfig]="imageListFilterOptionsSelectorConfig"
-    [publishedByUserOptionList]="publishedByUserOptionList"
-    [verifiedByUserOptionList]="verifiedByUserOptionList"
-    (publishedByUserSearch)="onPublishedByUserSearch($event)"
+  <app-image-filter-options-selector [filterOptions]="filterOptions" [sortOption]="imageListSortOption"
+    [selectorConfig]="imageListFilterOptionsSelectorConfig" [publishedByUserOptionList]="publishedByUserOptionList"
+    [verifiedByUserOptionList]="verifiedByUserOptionList" (publishedByUserSearch)="onPublishedByUserSearch($event)"
     (verifiedByUserSearch)="onVerifiedByUserSearch($event)"
     (filterOptionsUpdated)="onImageListFilterOptionsUpdated($event)"
-    (sortOptionUpdated)="onImageListSortOptionUploaded($event)"
-  >
+    (sortOptionUpdated)="onImageListSortOptionUploaded($event)">
   </app-image-filter-options-selector>
 
   <p *ngIf="fromImageIndex !== 0" nz-typography>
@@ -19,28 +14,15 @@
     {{ totalImageCount }}
   </p>
 
-  <app-image-grid
-    emptyText="No image"
-    [imageList]="imageList"
-    [imageTagList]="imageTagList"
-    [loading]="isLoadingImageList"
-    (contextmenu)="onImageGridContextMenu($event)"
-    (imageListSelected)="onImageGridImageListSelected($event)"
-    (imageDbClicked)="onImageDbClicked($event)"
-  >
+  <app-image-grid emptyText="No image" [imageList]="imageList" [imageTagList]="imageTagList"
+    [loading]="isLoadingImageList" (contextmenu)="onImageGridContextMenu($event)"
+    (imageListSelected)="onImageGridImageListSelected($event)" (imageDbClicked)="onImageDbClicked($event)">
   </app-image-grid>
 
   <div *ngIf="!isLoadingImageList" class="pagination">
-    <nz-pagination
-      [nzPageIndex]="pageIndex"
-      [nzPageSize]="pageSize"
-      [nzTotal]="totalImageCount"
-      nzShowQuickJumper
-      nzShowSizeChanger
-      [nzPageSizeOptions]="[12, 24, 60, 120, 240]"
-      (nzPageIndexChange)="onPageIndexChanged($event)"
-      (nzPageSizeChange)="onPageSizeChanged($event)"
-    >
+    <nz-pagination [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzTotal]="totalImageCount" nzShowQuickJumper
+      nzShowSizeChanger [nzPageSizeOptions]="[12, 24, 60, 120, 240]" (nzPageIndexChange)="onPageIndexChanged($event)"
+      (nzPageSizeChange)="onPageSizeChanged($event)">
     </nz-pagination>
   </div>
 </div>
@@ -49,11 +31,8 @@
   <ul nz-menu>
     <li nz-submenu nzTitle="Change image type of selected image(s) to...">
       <ul>
-        <li
-          *ngFor="let imageType of imageTypeList"
-          nz-menu-item
-          (click)="onSetImageTypeOfSelectedImagesClicked(imageType)"
-        >
+        <li *ngFor="let imageType of imageTypeList" nz-menu-item
+          (click)="onSetImageTypeOfSelectedImagesClicked(imageType)">
           {{ imageType.displayName }}
         </li>
       </ul>
@@ -61,10 +40,7 @@
     <li nz-menu-item (click)="onSetImageTagOfSelectedImagesClicked()">
       Add image tags to selected image(s)
     </li>
-    <li
-      nz-menu-item
-      (click)="onRequestRegionDetectionForSelectedImagesClicked()"
-    >
+    <li nz-menu-item (click)="onRequestRegionDetectionForSelectedImagesClicked()">
       Request for AI-based lesion suggestion for selected image(s)
     </li>
     <li nz-menu-item nzDanger (click)="onDeleteSelectedImagesClicked()">
@@ -73,12 +49,8 @@
   </ul>
 </nz-dropdown-menu>
 
-<nz-modal
-  [(nzVisible)]="isAddImageTagToSelectedImageListModalVisible"
-  nzTitle="Add image's tag to selected image list"
-  (nzOnOk)="onAddImageTagToSelectedImageListModalSubmit()"
-  (nzOnCancel)="onAddImageTagToSelectedImageListModalCancel()"
->
+<nz-modal [(nzVisible)]="isAddImageTagToSelectedImageListModalVisible" nzTitle="Add image's tag to selected image list"
+  (nzOnOk)="onAddImageTagToSelectedImageListModalSubmit()" (nzOnCancel)="onAddImageTagToSelectedImageListModalCancel()">
   <ng-container *nzModalContent>
     <div class="modal-content-header">
       <label for="" *ngIf="!isEmptyImageTagListModal && !isEmptyImageTypeListModal">
@@ -91,33 +63,18 @@
         No image's type with selected images.
       </label>
     </div>
-    <nz-checkbox-wrapper
-      style="width: 100%"
-      (nzOnChange)="onChooseImageTagToSelectedImageListModal($event)"
-      *ngIf="!isEmptyImageTagListModal && !isEmptyImageTypeListModal && isAddImageTagToSelectedImageListModalVisible"
-    >
+    <nz-checkbox-wrapper style="width: 100%" (nzOnChange)="onChooseImageTagToSelectedImageListModal($event)"
+      *ngIf="!isEmptyImageTagListModal && !isEmptyImageTypeListModal && isAddImageTagToSelectedImageListModalVisible">
       <div nz-row>
-        <div
-          nz-col
-          nzSpan="8"
-          *ngFor="let imageTag of addImageTagModalImageTagList"
-        >
-          <label
-            nz-checkbox
-            nzValue="{{ imageTag.id }}"
-            [(ngModel)]="imageTag.checked"
-            (ngModelChange)="onUpdateSingleImageTagChecked()"
-          >
+        <div nz-col nzSpan="8" *ngFor="let imageTag of addImageTagModalImageTagList">
+          <label nz-checkbox nzValue="{{ imageTag.id }}" [(ngModel)]="imageTag.checked"
+            (ngModelChange)="onUpdateSingleImageTagChecked()">
             {{ imageTag.displayName }}
           </label>
         </div>
       </div>
-      <label
-        nz-checkbox
-        [(ngModel)]="isSelectAllChecked"
-        (ngModelChange)="onUpdateImageTagListModalAllChecked()"
-        [nzIndeterminate]="indeterminate"
-      >
+      <label nz-checkbox [(ngModel)]="isSelectAllChecked" (ngModelChange)="onUpdateImageTagListModalAllChecked()"
+        [nzIndeterminate]="indeterminate">
         Select all
       </label>
     </nz-checkbox-wrapper>

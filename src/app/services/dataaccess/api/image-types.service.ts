@@ -6,8 +6,7 @@ import {
   UnauthorizedError,
   UnknownAPIError,
 } from './errors';
-import { ImageTag, ImageTagGroup, ImageType, RegionLabel } from './schemas';
-import { ImageTagGroupAndTagList } from './schemas/image_tag_group_and_tag_list';
+import { ImageType, RegionLabel, ImageTagGroupAndTagList } from './schemas';
 
 export class InvalidImageTypeInformationError extends Error {
   constructor() {
@@ -37,7 +36,7 @@ export class RegionLabelNotFoundError extends Error {
   providedIn: 'root',
 })
 export class ImageTypesService {
-  constructor(private readonly axios: Axios) { }
+  constructor(private readonly axios: Axios) {}
 
   public async createImageType(
     displayName: string,
@@ -274,21 +273,14 @@ export class ImageTypesService {
     }
   }
 
-  public async getImageTagGroupListOfImageType(imageTypeID: number): Promise<{
-    imageTagGroupList: ImageTagGroup[];
-    imageTagList: ImageTag[][];
-  }> {
+  public async getImageTagGroupListOfImageType(
+    imageTypeID: number
+  ): Promise<ImageTagGroupAndTagList> {
     try {
       const response = await this.axios.get(
         `/api/image-types/${imageTypeID}/image-tag-groups`
       );
-      const imageTagGroupList = response.data.image_tag_group_list.map(
-        ImageTagGroup.fromJSON
-      );
-      const imageTagList: ImageTag[][] = response.data.image_tag_list.map(
-        (ImageTagSublist: any[]) => ImageTagSublist.map(ImageTag.fromJSON)
-      );
-      return { imageTagGroupList, imageTagList };
+      return ImageTagGroupAndTagList.fromJSON(response.data);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -304,31 +296,21 @@ export class ImageTypesService {
     }
   }
 
-  public async getImageTagGroupListOfImageTypeList(imageTypeIdList: number[]): Promise<
-    ImageTagGroupAndTagList[]
-  > {
+  public async getImageTagGroupListOfImageTypeList(
+    imageTypeIdList: number[]
+  ): Promise<ImageTagGroupAndTagList[]> {
     try {
-      const response = await this.axios.get('/api/image-types/image-tag-groups', {
-        params: {
-          image_type_id_list: imageTypeIdList
+      const response = await this.axios.get(
+        '/api/image-types/image-tag-groups',
+        {
+          params: { image_type_id_list: imageTypeIdList },
         }
-      });
-
-      const imageTagGroupAndTagList: ImageTagGroupAndTagList[] = response.data.image_tag_group_and_tag_list;
-      for (const imageTagGroupAndTag of imageTagGroupAndTagList) {
-        imageTagGroupAndTag.imageTagGroupList = imageTagGroupAndTag.imageTagGroupList.map(ImageTagGroup.fromJSON);
-
-        imageTagGroupAndTag.imageTagListOfImageTagGroupList
-          = imageTagGroupAndTag.imageTagListOfImageTagGroupList.map(
-            (imageTagListOfImageTagGroup: any[]) => {
-              if (imageTagListOfImageTagGroup.length === 0) return [];
-              return imageTagListOfImageTagGroup.map(
-                ImageTag.fromJSON
-              ) || [];
-            });
-      }
-
-      return imageTagGroupAndTagList;
+      );
+      const imageTagGroupListOfImageTypeListJSON = response.data
+        .image_tag_group_of_image_type_list as any[];
+      return imageTagGroupListOfImageTypeListJSON.map(
+        ImageTagGroupAndTagList.fromJSON
+      );
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

@@ -51,12 +51,6 @@ export class ImageCannotBeAssignedWithImageTagError extends Error {
   }
 }
 
-export class ImageAlreadyHasImageTagError extends Error {
-  constructor() {
-    super('Image already has image tag');
-  }
-}
-
 export class ImageDoesNotHaveImageTagError extends Error {
   constructor() {
     super('Image does not have image tag');
@@ -278,15 +272,13 @@ export class ImagesService {
   ): Promise<void> {
     try {
       await this.axios.post(`/api/images/${id}/tags`, {
-        image_tag_id_list: imageTagID,
+        image_tag_id: imageTagID,
       });
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
       }
       switch (e.response?.status) {
-        case HttpStatusCode.BadRequest:
-          throw new ImageCannotBeAssignedWithImageTagError();
         case HttpStatusCode.Unauthorized:
           throw new UnauthenticatedError();
         case HttpStatusCode.Forbidden:
@@ -294,7 +286,7 @@ export class ImagesService {
         case HttpStatusCode.NotFound:
           throw new ImageOrImageTagNotFoundError();
         case HttpStatusCode.Conflict:
-          throw new ImageAlreadyHasImageTagError();
+          throw new ImageCannotBeAssignedWithImageTagError();
         default:
           throw new UnknownAPIError(e);
       }
@@ -308,15 +300,13 @@ export class ImagesService {
     try {
       await this.axios.post(`/api/images/tags`, {
         image_id_list: imageIdList,
-        image_tag_id_list: imageTagIdList
+        image_tag_id_list: imageTagIdList,
       });
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
       }
       switch (e.response?.status) {
-        case HttpStatusCode.BadRequest:
-          throw new ImageCannotBeAssignedWithImageTagError();
         case HttpStatusCode.Unauthorized:
           throw new UnauthenticatedError();
         case HttpStatusCode.Forbidden:
@@ -324,7 +314,7 @@ export class ImagesService {
         case HttpStatusCode.NotFound:
           throw new ImageOrImageTagNotFoundError();
         case HttpStatusCode.Conflict:
-          throw new ImageAlreadyHasImageTagError();
+          throw new ImageCannotBeAssignedWithImageTagError();
         default:
           throw new UnknownAPIError(e);
       }

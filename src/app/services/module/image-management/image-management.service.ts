@@ -123,7 +123,10 @@ export class ImageManagementService {
     imageIdList: number[],
     imageTagIdList: number[]
   ): Promise<void> {
-    await this.imagesService.addImageTagListToImageList(imageIdList, imageTagIdList);
+    await this.imagesService.addImageTagListToImageList(
+      imageIdList,
+      imageTagIdList
+    );
   }
 
   public async removeImageTagFromImage(

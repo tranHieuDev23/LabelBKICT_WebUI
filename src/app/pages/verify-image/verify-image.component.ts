@@ -22,7 +22,6 @@ import {
 import { RegionSelectorComponent } from 'src/app/components/region-selector/region-selector.component';
 import {
   Image,
-  ImageAlreadyHasImageTagError,
   ImageBookmark,
   ImageCannotBeAssignedWithImageTagError,
   ImageDoesNotHaveImageTagError,
@@ -34,7 +33,6 @@ import {
   ImageStatus,
   ImageTag,
   ImageTagGroup,
-  ImageTypesService,
   InvalidImageInformationError,
   InvalidImageStatusError,
   InvalidRegionInformation,
@@ -50,6 +48,7 @@ import {
 import { ImageListManagementService } from 'src/app/services/module/image-list-management';
 import { ImageManagementService } from 'src/app/services/module/image-management';
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
+import { ImageTypeManagementService } from 'src/app/services/module/image-type-management';
 import { RegionImageService } from 'src/app/services/module/region-management/region-image.service';
 import { RegionManagementService } from 'src/app/services/module/region-management/region-management.service';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
@@ -113,7 +112,7 @@ export class VerifyImageComponent implements AfterContentInit {
     private readonly imageManagementService: ImageManagementService,
     private readonly imageListManagementService: ImageListManagementService,
     private readonly regionManagementService: RegionManagementService,
-    private readonly imageTypesService: ImageTypesService,
+    private readonly imageTypeManagementService: ImageTypeManagementService,
     private readonly imageStatusService: ImageStatusService,
     private readonly regionImageService: RegionImageService,
     private readonly route: ActivatedRoute,
@@ -192,17 +191,20 @@ export class VerifyImageComponent implements AfterContentInit {
       this.isImageEditable = canEdit;
 
       if (image.imageType) {
-        const { regionLabelList } = await this.imageTypesService.getImageType(
-          image.imageType.id
-        );
-        this.regionLabelList = regionLabelList;
-
-        const { imageTagGroupList, imageTagList } =
-          await this.imageTypesService.getImageTagGroupListOfImageType(
+        const { regionLabelList } =
+          await this.imageTypeManagementService.getImageType(
             image.imageType.id
           );
+        this.regionLabelList = regionLabelList;
+
+        const {
+          imageTagGroupList,
+          imageTagList: imageTagListOfImageTagGroupList,
+        } = await this.imageTypeManagementService.getImageTagGroupListOfImageType(
+          image.imageType.id
+        );
         this.allowedImageTagGroupListForImageType = imageTagGroupList;
-        this.allowedImageTagListForImageType = imageTagList;
+        this.allowedImageTagListForImageType = imageTagListOfImageTagGroupList;
       } else {
         this.regionLabelList = [];
         this.allowedImageTagGroupListForImageType = [];
@@ -813,13 +815,6 @@ export class VerifyImageComponent implements AfterContentInit {
         'User does not have the required permission'
       );
       this.router.navigateByUrl('/welcome');
-      return;
-    }
-    if (e instanceof ImageAlreadyHasImageTagError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Image already has image tag'
-      );
       return;
     }
     if (e instanceof ImageCannotBeAssignedWithImageTagError) {

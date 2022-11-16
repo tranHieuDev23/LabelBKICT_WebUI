@@ -5,15 +5,14 @@ import { NzUploadFile } from 'ng-zorro-antd/upload';
 import {
   ImageTag,
   ImageTagGroup,
-  ImageTagsService,
   ImageType,
-  ImageTypesService,
   UnauthenticatedError,
   UnauthorizedError,
   UploadImageBatchMessage,
   UploadImageBatchMessageType,
 } from 'src/app/services/dataaccess/api';
 import { ImageManagementService } from 'src/app/services/module/image-management';
+import { ImageTypeManagementService } from 'src/app/services/module/image-type-management';
 
 @Component({
   selector: 'app-image-upload',
@@ -57,7 +56,7 @@ export class ImageUploadComponent {
   @Output() public uploadFailure = new EventEmitter<NzUploadFile>();
 
   constructor(
-    private readonly imageTypesService: ImageTypesService,
+    private readonly imageTypeManagementService: ImageTypeManagementService,
     private readonly imageManagementService: ImageManagementService,
     private readonly notificationService: NzNotificationService,
     private readonly router: Router
@@ -74,12 +73,14 @@ export class ImageUploadComponent {
     }
 
     try {
-      const { imageTagGroupList, imageTagList } =
-        await this.imageTypesService.getImageTagGroupListOfImageType(
-          imageType.id
-        );
+      const {
+        imageTagGroupList,
+        imageTagList: imageTagListOfImageTagGroupList,
+      } = await this.imageTypeManagementService.getImageTagGroupListOfImageType(
+        imageType.id
+      );
       this.allowedImageTagGroupListForImageType = imageTagGroupList;
-      this.allowedImageTagListForImageType = imageTagList;
+      this.allowedImageTagListForImageType = imageTagListOfImageTagGroupList;
       this.imageTagListForUploadedImage = [];
     } catch (e) {
       if (e instanceof UnauthenticatedError) {

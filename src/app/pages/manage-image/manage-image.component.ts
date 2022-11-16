@@ -24,7 +24,6 @@ import { RegionSelectorComponent } from 'src/app/components/region-selector/regi
 import {
   DetectionTaskAlreadyExistsError,
   Image,
-  ImageAlreadyHasImageTagError,
   ImageBookmark,
   ImageCannotBeAssignedWithImageTagError,
   ImageDoesNotHaveImageTagError,
@@ -38,7 +37,6 @@ import {
   ImageTag,
   ImageTagGroup,
   ImageType,
-  ImageTypesService,
   InvalidImageInformationError,
   InvalidImageStatusError,
   InvalidRegionInformation,
@@ -54,6 +52,7 @@ import {
 import { ImageListManagementService } from 'src/app/services/module/image-list-management';
 import { ImageManagementService } from 'src/app/services/module/image-management';
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
+import { ImageTypeManagementService } from 'src/app/services/module/image-type-management';
 import { RegionImageService } from 'src/app/services/module/region-management/region-image.service';
 import { RegionManagementService } from 'src/app/services/module/region-management/region-management.service';
 import { SessionManagementService } from 'src/app/services/module/session-management';
@@ -125,7 +124,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     private readonly imageManagementService: ImageManagementService,
     private readonly imageListManagementService: ImageListManagementService,
     private readonly regionManagementService: RegionManagementService,
-    private readonly imageTypesService: ImageTypesService,
+    private readonly imageTypeManagementService: ImageTypeManagementService,
     private readonly imageStatusService: ImageStatusService,
     private readonly regionImageService: RegionImageService,
     private readonly route: ActivatedRoute,
@@ -140,9 +139,8 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   ngOnInit(): void {
     (async () => {
       try {
-        const { imageTypeList } = await this.imageTypesService.getImageTypeList(
-          false
-        );
+        const { imageTypeList } =
+          await this.imageTypeManagementService.getImageTypeList();
         this.imageSettingsModalImageTypeList = imageTypeList;
       } catch (e) {
         this.handleError('Failed to load page', e);
@@ -222,17 +220,20 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       this.isImageEditable = canEdit;
 
       if (image.imageType) {
-        const { regionLabelList } = await this.imageTypesService.getImageType(
-          image.imageType.id
-        );
-        this.regionLabelList = regionLabelList;
-
-        const { imageTagGroupList, imageTagList } =
-          await this.imageTypesService.getImageTagGroupListOfImageType(
+        const { regionLabelList } =
+          await this.imageTypeManagementService.getImageType(
             image.imageType.id
           );
+        this.regionLabelList = regionLabelList;
+
+        const {
+          imageTagGroupList,
+          imageTagList: imageTagListOfImageTagGroupList,
+        } = await this.imageTypeManagementService.getImageTagGroupListOfImageType(
+          image.imageType.id
+        );
         this.allowedImageTagGroupListForImageType = imageTagGroupList;
-        this.allowedImageTagListForImageType = imageTagList;
+        this.allowedImageTagListForImageType = imageTagListOfImageTagGroupList;
       } else {
         this.regionLabelList = [];
         this.allowedImageTagGroupListForImageType = [];
@@ -1010,13 +1011,6 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         'User does not have the required permission'
       );
       this.router.navigateByUrl('/welcome');
-      return;
-    }
-    if (e instanceof ImageAlreadyHasImageTagError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Image already has image tag'
-      );
       return;
     }
     if (e instanceof ImageCannotBeAssignedWithImageTagError) {

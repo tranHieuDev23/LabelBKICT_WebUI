@@ -10,7 +10,7 @@ import { ImageTagGroupAndTagList } from '../../dataaccess/api/schemas/image_tag_
   providedIn: 'root',
 })
 export class ImageTypeManagementService {
-  constructor(private readonly imageTypesService: ImageTypesService) { }
+  constructor(private readonly imageTypesService: ImageTypesService) {}
 
   public async createImageType(
     displayName: string,
@@ -20,6 +20,13 @@ export class ImageTypeManagementService {
       displayName.trim(),
       hasPredictiveModel
     );
+  }
+
+  public async getImageType(id: number): Promise<{
+    imageType: ImageType;
+    regionLabelList: RegionLabel[];
+  }> {
+    return await this.imageTypesService.getImageType(id);
   }
 
   public async getImageTypeList(): Promise<{
@@ -89,9 +96,19 @@ export class ImageTypeManagementService {
     );
   }
 
+  public async getImageTagGroupListOfImageType(
+    imageTypeId: number
+  ): Promise<ImageTagGroupAndTagList> {
+    return await this.imageTypesService.getImageTagGroupListOfImageType(
+      imageTypeId
+    );
+  }
+
   public async getImageTagGroupListOfImageTypeList(
     imageTypeIdList: number[]
   ): Promise<ImageTagGroupAndTagList[]> {
-    return await this.imageTypesService.getImageTagGroupListOfImageTypeList(imageTypeIdList);
+    return await this.imageTypesService.getImageTagGroupListOfImageTypeList(
+      imageTypeIdList
+    );
   }
 }
