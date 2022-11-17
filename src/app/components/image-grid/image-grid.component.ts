@@ -5,7 +5,10 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { SelectContainerComponent } from 'ngx-drag-to-select';
+import {
+  SelectContainerComponent,
+  SelectItemDirective,
+} from 'ngx-drag-to-select';
 import { Image, ImageStatus, ImageTag } from 'src/app/services/dataaccess/api';
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
 
@@ -24,9 +27,9 @@ export class ImageGridComponent {
   @Input() public loading = true;
 
   @Output() public imageDbClicked = new EventEmitter<number>();
-  @Output() public imageListSelected = new EventEmitter<Image[]>();
+  @Output() public imageListSelected = new EventEmitter<number[]>();
 
-  public selectedImageList: Image[] = [];
+  public selectedIndexList: number[] = [];
 
   constructor(private readonly imageStatusService: ImageStatusService) {}
 
@@ -38,23 +41,25 @@ export class ImageGridComponent {
     return this.imageStatusService.getImageStatusString(status);
   }
 
-  public onImageDbClick(id: number): void {
-    this.imageDbClicked.emit(id);
+  public onImageDbClick(index: number): void {
+    this.imageDbClicked.emit(index - 1);
   }
 
   public onImageListSelected(): void {
-    this.imageListSelected.emit(this.selectedImageList);
+    this.imageListSelected.emit(
+      this.selectedIndexList.map((index) => index - 1)
+    );
   }
 
   public onSelectAllClicked(): void {
     this.selectContainer?.selectAll();
   }
 
-  public onImageContextMenu(selectedImage: Image): void {
-    if (this.selectedImageList.length < 2) {
+  public onImageContextMenu(selectedIndex: number): void {
+    if (this.selectedIndexList.length < 2) {
       this.selectContainer?.clearSelection();
       this.selectContainer?.selectItems(
-        (image: Image) => image.id === selectedImage.id
+        (index: number) => index === selectedIndex
       );
       this.onImageListSelected();
     }

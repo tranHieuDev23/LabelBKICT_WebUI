@@ -12,6 +12,8 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { ImageTagSelectModule } from 'src/app/components/image-tag-select/image-tag-select.module';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 
 @NgModule({
   declarations: [MyImagesComponent],
@@ -27,6 +29,8 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
     NzDropDownModule,
     NzModalModule,
     NzCheckboxModule,
+    ImageTagSelectModule,
+    NzTagModule,
   ],
   exports: [MyImagesComponent],
 })

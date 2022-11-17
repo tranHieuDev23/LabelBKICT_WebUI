@@ -97,18 +97,18 @@ export class ImageTypeManagementService {
   }
 
   public async getImageTagGroupListOfImageType(
-    imageTypeId: number
+    imageTypeID: number
   ): Promise<ImageTagGroupAndTagList> {
     return await this.imageTypesService.getImageTagGroupListOfImageType(
-      imageTypeId
+      imageTypeID
     );
   }
 
   public async getImageTagGroupListOfImageTypeList(
-    imageTypeIdList: number[]
+    imageTypeIDList: number[]
   ): Promise<ImageTagGroupAndTagList[]> {
     return await this.imageTypesService.getImageTagGroupListOfImageTypeList(
-      imageTypeIdList
+      imageTypeIDList
     );
   }
 }

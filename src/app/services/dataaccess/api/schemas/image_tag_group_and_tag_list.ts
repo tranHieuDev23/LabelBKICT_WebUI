@@ -8,9 +8,12 @@ export class ImageTagGroupAndTagList {
   ) {}
 
   public static fromJSON(imageTagJSON: any): ImageTagGroupAndTagList {
-    return new ImageTagGroupAndTagList(
-      imageTagJSON.image_tag_group_list || [],
-      imageTagJSON.image_tag_list || [[]]
+    const imageTagGroupList = imageTagJSON.image_tag_group_list.map(
+      ImageTagGroup.fromJSON
     );
+    const imageTagList: ImageTag[][] = imageTagJSON.image_tag_list.map(
+      (ImageTagSublist: any[]) => ImageTagSublist.map(ImageTag.fromJSON)
+    );
+    return new ImageTagGroupAndTagList(imageTagGroupList, imageTagList);
   }
 }

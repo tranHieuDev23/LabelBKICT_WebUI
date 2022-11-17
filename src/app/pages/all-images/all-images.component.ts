@@ -68,7 +68,7 @@ export class AllImagesComponent implements OnInit {
 
   public imageTypeList: ImageType[] = [];
 
-  private selectedImageList: Image[] = [];
+  private selectedImageIndexList: number[] = [];
 
   constructor(
     private readonly imageListManagementService: ImageListManagementService,
@@ -248,12 +248,12 @@ export class AllImagesComponent implements OnInit {
     this.router.navigate(['/all-images'], { queryParams });
   }
 
-  public onImageGridImageListSelected(imageList: Image[]): void {
-    this.selectedImageList = imageList;
+  public onImageGridImageListSelected(imageIndexList: number[]): void {
+    this.selectedImageIndexList = imageIndexList;
   }
 
   public onImageGridContextMenu(event: MouseEvent): boolean {
-    if (this.selectedImageList.length === 0) {
+    if (this.selectedImageIndexList.length === 0) {
       return false;
     }
     (async () => {
@@ -275,7 +275,9 @@ export class AllImagesComponent implements OnInit {
   }
 
   public onSetImageTypeOfSelectedImagesClicked(imageType: ImageType): void {
-    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    const selectedImageIDList = this.selectedImageIndexList.map(
+      (index) => this.imageList[index].id
+    );
     this.modalService.create({
       nzTitle: 'Change image type of image(s)',
       nzContent:
@@ -301,7 +303,9 @@ export class AllImagesComponent implements OnInit {
   }
 
   public onDeleteSelectedImagesClicked(): void {
-    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    const selectedImageIDList = this.selectedImageIndexList.map(
+      (index) => this.imageList[index].id
+    );
     this.modalService.create({
       nzTitle: 'Delete image(s)',
       nzContent:
@@ -323,7 +327,9 @@ export class AllImagesComponent implements OnInit {
   }
 
   public async onRequestRegionDetectionForSelectedImagesClicked() {
-    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    const selectedImageIDList = this.selectedImageIndexList.map(
+      (index) => this.imageList[index].id
+    );
     this.modalService.create({
       nzTitle: 'Request for lesion suggestion for selected image(s)',
       nzContent: 'Are you sure?',

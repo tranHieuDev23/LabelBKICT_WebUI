@@ -15,8 +15,9 @@ import {
   Image,
   ImageListSortOption,
   ImageTag,
+  ImageTagGroup,
+  ImageTagGroupAndTagList,
   ImageType,
-  ImageTypesService,
   InvalidImageListFilterOptionsError,
   OneOrMoreImagesNotFoundError,
   TooManyImagesError,
@@ -28,10 +29,11 @@ import {
   FilterOptionsService,
   ImageListManagementService,
 } from 'src/app/services/module/image-list-management';
-import { ImageManagementService } from 'src/app/services/module/image-management';
+import { ImageTagManagementService } from 'src/app/services/module/image-tag-management';
 import { ImageTypeManagementService } from 'src/app/services/module/image-type-management';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
+import { getUniqueValueList } from 'src/app/services/utils/array/unique-values';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
 
@@ -59,14 +61,6 @@ export class MyImagesComponent implements OnInit {
   public publishedByUserOptionList: User[] = [];
   public verifiedByUserOptionList: User[] = [];
 
-  public isAddImageTagToSelectedImageListModalVisible: boolean = false;
-  public addImageTagModalImageTagList: any[] = [];
-  public selectedImageTagIdList: number[] = [];
-  public isEmptyImageTagListModal = false;
-  public isEmptyImageTypeListModal = false;
-  public indeterminate = true;
-  public isSelectAllChecked = false;
-
   public fromImageIndex: number = 0;
   public toImageIndex: number = 0;
   public totalImageCount: number = 0;
@@ -84,16 +78,24 @@ export class MyImagesComponent implements OnInit {
 
   public imageTypeList: ImageType[] = [];
 
-  private selectedImageList: Image[] = [];
+  private selectedImageIndexList: number[] = [];
+
+  public isAddImageTagToSelectedImageListModalVisible: boolean = false;
+  public addImageTagToSelectedImageListModalImageTagGroupList: ImageTagGroup[] =
+    [];
+  public addImageTagToSelectedImageListModalImageTagList: ImageTag[][] = [];
+  public addImageTagToSelectedImageListModalSelectedImageTagList: ImageTag[] =
+    [];
+  public addImageTagToSelectedImageListModalImageTagListAfterUpdate: ImageTag[] =
+    [];
 
   constructor(
-    private readonly imageManagementService: ImageManagementService,
     private readonly imageListManagementService: ImageListManagementService,
-    private readonly imageTypeManagementService: ImageTypeManagementService,
     private readonly filterOptionsService: FilterOptionsService,
     private readonly userManagementService: UserManagementService,
     private readonly sessionManagementService: SessionManagementService,
-    private readonly imageTypesService: ImageTypesService,
+    private readonly imageTypeManagementService: ImageTypeManagementService,
+    private readonly imageTagManagementService: ImageTagManagementService,
     private readonly paginationService: PaginationService,
     private readonly jsonCompressService: JSONCompressService,
     private readonly activatedRoute: ActivatedRoute,
@@ -256,19 +258,19 @@ export class MyImagesComponent implements OnInit {
     this.router.navigate(['/my-images'], { queryParams });
   }
 
-  public onImageGridImageListSelected(imageList: Image[]): void {
-    this.selectedImageList = imageList;
+  public onImageGridImageListSelected(imageIndexList: number[]): void {
+    this.selectedImageIndexList = imageIndexList;
   }
 
   public onImageGridContextMenu(event: MouseEvent): boolean {
-    if (this.selectedImageList.length === 0) {
+    if (this.selectedImageIndexList.length === 0) {
       return false;
     }
     (async () => {
       if (this.imageTypeList.length === 0) {
         try {
           const { imageTypeList } =
-            await this.imageTypesService.getImageTypeList(false);
+            await this.imageTypeManagementService.getImageTypeList();
           this.imageTypeList = imageTypeList;
         } catch (e) {
           this.handleError('Failed to get image type list', e);
@@ -284,7 +286,9 @@ export class MyImagesComponent implements OnInit {
   }
 
   public onSetImageTypeOfSelectedImagesClicked(imageType: ImageType): void {
-    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    const selectedImageIDList = this.selectedImageIndexList.map(
+      (index) => this.imageList[index].id
+    );
     this.modalService.create({
       nzTitle: 'Change image type of image(s)',
       nzContent:
@@ -297,146 +301,128 @@ export class MyImagesComponent implements OnInit {
             selectedImageIDList,
             imageType.id
           );
-          await this.getImageListFromPaginationInfo();
           this.notificationService.success(
-            'Changed image type of image(s) successfully',
+            'Changed image type of selected image(s) successfully',
             ''
           );
+          await this.getImageListFromPaginationInfo();
         } catch (e) {
-          this.handleError('Failed to change image type of image(s)', e);
-        }
-      },
-    });
-  }
-
-  public onSetImageTagOfSelectedImagesClicked(): void {
-    const selectedImageTypeIdList = this.selectedImageList
-      .map((image) => image.imageType?.id || 0)
-      .filter((imageTypeId) => imageTypeId !== 0);
-    this.modalService.create({
-      nzTitle: 'Set image tag of image(s)',
-      nzContent:
-        'Are you sure? This will also remove all image tags from these images, and ' +
-        'mark all region extracted from them as not labeled. This action is <b>IRREVERSIBLE</b>.',
-      nzOkDanger: true,
-
-      nzOnOk: async () => {
-        if (selectedImageTypeIdList.length === 0) {
-          this.isEmptyImageTypeListModal = true;
-          this.isAddImageTagToSelectedImageListModalVisible = true;
-        } else {
-          const imageTagGroupAndTagList =
-            await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(
-              selectedImageTypeIdList
-            );
-          const imageTagListOfImageTagGroupList = imageTagGroupAndTagList
-            .map((imageTagGroupAndTag) => imageTagGroupAndTag.imageTagList)
-            .flat(2);
-          const uniqueImageTagList = [
-            ...new Map(
-              imageTagListOfImageTagGroupList.map((m) => [m.id, m])
-            ).values(),
-          ];
-          if (uniqueImageTagList.length === 0) {
-            this.isEmptyImageTagListModal = true;
-          }
-
-          this.addImageTagModalImageTagList = uniqueImageTagList.map(
-            (imageTag) => ({ ...imageTag, checked: false })
+          this.handleError(
+            'Failed to change image type of selected image(s)',
+            e
           );
-          this.isAddImageTagToSelectedImageListModalVisible = true;
         }
       },
     });
   }
 
-  public async onAddImageTagToSelectedImageListModalSubmit(): Promise<void> {
-    try {
-      if (this.isEmptyImageTagListModal) {
-        this.isAddImageTagToSelectedImageListModalVisible = false;
-        this.isEmptyImageTagListModal = false;
-        return;
-      }
-      if (this.isEmptyImageTypeListModal) {
-        this.isAddImageTagToSelectedImageListModalVisible = false;
-        this.isEmptyImageTypeListModal = false;
-        return;
-      }
-      await this.imageManagementService.addImageTagListToImageList(
-        this.selectedImageList.map((image) => image.id),
-        this.selectedImageTagIdList
-      );
-      this.isAddImageTagToSelectedImageListModalVisible = false;
+  public async onAddImageTagToSelectedImageListClicked(): Promise<void> {
+    if (this.selectedImageIndexList.length === 0) {
+      return;
+    }
 
-      await this.getImageListFromPaginationInfo();
-      this.notificationService.success(
-        `Added image's tag for selected image(s) successfully`,
+    const hasImageWithNoType =
+      this.selectedImageIndexList.findIndex(
+        (index) => this.imageList[index].imageType === null
+      ) != -1;
+    if (hasImageWithNoType) {
+      this.notificationService.info(
+        'Cannot assign image tag because one or more selected images does not have an image type',
         ''
       );
+      return;
+    }
+
+    const selectedImageTypeIDList = getUniqueValueList(
+      this.selectedImageIndexList.map(
+        (index) => this.imageList[index].imageType?.id || 0
+      )
+    );
+    let imageTagGroupAndTagListOfImageTypeList: ImageTagGroupAndTagList[] = [];
+    try {
+      imageTagGroupAndTagListOfImageTypeList =
+        await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(
+          selectedImageTypeIDList
+        );
     } catch (e) {
-      this.handleError(`Failed to add image's tag for selected image(s)`, e);
+      this.handleError('Failed to retrieve eligible image tag group list', e);
+      return;
+    }
+
+    const intersectionImageTagGroupAndTagListOfImageTypeList =
+      this.imageTagManagementService.getIntersectionImageTagGroupAndTagList(
+        imageTagGroupAndTagListOfImageTypeList
+      );
+    this.isAddImageTagToSelectedImageListModalVisible = true;
+    this.addImageTagToSelectedImageListModalImageTagGroupList =
+      intersectionImageTagGroupAndTagListOfImageTypeList.imageTagGroupList;
+    this.addImageTagToSelectedImageListModalImageTagList =
+      intersectionImageTagGroupAndTagListOfImageTypeList.imageTagList;
+    this.addImageTagToSelectedImageListModalImageTagListAfterUpdate =
+      this.imageTagManagementService.getUnionImageTagList(
+        this.selectedImageIndexList.map((index) => this.imageTagList[index])
+      );
+    this.addImageTagToSelectedImageListModalSelectedImageTagList = [];
+  }
+
+  public onAddImageTagToSelectedImageListModalImageTagAdded(
+    addedImageTag: ImageTag
+  ): void {
+    this.addImageTagToSelectedImageListModalImageTagListAfterUpdate = [
+      ...this.addImageTagToSelectedImageListModalImageTagListAfterUpdate,
+      addedImageTag,
+    ];
+    this.addImageTagToSelectedImageListModalSelectedImageTagList = [
+      ...this.addImageTagToSelectedImageListModalSelectedImageTagList,
+      addedImageTag,
+    ];
+  }
+
+  public onAddImageTagToSelectedImageListModalImageTagDeleted(
+    deletedImageTag: ImageTag
+  ): void {
+    this.addImageTagToSelectedImageListModalImageTagListAfterUpdate =
+      this.addImageTagToSelectedImageListModalImageTagListAfterUpdate.filter(
+        (imageTag) => imageTag.id !== deletedImageTag.id
+      );
+    this.addImageTagToSelectedImageListModalSelectedImageTagList =
+      this.addImageTagToSelectedImageListModalSelectedImageTagList.filter(
+        (imageTag) => imageTag.id !== deletedImageTag.id
+      );
+  }
+
+  public async onAddImageTagToSelectedImageListModalOk(): Promise<void> {
+    const selectedImageIDList = this.selectedImageIndexList.map(
+      (index) => this.imageList[index].id
+    );
+    const selectedImageTagIDList =
+      this.addImageTagToSelectedImageListModalSelectedImageTagList.map(
+        (imageTag) => imageTag.id
+      );
+    try {
+      await this.imageListManagementService.addImageTagListToImageList(
+        selectedImageIDList,
+        selectedImageTagIDList
+      );
+      this.notificationService.success(
+        'Added image tags to selected image(s) successfully',
+        ''
+      );
+      this.isAddImageTagToSelectedImageListModalVisible = false;
+      await this.getImageListFromPaginationInfo();
+    } catch (e) {
+      this.handleError('Failed to add image tags to selected image(s)', e);
     }
   }
 
   public onAddImageTagToSelectedImageListModalCancel(): void {
     this.isAddImageTagToSelectedImageListModalVisible = false;
-    this.isEmptyImageTagListModal = false;
-    this.isEmptyImageTypeListModal = false;
-    this.indeterminate = true;
-    this.isSelectAllChecked = false;
-  }
-
-  public onChooseImageTagToSelectedImageListModal(value: string[]): void {
-    this.selectedImageTagIdList = value
-      .filter((ele) => ele !== null)
-      .map((ele) => +ele);
-    if (this.isSelectAllChecked && !this.indeterminate) {
-      this.selectedImageTagIdList = this.addImageTagModalImageTagList.map(
-        (imageTag) => imageTag.id
-      );
-    }
-    if (!this.isSelectAllChecked && !this.indeterminate) {
-      this.selectedImageTagIdList = [];
-    }
-  }
-
-  public onUpdateImageTagListModalAllChecked(): void {
-    this.indeterminate = false;
-    if (this.isSelectAllChecked) {
-      this.addImageTagModalImageTagList = this.addImageTagModalImageTagList.map(
-        (imageTag) => ({
-          ...imageTag,
-          checked: true,
-        })
-      );
-    } else {
-      this.addImageTagModalImageTagList = this.addImageTagModalImageTagList.map(
-        (imageTag) => ({
-          ...imageTag,
-          checked: false,
-        })
-      );
-    }
-  }
-
-  public onUpdateSingleImageTagChecked(): void {
-    if (
-      this.addImageTagModalImageTagList.every((imageTag) => !imageTag.checked)
-    ) {
-      this.isSelectAllChecked = false;
-      this.indeterminate = false;
-    } else if (
-      this.addImageTagModalImageTagList.every((imageTag) => imageTag.checked)
-    ) {
-      this.isSelectAllChecked = true;
-      this.indeterminate = false;
-    } else {
-      this.indeterminate = true;
-    }
   }
 
   public onDeleteSelectedImagesClicked(): void {
-    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    const selectedImageIDList = this.selectedImageIndexList.map(
+      (index) => this.imageList[index].id
+    );
     this.modalService.create({
       nzTitle: 'Delete image(s)',
       nzContent:
@@ -458,7 +444,9 @@ export class MyImagesComponent implements OnInit {
   }
 
   public async onRequestRegionDetectionForSelectedImagesClicked() {
-    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    const selectedImageIDList = this.selectedImageIndexList.map(
+      (index) => this.imageList[index].id
+    );
     this.modalService.create({
       nzTitle: 'Request for lesion suggestion for selected image(s)',
       nzContent: 'Are you sure?',

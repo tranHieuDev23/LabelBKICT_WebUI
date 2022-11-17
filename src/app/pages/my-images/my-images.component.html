@@ -37,7 +37,7 @@
         </li>
       </ul>
     </li>
-    <li nz-menu-item (click)="onSetImageTagOfSelectedImagesClicked()">
+    <li nz-menu-item (click)="onAddImageTagToSelectedImageListClicked()">
       Add image tags to selected image(s)
     </li>
     <li nz-menu-item (click)="onRequestRegionDetectionForSelectedImagesClicked()">
@@ -49,34 +49,18 @@
   </ul>
 </nz-dropdown-menu>
 
-<nz-modal [(nzVisible)]="isAddImageTagToSelectedImageListModalVisible" nzTitle="Add image's tag to selected image list"
-  (nzOnOk)="onAddImageTagToSelectedImageListModalSubmit()" (nzOnCancel)="onAddImageTagToSelectedImageListModalCancel()">
+<nz-modal [(nzVisible)]="isAddImageTagToSelectedImageListModalVisible" nzTitle="Add images tags to selected image(s)"
+  [nzOkDisabled]="addImageTagToSelectedImageListModalSelectedImageTagList.length === 0"
+  (nzOnOk)="onAddImageTagToSelectedImageListModalOk()" (nzOnCancel)="onAddImageTagToSelectedImageListModalCancel()">
   <ng-container *nzModalContent>
-    <div class="modal-content-header">
-      <label for="" *ngIf="!isEmptyImageTagListModal && !isEmptyImageTypeListModal">
-        Choose image's tag add to image:
-      </label>
-      <label for="" *ngIf="isEmptyImageTagListModal">
-        No image's tag with selected images.
-      </label>
-      <label for="" *ngIf="isEmptyImageTypeListModal">
-        No image's type with selected images.
-      </label>
-    </div>
-    <nz-checkbox-wrapper style="width: 100%" (nzOnChange)="onChooseImageTagToSelectedImageListModal($event)"
-      *ngIf="!isEmptyImageTagListModal && !isEmptyImageTypeListModal && isAddImageTagToSelectedImageListModalVisible">
-      <div nz-row>
-        <div nz-col nzSpan="8" *ngFor="let imageTag of addImageTagModalImageTagList">
-          <label nz-checkbox nzValue="{{ imageTag.id }}" [(ngModel)]="imageTag.checked"
-            (ngModelChange)="onUpdateSingleImageTagChecked()">
-            {{ imageTag.displayName }}
-          </label>
-        </div>
-      </div>
-      <label nz-checkbox [(ngModel)]="isSelectAllChecked" (ngModelChange)="onUpdateImageTagListModalAllChecked()"
-        [nzIndeterminate]="indeterminate">
-        Select all
-      </label>
-    </nz-checkbox-wrapper>
+    <nz-tag *ngFor="let imageTag of addImageTagToSelectedImageListModalSelectedImageTagList" nzMode="closeable"
+      (nzOnClose)="onAddImageTagToSelectedImageListModalImageTagDeleted(imageTag)">
+      {{ imageTag.displayName }}
+    </nz-tag>
+    <app-image-tag-select [allImageTagGroupList]="addImageTagToSelectedImageListModalImageTagGroupList"
+      [allImageTagList]="addImageTagToSelectedImageListModalImageTagList"
+      [imageTagList]="addImageTagToSelectedImageListModalImageTagListAfterUpdate"
+      (imageTagAdded)="onAddImageTagToSelectedImageListModalImageTagAdded($event)">
+    </app-image-tag-select>
   </ng-container>
 </nz-modal>
