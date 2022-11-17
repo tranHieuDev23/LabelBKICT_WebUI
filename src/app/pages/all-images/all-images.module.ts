@@ -9,6 +9,8 @@ import { ImageFilterOptionsSelectorModule } from 'src/app/components/image-filte
 import { ImageGridModule } from 'src/app/components/image-grid/image-grid.module';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { ImageTagSelectModule } from 'src/app/components/image-tag-select/image-tag-select.module';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 
 @NgModule({
   declarations: [AllImagesComponent],
@@ -21,6 +23,8 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
     ImageGridModule,
     NzDropDownModule,
     NzModalModule,
+    ImageTagSelectModule,
+    NzTagModule,
   ],
   exports: [AllImagesComponent],
 })

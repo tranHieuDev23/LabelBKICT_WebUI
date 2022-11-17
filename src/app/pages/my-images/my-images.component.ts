@@ -327,7 +327,7 @@ export class MyImagesComponent implements OnInit {
       ) != -1;
     if (hasImageWithNoType) {
       this.notificationService.info(
-        'Cannot assign image tag because one or more selected images does not have an image type',
+        'Cannot assign image tags because one or more selected images does not have an image type',
         ''
       );
       return;
