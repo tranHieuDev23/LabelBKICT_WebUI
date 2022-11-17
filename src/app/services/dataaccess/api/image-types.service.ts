@@ -1,6 +1,7 @@
 import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
+import qs from 'qs';
 import {
   UnauthenticatedError,
   UnauthorizedError,
@@ -304,6 +305,9 @@ export class ImageTypesService {
         '/api/image-types/image-tag-groups',
         {
           params: { image_type_id_list: imageTypeIdList },
+          paramsSerializer: (params) => {
+            return qs.stringify(params, { arrayFormat: 'repeat' });
+          },
         }
       );
       const imageTagGroupListOfImageTypeListJSON = response.data
