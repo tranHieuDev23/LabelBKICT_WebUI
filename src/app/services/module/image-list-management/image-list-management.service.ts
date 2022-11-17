@@ -6,13 +6,17 @@ import {
   User,
   ImageListService,
   ImageListSortOption,
+  ImagesService,
 } from '../../dataaccess/api';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ImageListManagementService {
-  constructor(private readonly imageListService: ImageListService) {}
+  constructor(
+    private readonly imageListService: ImageListService,
+    private readonly imagesService: ImagesService
+  ) {}
 
   public async updateImageListImageType(
     imageIDList: number[],
@@ -159,6 +163,19 @@ export class ImageListManagementService {
       imageID,
       sortOption,
       filterOptions
+    );
+  }
+
+  public async addImageTagListToImageList(
+    imageIDList: number[],
+    imageTagIDList: number[]
+  ): Promise<void> {
+    if (imageIDList.length === 0 || imageTagIDList.length === 0) {
+      return;
+    }
+    await this.imagesService.addImageTagListToImageList(
+      imageIDList,
+      imageTagIDList
     );
   }
 }

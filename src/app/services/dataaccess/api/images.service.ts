@@ -51,12 +51,6 @@ export class ImageCannotBeAssignedWithImageTagError extends Error {
   }
 }
 
-export class ImageAlreadyHasImageTagError extends Error {
-  constructor() {
-    super('Image already has image tag');
-  }
-}
-
 export class ImageDoesNotHaveImageTagError extends Error {
   constructor() {
     super('Image does not have image tag');
@@ -285,8 +279,6 @@ export class ImagesService {
         throw e;
       }
       switch (e.response?.status) {
-        case HttpStatusCode.BadRequest:
-          throw new ImageCannotBeAssignedWithImageTagError();
         case HttpStatusCode.Unauthorized:
           throw new UnauthenticatedError();
         case HttpStatusCode.Forbidden:
@@ -294,7 +286,35 @@ export class ImagesService {
         case HttpStatusCode.NotFound:
           throw new ImageOrImageTagNotFoundError();
         case HttpStatusCode.Conflict:
-          throw new ImageAlreadyHasImageTagError();
+          throw new ImageCannotBeAssignedWithImageTagError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async addImageTagListToImageList(
+    imageIdList: number[],
+    imageTagIdList: number[]
+  ): Promise<void> {
+    try {
+      await this.axios.post(`/api/images/tags`, {
+        image_id_list: imageIdList,
+        image_tag_id_list: imageTagIdList,
+      });
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageOrImageTagNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new ImageCannotBeAssignedWithImageTagError();
         default:
           throw new UnknownAPIError(e);
       }

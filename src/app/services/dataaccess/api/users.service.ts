@@ -1,6 +1,7 @@
 import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
+import qs from 'qs';
 import {
   UnauthenticatedError,
   UnauthorizedError,
@@ -165,6 +166,9 @@ export class UsersService {
           with_user_role: withUserRole ? 1 : 0,
           with_user_tag: withUserTag ? 1 : 0,
           ...filterOptionsQueryParams,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
         },
       });
 

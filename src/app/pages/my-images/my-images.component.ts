@@ -15,8 +15,9 @@ import {
   Image,
   ImageListSortOption,
   ImageTag,
+  ImageTagGroup,
+  ImageTagGroupAndTagList,
   ImageType,
-  ImageTypesService,
   InvalidImageListFilterOptionsError,
   OneOrMoreImagesNotFoundError,
   TooManyImagesError,
@@ -28,8 +29,11 @@ import {
   FilterOptionsService,
   ImageListManagementService,
 } from 'src/app/services/module/image-list-management';
+import { ImageTagManagementService } from 'src/app/services/module/image-tag-management';
+import { ImageTypeManagementService } from 'src/app/services/module/image-type-management';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
+import { getUniqueValueList } from 'src/app/services/utils/array/unique-values';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
 
@@ -74,14 +78,24 @@ export class MyImagesComponent implements OnInit {
 
   public imageTypeList: ImageType[] = [];
 
-  private selectedImageList: Image[] = [];
+  private selectedIndexList: number[] = [];
+
+  public isAddImageTagToSelectedImageListModalVisible: boolean = false;
+  public addImageTagToSelectedImageListModalImageTagGroupList: ImageTagGroup[] =
+    [];
+  public addImageTagToSelectedImageListModalImageTagList: ImageTag[][] = [];
+  public addImageTagToSelectedImageListModalSelectedImageTagList: ImageTag[] =
+    [];
+  public addImageTagToSelectedImageListModalImageTagListAfterUpdate: ImageTag[] =
+    [];
 
   constructor(
     private readonly imageListManagementService: ImageListManagementService,
     private readonly filterOptionsService: FilterOptionsService,
     private readonly userManagementService: UserManagementService,
     private readonly sessionManagementService: SessionManagementService,
-    private readonly imageTypesService: ImageTypesService,
+    private readonly imageTypeManagementService: ImageTypeManagementService,
+    private readonly imageTagManagementService: ImageTagManagementService,
     private readonly paginationService: PaginationService,
     private readonly jsonCompressService: JSONCompressService,
     private readonly activatedRoute: ActivatedRoute,
@@ -244,19 +258,19 @@ export class MyImagesComponent implements OnInit {
     this.router.navigate(['/my-images'], { queryParams });
   }
 
-  public onImageGridImageListSelected(imageList: Image[]): void {
-    this.selectedImageList = imageList;
+  public onImageGridImageListSelected(imageIndexList: number[]): void {
+    this.selectedIndexList = imageIndexList;
   }
 
   public onImageGridContextMenu(event: MouseEvent): boolean {
-    if (this.selectedImageList.length === 0) {
+    if (this.selectedIndexList.length === 0) {
       return false;
     }
     (async () => {
       if (this.imageTypeList.length === 0) {
         try {
           const { imageTypeList } =
-            await this.imageTypesService.getImageTypeList(false);
+            await this.imageTypeManagementService.getImageTypeList();
           this.imageTypeList = imageTypeList;
         } catch (e) {
           this.handleError('Failed to get image type list', e);
@@ -272,7 +286,9 @@ export class MyImagesComponent implements OnInit {
   }
 
   public onSetImageTypeOfSelectedImagesClicked(imageType: ImageType): void {
-    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    const selectedImageIDList = this.selectedIndexList.map(
+      (index) => this.imageList[index].id
+    );
     this.modalService.create({
       nzTitle: 'Change image type of image(s)',
       nzContent:
@@ -285,22 +301,130 @@ export class MyImagesComponent implements OnInit {
             selectedImageIDList,
             imageType.id
           );
-          await this.getImageListFromPaginationInfo();
           this.notificationService.success(
-            'Changed image type of image(s) successfully',
+            'Changed image type of selected image(s) successfully',
             ''
           );
+          await this.getImageListFromPaginationInfo();
         } catch (e) {
-          this.handleError('Failed to change image type of image(s)', e);
+          this.handleError(
+            'Failed to change image type of selected image(s)',
+            e
+          );
         }
       },
     });
   }
 
+  public async onAddImageTagToSelectedImageListClicked(): Promise<void> {
+    if (this.selectedIndexList.length === 0) {
+      return;
+    }
+
+    const hasImageWithNoType =
+      this.selectedIndexList.findIndex(
+        (index) => this.imageList[index].imageType === null
+      ) != -1;
+    if (hasImageWithNoType) {
+      this.notificationService.info(
+        'Cannot assign image tags because one or more selected images does not have an image type',
+        ''
+      );
+      return;
+    }
+
+    const selectedImageTypeIDList = getUniqueValueList(
+      this.selectedIndexList.map(
+        (index) => this.imageList[index].imageType?.id || 0
+      )
+    );
+    let imageTagGroupAndTagListOfImageTypeList: ImageTagGroupAndTagList[] = [];
+    try {
+      imageTagGroupAndTagListOfImageTypeList =
+        await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(
+          selectedImageTypeIDList
+        );
+    } catch (e) {
+      this.handleError('Failed to retrieve eligible image tag group list', e);
+      return;
+    }
+
+    const intersectionImageTagGroupAndTagListOfImageTypeList =
+      this.imageTagManagementService.getIntersectionImageTagGroupAndTagList(
+        imageTagGroupAndTagListOfImageTypeList
+      );
+    this.isAddImageTagToSelectedImageListModalVisible = true;
+    this.addImageTagToSelectedImageListModalImageTagGroupList =
+      intersectionImageTagGroupAndTagListOfImageTypeList.imageTagGroupList;
+    this.addImageTagToSelectedImageListModalImageTagList =
+      intersectionImageTagGroupAndTagListOfImageTypeList.imageTagList;
+    this.addImageTagToSelectedImageListModalImageTagListAfterUpdate =
+      this.imageTagManagementService.getUnionImageTagList(
+        this.selectedIndexList.map((index) => this.imageTagList[index])
+      );
+    this.addImageTagToSelectedImageListModalSelectedImageTagList = [];
+  }
+
+  public onAddImageTagToSelectedImageListModalImageTagAdded(
+    addedImageTag: ImageTag
+  ): void {
+    this.addImageTagToSelectedImageListModalImageTagListAfterUpdate = [
+      ...this.addImageTagToSelectedImageListModalImageTagListAfterUpdate,
+      addedImageTag,
+    ];
+    this.addImageTagToSelectedImageListModalSelectedImageTagList = [
+      ...this.addImageTagToSelectedImageListModalSelectedImageTagList,
+      addedImageTag,
+    ];
+  }
+
+  public onAddImageTagToSelectedImageListModalImageTagDeleted(
+    deletedImageTag: ImageTag
+  ): void {
+    this.addImageTagToSelectedImageListModalImageTagListAfterUpdate =
+      this.addImageTagToSelectedImageListModalImageTagListAfterUpdate.filter(
+        (imageTag) => imageTag.id !== deletedImageTag.id
+      );
+    this.addImageTagToSelectedImageListModalSelectedImageTagList =
+      this.addImageTagToSelectedImageListModalSelectedImageTagList.filter(
+        (imageTag) => imageTag.id !== deletedImageTag.id
+      );
+  }
+
+  public async onAddImageTagToSelectedImageListModalOk(): Promise<void> {
+    const selectedImageIDList = this.selectedIndexList.map(
+      (index) => this.imageList[index].id
+    );
+    const selectedImageTagIDList =
+      this.addImageTagToSelectedImageListModalSelectedImageTagList.map(
+        (imageTag) => imageTag.id
+      );
+    try {
+      await this.imageListManagementService.addImageTagListToImageList(
+        selectedImageIDList,
+        selectedImageTagIDList
+      );
+      this.notificationService.success(
+        'Added image tags to selected image(s) successfully',
+        ''
+      );
+      this.isAddImageTagToSelectedImageListModalVisible = false;
+      await this.getImageListFromPaginationInfo();
+    } catch (e) {
+      this.handleError('Failed to add image tags to selected image(s)', e);
+    }
+  }
+
+  public onAddImageTagToSelectedImageListModalCancel(): void {
+    this.isAddImageTagToSelectedImageListModalVisible = false;
+  }
+
   public onDeleteSelectedImagesClicked(): void {
-    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    const selectedImageIDList = this.selectedIndexList.map(
+      (index) => this.imageList[index].id
+    );
     this.modalService.create({
-      nzTitle: 'Delete image(s)',
+      nzTitle: 'Delete selected image(s)',
       nzContent:
         'Are you sure? This will also delete all region extracted from them. ' +
         'This action is <b>IRREVERSIBLE</b>.',
@@ -311,16 +435,21 @@ export class MyImagesComponent implements OnInit {
             selectedImageIDList
           );
           await this.getImageListFromPaginationInfo();
-          this.notificationService.success('Delete image(s) successfully', '');
+          this.notificationService.success(
+            'Delete selected image(s) successfully',
+            ''
+          );
         } catch (e) {
-          this.handleError('Failed to delete image(s)', e);
+          this.handleError('Failed to delete selected image(s)', e);
         }
       },
     });
   }
 
   public async onRequestRegionDetectionForSelectedImagesClicked() {
-    const selectedImageIDList = this.selectedImageList.map((image) => image.id);
+    const selectedImageIDList = this.selectedIndexList.map(
+      (index) => this.imageList[index].id
+    );
     this.modalService.create({
       nzTitle: 'Request for lesion suggestion for selected image(s)',
       nzContent: 'Are you sure?',
@@ -331,12 +460,12 @@ export class MyImagesComponent implements OnInit {
           );
           await this.getImageListFromPaginationInfo();
           this.notificationService.success(
-            'Requested for lesion suggestion for image(s) successfully',
+            'Requested for lesion suggestion for selected image(s) successfully',
             ''
           );
         } catch (e) {
           this.handleError(
-            'Failed to requested for lesion suggestion for image(s)',
+            'Failed to requested for lesion suggestion for selected image(s)',
             e
           );
         }

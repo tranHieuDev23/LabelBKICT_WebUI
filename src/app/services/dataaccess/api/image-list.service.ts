@@ -307,6 +307,9 @@ export class ImageListService {
             sort_order: sortOption,
             ...filterOptionsQueryParams,
           },
+          paramsSerializer: (params) => {
+            return qs.stringify(params, { arrayFormat: 'repeat' });
+          },
         }
       );
 

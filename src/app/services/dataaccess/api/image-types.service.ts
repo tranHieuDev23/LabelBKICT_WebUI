@@ -1,12 +1,13 @@
 import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
+import qs from 'qs';
 import {
   UnauthenticatedError,
   UnauthorizedError,
   UnknownAPIError,
 } from './errors';
-import { ImageTag, ImageTagGroup, ImageType, RegionLabel } from './schemas';
+import { ImageType, RegionLabel, ImageTagGroupAndTagList } from './schemas';
 
 export class InvalidImageTypeInformationError extends Error {
   constructor() {
@@ -273,21 +274,47 @@ export class ImageTypesService {
     }
   }
 
-  public async getImageTagGroupListOfImageType(imageTypeID: number): Promise<{
-    imageTagGroupList: ImageTagGroup[];
-    imageTagList: ImageTag[][];
-  }> {
+  public async getImageTagGroupListOfImageType(
+    imageTypeID: number
+  ): Promise<ImageTagGroupAndTagList> {
     try {
       const response = await this.axios.get(
         `/api/image-types/${imageTypeID}/image-tag-groups`
       );
-      const imageTagGroupList = response.data.image_tag_group_list.map(
-        ImageTagGroup.fromJSON
+      return ImageTagGroupAndTagList.fromJSON(response.data);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getImageTagGroupListOfImageTypeList(
+    imageTypeIdList: number[]
+  ): Promise<ImageTagGroupAndTagList[]> {
+    try {
+      const response = await this.axios.get(
+        '/api/image-types/image-tag-groups',
+        {
+          params: { image_type_id_list: imageTypeIdList },
+          paramsSerializer: (params) => {
+            return qs.stringify(params, { arrayFormat: 'repeat' });
+          },
+        }
       );
-      const imageTagList: ImageTag[][] = response.data.image_tag_list.map(
-        (ImageTagSublist: any[]) => ImageTagSublist.map(ImageTag.fromJSON)
+      const imageTagGroupListOfImageTypeListJSON = response.data
+        .image_tag_group_of_image_type_list as any[];
+      return imageTagGroupListOfImageTypeListJSON.map(
+        ImageTagGroupAndTagList.fromJSON
       );
-      return { imageTagGroupList, imageTagList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

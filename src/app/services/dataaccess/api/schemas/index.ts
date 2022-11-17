@@ -7,6 +7,7 @@ export * from './image_type';
 export * from './region_label';
 export * from './image_tag_group';
 export * from './image_tag';
+export * from './image_tag_group_and_tag_list';
 export * from './image';
 export * from './image_list_filter_options';
 export * from './image_bookmark';

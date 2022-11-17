@@ -1,7 +1,5 @@
 <div class="carded-content">
-    <h1 nz-typography>
-        My images
-    </h1>
+    <h1 nz-typography>My images</h1>
 
     <app-image-filter-options-selector [filterOptions]="filterOptions" [sortOption]="imageListSortOption"
         [selectorConfig]="imageListFilterOptionsSelectorConfig" [publishedByUserOptionList]="publishedByUserOptionList"
@@ -38,6 +36,9 @@
                 </li>
             </ul>
         </li>
+        <li nz-menu-item (click)="onAddImageTagToSelectedImageListClicked()">
+            Add image tags to selected image(s)
+        </li>
         <li nz-menu-item (click)="onRequestRegionDetectionForSelectedImagesClicked()">
             Request for AI-based lesion suggestion for selected image(s)
         </li>
@@ -46,3 +47,19 @@
         </li>
     </ul>
 </nz-dropdown-menu>
+
+<nz-modal [(nzVisible)]="isAddImageTagToSelectedImageListModalVisible" nzTitle="Add images tags to selected image(s)"
+    [nzOkDisabled]="addImageTagToSelectedImageListModalSelectedImageTagList.length === 0"
+    (nzOnOk)="onAddImageTagToSelectedImageListModalOk()" (nzOnCancel)="onAddImageTagToSelectedImageListModalCancel()">
+    <ng-container *nzModalContent>
+        <nz-tag *ngFor="let imageTag of addImageTagToSelectedImageListModalSelectedImageTagList" nzMode="closeable"
+            (nzOnClose)="onAddImageTagToSelectedImageListModalImageTagDeleted(imageTag)">
+            {{ imageTag.displayName }}
+        </nz-tag>
+        <app-image-tag-select [allImageTagGroupList]="addImageTagToSelectedImageListModalImageTagGroupList"
+            [allImageTagList]="addImageTagToSelectedImageListModalImageTagList"
+            [imageTagList]="addImageTagToSelectedImageListModalImageTagListAfterUpdate"
+            (imageTagAdded)="onAddImageTagToSelectedImageListModalImageTagAdded($event)">
+        </app-image-tag-select>
+    </ng-container>
+</nz-modal>

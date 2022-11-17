@@ -2,19 +2,5 @@
     (nzOnClose)="onDeleteImageTag(imageTag)">
     {{ imageTag.displayName }}
 </nz-tag>
-<span *ngIf="editable">
-    <nz-tag *ngIf="!isAddImageTagSelectVisible" class="editable-tag" nzNoAnimation (click)="showAddImageTagInput()">
-        <i nz-icon nzType="plus"></i> New image tag
-    </nz-tag>
-    <nz-select *ngIf="isAddImageTagSelectVisible" class="editable-tag-select" nzSize="small"
-        nzPlaceholder="Type to search" [(ngModel)]="selectedImageTag" (ngModelChange)="onAddImageTag($event)">
-        <ng-template ngFor let-index [ngForOf]="allowedImageTagGroupIndexList">
-            <nz-option nzDisabled="true" nzCustomContent="true">
-                <span nz-typography nzType="secondary">{{ allImageTagGroupList[index].displayName }}</span>
-            </nz-option>
-            <nz-option *ngFor="let imageTag of allImageTagList[index]" [nzValue]="imageTag"
-                [nzLabel]="imageTag.displayName" [nzHide]="isImageTagInImageTagList(imageTag)">
-            </nz-option>
-        </ng-template>
-    </nz-select>
-</span>
+<app-image-tag-select *ngIf="editable" [allImageTagGroupList]="allImageTagGroupList" [allImageTagList]="allImageTagList"
+    [imageTagList]="imageTagList" (imageTagAdded)="onAddImageTag($event)"></app-image-tag-select>

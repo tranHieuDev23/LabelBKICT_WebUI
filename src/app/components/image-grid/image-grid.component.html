@@ -2,12 +2,12 @@
     <nz-skeleton [nzActive]="true"></nz-skeleton>
 </div>
 <div *ngIf="!loading">
-    <dts-select-container *ngIf="imageList.length > 0" [(selectedItems)]="selectedImageList"
+    <dts-select-container *ngIf="imageList.length > 0" [(selectedItems)]="selectedIndexList"
         (select)="onImageListSelected()">
         <div nz-row [nzGutter]="{ xs: 8, md: 16, xl: 24, xxl: 32 }">
             <div nz-col [nzSpan]="24" [nzMd]="12" [nzLg]="8" [nzXl]="6" *ngFor="let image of imageList; index as i">
-                <nz-card nzSize="small" [nzCover]="coverTemplate" (dblclick)="onImageDbClick(i)"
-                    (contextmenu)="onImageContextMenu(image)" [dtsSelectItem]="image">
+                <nz-card nzSize="small" [nzCover]="coverTemplate" (dblclick)="onImageDbClick(i + 1)"
+                    (contextmenu)="onImageContextMenu(i + 1)" [dtsSelectItem]="i + 1">
                     <p>
                         <nz-tag nzColor="magenta">
                             {{ image.imageType? image.imageType.displayName : 'No type' }}

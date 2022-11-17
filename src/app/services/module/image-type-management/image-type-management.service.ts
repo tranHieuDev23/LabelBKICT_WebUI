@@ -4,6 +4,7 @@ import {
   ImageTypesService,
   RegionLabel,
 } from '../../dataaccess/api';
+import { ImageTagGroupAndTagList } from '../../dataaccess/api/schemas/image_tag_group_and_tag_list';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +20,13 @@ export class ImageTypeManagementService {
       displayName.trim(),
       hasPredictiveModel
     );
+  }
+
+  public async getImageType(id: number): Promise<{
+    imageType: ImageType;
+    regionLabelList: RegionLabel[];
+  }> {
+    return await this.imageTypesService.getImageType(id);
   }
 
   public async getImageTypeList(): Promise<{
@@ -85,6 +93,22 @@ export class ImageTypeManagementService {
     await this.imageTypesService.removeRegionLabelFromImageType(
       imageTypeID,
       regionLabelID
+    );
+  }
+
+  public async getImageTagGroupListOfImageType(
+    imageTypeID: number
+  ): Promise<ImageTagGroupAndTagList> {
+    return await this.imageTypesService.getImageTagGroupListOfImageType(
+      imageTypeID
+    );
+  }
+
+  public async getImageTagGroupListOfImageTypeList(
+    imageTypeIDList: number[]
+  ): Promise<ImageTagGroupAndTagList[]> {
+    return await this.imageTypesService.getImageTagGroupListOfImageTypeList(
+      imageTypeIDList
     );
   }
 }
