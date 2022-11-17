@@ -68,7 +68,7 @@ export class AllImagesComponent implements OnInit {
 
   public imageTypeList: ImageType[] = [];
 
-  private selectedImageIndexList: number[] = [];
+  private selectedIndexList: number[] = [];
 
   constructor(
     private readonly imageListManagementService: ImageListManagementService,
@@ -249,11 +249,11 @@ export class AllImagesComponent implements OnInit {
   }
 
   public onImageGridImageListSelected(imageIndexList: number[]): void {
-    this.selectedImageIndexList = imageIndexList;
+    this.selectedIndexList = imageIndexList;
   }
 
   public onImageGridContextMenu(event: MouseEvent): boolean {
-    if (this.selectedImageIndexList.length === 0) {
+    if (this.selectedIndexList.length === 0) {
       return false;
     }
     (async () => {
@@ -275,7 +275,7 @@ export class AllImagesComponent implements OnInit {
   }
 
   public onSetImageTypeOfSelectedImagesClicked(imageType: ImageType): void {
-    const selectedImageIDList = this.selectedImageIndexList.map(
+    const selectedImageIDList = this.selectedIndexList.map(
       (index) => this.imageList[index].id
     );
     this.modalService.create({
@@ -303,7 +303,7 @@ export class AllImagesComponent implements OnInit {
   }
 
   public onDeleteSelectedImagesClicked(): void {
-    const selectedImageIDList = this.selectedImageIndexList.map(
+    const selectedImageIDList = this.selectedIndexList.map(
       (index) => this.imageList[index].id
     );
     this.modalService.create({
@@ -327,7 +327,7 @@ export class AllImagesComponent implements OnInit {
   }
 
   public async onRequestRegionDetectionForSelectedImagesClicked() {
-    const selectedImageIDList = this.selectedImageIndexList.map(
+    const selectedImageIDList = this.selectedIndexList.map(
       (index) => this.imageList[index].id
     );
     this.modalService.create({

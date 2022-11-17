@@ -226,14 +226,12 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
           );
         this.regionLabelList = regionLabelList;
 
-        const {
-          imageTagGroupList,
-          imageTagList: imageTagListOfImageTagGroupList,
-        } = await this.imageTypeManagementService.getImageTagGroupListOfImageType(
-          image.imageType.id
-        );
+        const { imageTagGroupList, imageTagList } =
+          await this.imageTypeManagementService.getImageTagGroupListOfImageType(
+            image.imageType.id
+          );
         this.allowedImageTagGroupListForImageType = imageTagGroupList;
-        this.allowedImageTagListForImageType = imageTagListOfImageTagGroupList;
+        this.allowedImageTagListForImageType = imageTagList;
       } else {
         this.regionLabelList = [];
         this.allowedImageTagGroupListForImageType = [];

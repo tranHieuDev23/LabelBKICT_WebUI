@@ -78,7 +78,7 @@ export class MyImagesComponent implements OnInit {
 
   public imageTypeList: ImageType[] = [];
 
-  private selectedImageIndexList: number[] = [];
+  private selectedIndexList: number[] = [];
 
   public isAddImageTagToSelectedImageListModalVisible: boolean = false;
   public addImageTagToSelectedImageListModalImageTagGroupList: ImageTagGroup[] =
@@ -259,11 +259,11 @@ export class MyImagesComponent implements OnInit {
   }
 
   public onImageGridImageListSelected(imageIndexList: number[]): void {
-    this.selectedImageIndexList = imageIndexList;
+    this.selectedIndexList = imageIndexList;
   }
 
   public onImageGridContextMenu(event: MouseEvent): boolean {
-    if (this.selectedImageIndexList.length === 0) {
+    if (this.selectedIndexList.length === 0) {
       return false;
     }
     (async () => {
@@ -286,7 +286,7 @@ export class MyImagesComponent implements OnInit {
   }
 
   public onSetImageTypeOfSelectedImagesClicked(imageType: ImageType): void {
-    const selectedImageIDList = this.selectedImageIndexList.map(
+    const selectedImageIDList = this.selectedIndexList.map(
       (index) => this.imageList[index].id
     );
     this.modalService.create({
@@ -317,12 +317,12 @@ export class MyImagesComponent implements OnInit {
   }
 
   public async onAddImageTagToSelectedImageListClicked(): Promise<void> {
-    if (this.selectedImageIndexList.length === 0) {
+    if (this.selectedIndexList.length === 0) {
       return;
     }
 
     const hasImageWithNoType =
-      this.selectedImageIndexList.findIndex(
+      this.selectedIndexList.findIndex(
         (index) => this.imageList[index].imageType === null
       ) != -1;
     if (hasImageWithNoType) {
@@ -334,7 +334,7 @@ export class MyImagesComponent implements OnInit {
     }
 
     const selectedImageTypeIDList = getUniqueValueList(
-      this.selectedImageIndexList.map(
+      this.selectedIndexList.map(
         (index) => this.imageList[index].imageType?.id || 0
       )
     );
@@ -360,7 +360,7 @@ export class MyImagesComponent implements OnInit {
       intersectionImageTagGroupAndTagListOfImageTypeList.imageTagList;
     this.addImageTagToSelectedImageListModalImageTagListAfterUpdate =
       this.imageTagManagementService.getUnionImageTagList(
-        this.selectedImageIndexList.map((index) => this.imageTagList[index])
+        this.selectedIndexList.map((index) => this.imageTagList[index])
       );
     this.addImageTagToSelectedImageListModalSelectedImageTagList = [];
   }
@@ -392,7 +392,7 @@ export class MyImagesComponent implements OnInit {
   }
 
   public async onAddImageTagToSelectedImageListModalOk(): Promise<void> {
-    const selectedImageIDList = this.selectedImageIndexList.map(
+    const selectedImageIDList = this.selectedIndexList.map(
       (index) => this.imageList[index].id
     );
     const selectedImageTagIDList =
@@ -420,11 +420,11 @@ export class MyImagesComponent implements OnInit {
   }
 
   public onDeleteSelectedImagesClicked(): void {
-    const selectedImageIDList = this.selectedImageIndexList.map(
+    const selectedImageIDList = this.selectedIndexList.map(
       (index) => this.imageList[index].id
     );
     this.modalService.create({
-      nzTitle: 'Delete image(s)',
+      nzTitle: 'Delete selected image(s)',
       nzContent:
         'Are you sure? This will also delete all region extracted from them. ' +
         'This action is <b>IRREVERSIBLE</b>.',
@@ -435,16 +435,19 @@ export class MyImagesComponent implements OnInit {
             selectedImageIDList
           );
           await this.getImageListFromPaginationInfo();
-          this.notificationService.success('Delete image(s) successfully', '');
+          this.notificationService.success(
+            'Delete selected image(s) successfully',
+            ''
+          );
         } catch (e) {
-          this.handleError('Failed to delete image(s)', e);
+          this.handleError('Failed to delete selected image(s)', e);
         }
       },
     });
   }
 
   public async onRequestRegionDetectionForSelectedImagesClicked() {
-    const selectedImageIDList = this.selectedImageIndexList.map(
+    const selectedImageIDList = this.selectedIndexList.map(
       (index) => this.imageList[index].id
     );
     this.modalService.create({
@@ -457,12 +460,12 @@ export class MyImagesComponent implements OnInit {
           );
           await this.getImageListFromPaginationInfo();
           this.notificationService.success(
-            'Requested for lesion suggestion for image(s) successfully',
+            'Requested for lesion suggestion for selected image(s) successfully',
             ''
           );
         } catch (e) {
           this.handleError(
-            'Failed to requested for lesion suggestion for image(s)',
+            'Failed to requested for lesion suggestion for selected image(s)',
             e
           );
         }

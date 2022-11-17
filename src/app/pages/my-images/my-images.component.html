@@ -10,8 +10,7 @@
   </app-image-filter-options-selector>
 
   <p *ngIf="fromImageIndex !== 0" nz-typography>
-    Showing image {{ fromImageIndex }} - {{ toImageIndex }} of
-    {{ totalImageCount }}
+    Showing image {{ fromImageIndex }} - {{ toImageIndex }} of {{ totalImageCount }}
   </p>
 
   <app-image-grid emptyText="No image" [imageList]="imageList" [imageTagList]="imageTagList"

@@ -5,10 +5,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {
-  SelectContainerComponent,
-  SelectItemDirective,
-} from 'ngx-drag-to-select';
+import { SelectContainerComponent } from 'ngx-drag-to-select';
 import { Image, ImageStatus, ImageTag } from 'src/app/services/dataaccess/api';
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
 
@@ -56,12 +53,13 @@ export class ImageGridComponent {
   }
 
   public onImageContextMenu(selectedIndex: number): void {
-    if (this.selectedIndexList.length < 2) {
-      this.selectContainer?.clearSelection();
-      this.selectContainer?.selectItems(
-        (index: number) => index === selectedIndex
-      );
-      this.onImageListSelected();
+    if (this.selectedIndexList.length >= 2) {
+      return;
     }
+    this.selectContainer?.clearSelection();
+    this.selectContainer?.selectItems(
+      (index: number) => index === selectedIndex
+    );
+    this.onImageListSelected();
   }
 }

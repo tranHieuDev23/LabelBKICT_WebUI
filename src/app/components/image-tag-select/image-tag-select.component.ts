@@ -12,6 +12,7 @@ export class ImageTagSelectComponent {
   @Input() public set allImageTagGroupList(v: ImageTagGroup[]) {
     this._allImageTagGroupList = v;
     this.updateAllowedImageTagGroupIndexList();
+    this.hideAddImageTagInput();
   }
 
   public get allImageTagGroupList(): ImageTagGroup[] {
@@ -23,6 +24,7 @@ export class ImageTagSelectComponent {
   @Input() public set allImageTagList(v: ImageTag[][]) {
     this._allImageTagList = v;
     this.updateAllowedImageTagGroupIndexList();
+    this.hideAddImageTagInput();
   }
 
   public get allImageTagList(): ImageTag[][] {
@@ -30,11 +32,11 @@ export class ImageTagSelectComponent {
   }
 
   private _imageTagList: ImageTag[] = [];
-  private imageTagIdSet: Set<number> = new Set<number>();
+  private imageTagIDSet: Set<number> = new Set<number>();
 
   @Input() public set imageTagList(v: ImageTag[]) {
     this._imageTagList = v;
-    this.imageTagIdSet = new Set(v.map((imageTag) => imageTag.id));
+    this.imageTagIDSet = new Set(v.map((imageTag) => imageTag.id));
     this.updateAllowedImageTagGroupIndexList();
     this.hideAddImageTagInput();
   }
@@ -53,7 +55,7 @@ export class ImageTagSelectComponent {
   constructor() {}
 
   public isImageTagInImageTagList(imageTag: ImageTag): boolean {
-    return this.imageTagIdSet.has(imageTag.id);
+    return this.imageTagIDSet.has(imageTag.id);
   }
 
   public showAddImageTagInput(): void {
@@ -65,9 +67,6 @@ export class ImageTagSelectComponent {
   }
 
   public hideAddImageTagInput(): void {
-    if (!this.isAddImageTagSelectVisible) {
-      return;
-    }
     this.isAddImageTagSelectVisible = false;
   }
 
