@@ -19,7 +19,6 @@ import {
   ImageType,
   OneOrMoreImagesNotFoundError,
   TooManyImagesError,
-  ImageTypesService,
   ImageTagGroup,
   ImageTagGroupAndTagList,
 } from 'src/app/services/dataaccess/api';
