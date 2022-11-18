@@ -1,4 +1,4 @@
-<nz-tag *ngFor="let imageTag of imageTagList" [nzMode]="editable? 'closeable' : 'default'"
+<nz-tag *ngFor="let imageTag of imageTagList" class="tag-list-item" [nzMode]="editable? 'closeable' : 'default'"
     (nzOnClose)="onDeleteImageTag(imageTag)">
     {{ imageTag.displayName }}
 </nz-tag>

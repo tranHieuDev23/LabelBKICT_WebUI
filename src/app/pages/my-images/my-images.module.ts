@@ -9,8 +9,7 @@ import { ImageGridModule } from 'src/app/components/image-grid/image-grid.module
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzModalModule } from 'ng-zorro-antd/modal';
-import { ImageTagSelectModule } from 'src/app/components/image-tag-select/image-tag-select.module';
-import { NzTagModule } from 'ng-zorro-antd/tag';
+import { AddableTagListModule } from 'src/app/components/addable-tag-list/addable-tag-list.module';
 
 @NgModule({
   declarations: [MyImagesComponent],
@@ -23,8 +22,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
     ImageGridModule,
     NzDropDownModule,
     NzModalModule,
-    ImageTagSelectModule,
-    NzTagModule,
+    AddableTagListModule,
   ],
   exports: [MyImagesComponent],
 })

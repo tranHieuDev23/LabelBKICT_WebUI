@@ -50,17 +50,15 @@
 </nz-dropdown-menu>
 
 <nz-modal [(nzVisible)]="isAddImageTagToSelectedImageListModalVisible" nzTitle="Add images tags to selected image(s)"
-    [nzOkDisabled]="addImageTagToSelectedImageListModalSelectedImageTagList.length === 0"
+    [nzOkDisabled]="addImageTagToSelectedImageListModalAddedImageTagList.length === 0"
     (nzOnOk)="onAddImageTagToSelectedImageListModalOk()" (nzOnCancel)="onAddImageTagToSelectedImageListModalCancel()">
     <ng-container *nzModalContent>
-        <nz-tag *ngFor="let imageTag of addImageTagToSelectedImageListModalSelectedImageTagList" nzMode="closeable"
-            (nzOnClose)="onAddImageTagToSelectedImageListModalImageTagDeleted(imageTag)">
-            {{ imageTag.displayName }}
-        </nz-tag>
-        <app-image-tag-select [allImageTagGroupList]="addImageTagToSelectedImageListModalImageTagGroupList"
+        <app-addable-tag-list [allImageTagGroupList]="addImageTagToSelectedImageListModalImageTagGroupList"
             [allImageTagList]="addImageTagToSelectedImageListModalImageTagList"
-            [imageTagList]="addImageTagToSelectedImageListModalImageTagListAfterUpdate"
-            (imageTagAdded)="onAddImageTagToSelectedImageListModalImageTagAdded($event)">
-        </app-image-tag-select>
+            [currentImageTagList]="addImageTagToSelectedImageListModalCurrentImageTagList"
+            [addedImageTagList]="addImageTagToSelectedImageListModalAddedImageTagList"
+            (imageTagAdded)="onAddImageTagToSelectedImageListModalImageTagAdded($event)"
+            (imageTagDeleted)="onAddImageTagToSelectedImageListModalImageTagDeleted($event)">
+        </app-addable-tag-list>
     </ng-container>
 </nz-modal>

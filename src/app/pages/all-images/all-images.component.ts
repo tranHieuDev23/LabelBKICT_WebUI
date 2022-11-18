@@ -78,10 +78,9 @@ export class AllImagesComponent implements OnInit {
   public addImageTagToSelectedImageListModalImageTagGroupList: ImageTagGroup[] =
     [];
   public addImageTagToSelectedImageListModalImageTagList: ImageTag[][] = [];
-  public addImageTagToSelectedImageListModalSelectedImageTagList: ImageTag[] =
+  public addImageTagToSelectedImageListModalCurrentImageTagList: ImageTag[] =
     [];
-  public addImageTagToSelectedImageListModalImageTagListAfterUpdate: ImageTag[] =
-    [];
+  public addImageTagToSelectedImageListModalAddedImageTagList: ImageTag[] = [];
 
   constructor(
     private readonly imageListManagementService: ImageListManagementService,
@@ -361,22 +360,18 @@ export class AllImagesComponent implements OnInit {
       intersectionImageTagGroupAndTagListOfImageTypeList.imageTagGroupList;
     this.addImageTagToSelectedImageListModalImageTagList =
       intersectionImageTagGroupAndTagListOfImageTypeList.imageTagList;
-    this.addImageTagToSelectedImageListModalImageTagListAfterUpdate =
+    this.addImageTagToSelectedImageListModalCurrentImageTagList =
       this.imageTagManagementService.getUnionImageTagList(
         this.selectedIndexList.map((index) => this.imageTagList[index])
       );
-    this.addImageTagToSelectedImageListModalSelectedImageTagList = [];
+    this.addImageTagToSelectedImageListModalAddedImageTagList = [];
   }
 
   public onAddImageTagToSelectedImageListModalImageTagAdded(
     addedImageTag: ImageTag
   ): void {
-    this.addImageTagToSelectedImageListModalImageTagListAfterUpdate = [
-      ...this.addImageTagToSelectedImageListModalImageTagListAfterUpdate,
-      addedImageTag,
-    ];
-    this.addImageTagToSelectedImageListModalSelectedImageTagList = [
-      ...this.addImageTagToSelectedImageListModalSelectedImageTagList,
+    this.addImageTagToSelectedImageListModalAddedImageTagList = [
+      ...this.addImageTagToSelectedImageListModalAddedImageTagList,
       addedImageTag,
     ];
   }
@@ -384,12 +379,8 @@ export class AllImagesComponent implements OnInit {
   public onAddImageTagToSelectedImageListModalImageTagDeleted(
     deletedImageTag: ImageTag
   ): void {
-    this.addImageTagToSelectedImageListModalImageTagListAfterUpdate =
-      this.addImageTagToSelectedImageListModalImageTagListAfterUpdate.filter(
-        (imageTag) => imageTag.id !== deletedImageTag.id
-      );
-    this.addImageTagToSelectedImageListModalSelectedImageTagList =
-      this.addImageTagToSelectedImageListModalSelectedImageTagList.filter(
+    this.addImageTagToSelectedImageListModalAddedImageTagList =
+      this.addImageTagToSelectedImageListModalAddedImageTagList.filter(
         (imageTag) => imageTag.id !== deletedImageTag.id
       );
   }
@@ -398,14 +389,14 @@ export class AllImagesComponent implements OnInit {
     const selectedImageIDList = this.selectedIndexList.map(
       (index) => this.imageList[index].id
     );
-    const selectedImageTagIDList =
-      this.addImageTagToSelectedImageListModalSelectedImageTagList.map(
+    const addedImageTagIDList =
+      this.addImageTagToSelectedImageListModalAddedImageTagList.map(
         (imageTag) => imageTag.id
       );
     try {
       await this.imageListManagementService.addImageTagListToImageList(
         selectedImageIDList,
-        selectedImageTagIDList
+        addedImageTagIDList
       );
       this.notificationService.success(
         'Added image tags to selected image(s) successfully',
