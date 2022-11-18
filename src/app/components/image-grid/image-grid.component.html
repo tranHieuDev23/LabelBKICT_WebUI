@@ -17,7 +17,7 @@
                         </nz-tag>
                     </p>
                     <p *ngIf="imageTagList[i].length > 0">
-                        <nz-tag *ngFor="let imageTag of imageTagList[i]">
+                        <nz-tag *ngFor="let imageTag of imageTagList[i]" class="tag-list-item">
                             {{ imageTag.displayName }}
                         </nz-tag>
                     </p>
