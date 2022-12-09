@@ -39,24 +39,26 @@ export function uploadImageBatch(
 ): Observable<UploadImageBatchMessage> {
   return new Observable<UploadImageBatchMessage>((subscriber) => {
     const limit = pLimit(5);
-    const uploadImagePromiseList = inputList.map(async (input, index) => {
-      try {
-        await uploadImage(input);
-        subscriber.next(
-          new UploadImageBatchMessage(
-            UploadImageBatchMessageType.UPLOAD_SUCCESS,
-            index
-          )
-        );
-      } catch {
-        subscriber.next(
-          new UploadImageBatchMessage(
-            UploadImageBatchMessageType.UPLOAD_FAILURE,
-            index
-          )
-        );
-      }
-    });
+    const uploadImagePromiseList = inputList.map((input, index) =>
+      limit(async () => {
+        try {
+          await uploadImage(input);
+          subscriber.next(
+            new UploadImageBatchMessage(
+              UploadImageBatchMessageType.UPLOAD_SUCCESS,
+              index
+            )
+          );
+        } catch {
+          subscriber.next(
+            new UploadImageBatchMessage(
+              UploadImageBatchMessageType.UPLOAD_FAILURE,
+              index
+            )
+          );
+        }
+      })
+    );
     Promise.all(uploadImagePromiseList).then(() => {
       subscriber.next(
         new UploadImageBatchMessage(
