@@ -78,6 +78,8 @@ export class MyImagesComponent implements OnInit {
 
   public imageTypeList: ImageType[] = [];
 
+  public classificationTypeList: String[] = ["Anatomical site", "Lesion", "HP"];
+
   private selectedIndexList: number[] = [];
 
   public isAddImageTagToSelectedImageListModalVisible: boolean = false;
@@ -462,6 +464,33 @@ export class MyImagesComponent implements OnInit {
         }
       },
     });
+  }
+
+  public async onRequestClassificationForSelectedImagesClicked(classificationTypeInx: number) {
+    const selectedImageIDList = this.selectedIndexList.map(
+      (index) => this.imageList[index].id
+    );
+    this.modalService.create({
+      nzTitle: `Request for ${this.classificationTypeList[classificationTypeInx]} classification for selected image(s)`,
+      nzContent: 'Are you sure?',
+      nzOnOk:async () => {
+        try {
+          await this.imageListManagementService.createImageClassificationTaskList(
+            selectedImageIDList
+          );
+          await this.getImageListFromPaginationInfo();
+          this.notificationService.success(
+            `Request for ${this.classificationTypeList[classificationTypeInx]} classification for selected image(s) successfully`,
+            ''
+          );
+        } catch (e) {
+          this.handleError(
+            `Failed to request for ${this.classificationTypeList[classificationTypeInx]} classification for selected image(s)`,
+            e
+          )
+        }
+      }
+    })
   }
 
   public async onImageDbClicked(imageIndex: number): Promise<void> {

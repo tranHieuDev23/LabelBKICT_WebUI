@@ -34,6 +34,12 @@ export class DetectionTaskAlreadyExistsError extends Error {
   }
 }
 
+export class ClassificationTaskAlreadyExistsError extends Error {
+  constructor() {
+    super('Classification task already exists');
+  }
+}
+
 export class ImageUserSearchArgumentsError extends Error {
   constructor() {
     super('Invalid user search arguments');
@@ -120,6 +126,32 @@ export class ImageListService {
           throw new OneOrMoreImagesNotFoundError();
         case HttpStatusCode.Conflict:
           throw new DetectionTaskAlreadyExistsError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async createImageClassificationTaskList(
+    imageIdList: number[]
+  ): Promise<void> {
+    try {
+      await this.axios.post(`/api/images/classification-task`, {
+        image_id_list: imageIdList,
+      });
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new OneOrMoreImagesNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new ClassificationTaskAlreadyExistsError();
         default:
           throw new UnknownAPIError(e);
       }
@@ -467,6 +499,7 @@ export class ImageListService {
     filterOptions: ImageListFilterOptions
   ): any {
     return {
+      filter_image_ids: filterOptions.imageIDList ? filterOptions.imageIDList : [],
       filter_image_types: filterOptions.imageTypeIDList,
       filter_image_tags: filterOptions.imageTagIDList,
       filter_region_labels: filterOptions.regionLabelIDList,

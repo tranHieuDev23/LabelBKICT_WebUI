@@ -38,6 +38,12 @@ export class ImageListManagementService {
     await this.imageListService.createImageDetectionTaskList(imageIDList);
   }
 
+  public async createImageClassificationTaskList(
+    imageIDList: number[]
+  ): Promise<void> {
+    await this.imageListService.createImageClassificationTaskList(imageIDList);
+  }
+
   public async getUserImageList(
     offset: number,
     limit: number,
