@@ -15,16 +15,7 @@ import {
   booleanPointInPolygon,
   Position,
 } from '@turf/turf';
-import { Rectangle } from '../models';
-
-export interface Coordinate {
-  x: number;
-  y: number;
-}
-
-export interface Polygon {
-  vertices: Coordinate[];
-}
+import { Coordinate, Polygon, Rectangle } from '../models';
 
 @Injectable({
   providedIn: 'root',
