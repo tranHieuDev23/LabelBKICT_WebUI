@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Coordinate, FreePolygon, Rectangle, Shape } from '../models';
+import { Coordinate, FreePolygon, Shape } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 
 @Injectable({
@@ -9,7 +9,12 @@ export class RegionSelectorGeometryService {
   public calculateImageDrawRegion(
     canvas: HTMLCanvasElement,
     content: RegionSelectorContent
-  ): Rectangle {
+  ): {
+    dx: number;
+    dy: number;
+    dw: number;
+    dh: number;
+  } {
     if (content.image === null) {
       return { dx: 0, dy: 0, dw: 0, dh: 0 };
     }

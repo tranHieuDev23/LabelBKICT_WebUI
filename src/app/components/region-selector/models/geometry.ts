@@ -81,10 +81,3 @@ export class FreePolygon implements Shape {
     ctx.stroke();
   }
 }
-
-export interface Rectangle {
-  dx: number;
-  dy: number;
-  dw: number;
-  dh: number;
-}
