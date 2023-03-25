@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Coordinate, FreePolygon } from '../models';
+import { Coordinate } from '../models';
 
 export interface DrawCircleArguments {
   canvasWidth: number;

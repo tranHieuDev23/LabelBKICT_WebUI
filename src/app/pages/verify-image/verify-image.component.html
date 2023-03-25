@@ -177,7 +177,7 @@
         <li *ngIf="!isRegionListVisible()" nz-menu-item (click)="onContextMenuShowRegionsClicked()">
             Show regions
         </li>
-        <li *ngIf="isRegionSelectorIsInDrawState()" nz-menu-item (click)="regionSelector?.finishDrawing()">
+        <li *ngIf="isRegionSelectorDrawingOrDeleting()" nz-menu-item (click)="regionSelector?.finishDrawing()">
             Finish drawing region
         </li>
         <li *ngIf="isRegionSelectorIsInSelectedState()" nz-menu-item (click)="onContextMenuEditDrawnRegionClicked()">

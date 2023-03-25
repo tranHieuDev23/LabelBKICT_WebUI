@@ -299,14 +299,14 @@ export class VerifyImageComponent implements AfterContentInit {
         }
         break;
       case 'Enter':
-        if (event.ctrlKey && this.regionSelector?.isInDrawState()) {
+        if (event.ctrlKey && this.regionSelector?.isDrawingOrDeleting()) {
           event.preventDefault();
           this.regionSelector.finishDrawing();
         }
         break;
       case 'Escape':
         if (
-          this.regionSelector?.isInDrawState() ||
+          this.regionSelector?.isDrawingOrDeleting() ||
           this.regionSelector?.isInSelectedState()
         ) {
           this.regionSelector.cancelDrawing();
@@ -648,8 +648,8 @@ export class VerifyImageComponent implements AfterContentInit {
     this.regionSelector?.showRegionList();
   }
 
-  public isRegionSelectorIsInDrawState(): boolean {
-    return this.regionSelector?.isInDrawState() || false;
+  public isRegionSelectorDrawingOrDeleting(): boolean {
+    return this.regionSelector?.isDrawingOrDeleting() || false;
   }
 
   public isRegionSelectorIsInSelectedState(): boolean {

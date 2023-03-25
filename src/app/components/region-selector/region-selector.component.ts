@@ -24,7 +24,8 @@ import { RegionSelectorSnapshot } from './snapshot/region-selector-editor-snapsh
 import { RegionSelectorSnapshotService } from './snapshot/region-selector-snapshot.service';
 import {
   DefaultState,
-  DrawState,
+  FreePolygonDrawState,
+  DeleteState,
   RegionSelectorState,
   SelectedState,
 } from './states';
@@ -335,8 +336,11 @@ export class RegionSelectorComponent implements OnInit {
     return this.state instanceof DefaultState;
   }
 
-  public isInDrawState(): boolean {
-    return this.state instanceof DrawState;
+  public isDrawingOrDeleting(): boolean {
+    return (
+      this.state instanceof FreePolygonDrawState ||
+      this.state instanceof DeleteState
+    );
   }
 
   public isInSelectedState(): boolean {
@@ -344,10 +348,7 @@ export class RegionSelectorComponent implements OnInit {
   }
 
   public isInAddingVertexDrawState(): boolean {
-    if (!(this.state instanceof DrawState)) {
-      return false;
-    }
-    return this.state.isAddingVertex;
+    return this.state instanceof FreePolygonDrawState;
   }
 
   public editSelectedRegion(): void {
@@ -366,9 +367,8 @@ export class RegionSelectorComponent implements OnInit {
 
     const newContent = { ...this.state.content };
     newContent.drawnShapeList = densifiedDrawnShapeList;
-    this.state = new DrawState(
+    this.state = new FreePolygonDrawState(
       newContent,
-      true,
       null,
       null,
       this.snapshotService,
@@ -406,9 +406,8 @@ export class RegionSelectorComponent implements OnInit {
 
     const newContent = { ...this.state.content };
     newContent.drawnShapeList = densifiedDrawnPolygonList;
-    this.state = new DrawState(
+    this.state = new FreePolygonDrawState(
       newContent,
-      true,
       regionID,
       null,
       this.snapshotService,
@@ -421,33 +420,50 @@ export class RegionSelectorComponent implements OnInit {
   }
 
   public toggleDrawDelete(isDrawing: boolean): void {
-    if (
-      !this.isInDrawState() ||
-      this.isInAddingVertexDrawState() === isDrawing
-    ) {
+    if (!this.isDrawingOrDeleting()) {
       return;
     }
-    const drawState = this.state as DrawState;
-    this.state = new DrawState(
-      drawState.content,
-      isDrawing,
-      drawState.regionIDToEdit,
-      null,
-      this.snapshotService,
-      this.regionSelectorGeometryService,
-      this.geometryService,
-      this.regionSelectorGraphicService,
-      this.canvasGraphicService
-    );
+
+    if (this.state instanceof FreePolygonDrawState) {
+      if (isDrawing) {
+        return;
+      }
+      this.state = new DeleteState(
+        this.state.content,
+        this.state.regionIDToEdit,
+        this.snapshotService,
+        this.regionSelectorGeometryService,
+        this.geometryService,
+        this.regionSelectorGraphicService,
+        this.canvasGraphicService
+      );
+    }
+
+    if (this.state instanceof DeleteState) {
+      if (!isDrawing) {
+        return;
+      }
+      this.state = new FreePolygonDrawState(
+        this.state.content,
+        this.state.regionIDToEdit,
+        null,
+        this.snapshotService,
+        this.regionSelectorGeometryService,
+        this.geometryService,
+        this.regionSelectorGraphicService,
+        this.canvasGraphicService
+      );
+    }
+
     this.onDraw();
   }
 
   public finishDrawing(): void {
-    if (!this.isInDrawState()) {
+    if (!this.isDrawingOrDeleting()) {
       return;
     }
 
-    const drawState = this.state as DrawState;
+    const drawState = this.state as FreePolygonDrawState;
     const content = drawState.content;
     const drawnShapeList = content.drawnShapeList;
     if (drawnShapeList.length === 0) {
@@ -505,11 +521,11 @@ export class RegionSelectorComponent implements OnInit {
   }
 
   public canUndo(): boolean {
-    return this.isInDrawState() && this.snapshotService.canUndo();
+    return this.isDrawingOrDeleting() && this.snapshotService.canUndo();
   }
 
   public canRedo(): boolean {
-    return this.isInDrawState() && this.snapshotService.canRedo();
+    return this.isDrawingOrDeleting() && this.snapshotService.canRedo();
   }
 
   public undo(): void {
@@ -652,7 +668,7 @@ export class RegionSelectorComponent implements OnInit {
 
       if (
         this.mouseOverRegionID !== null &&
-        !this.isInDrawState() &&
+        !this.isDrawingOrDeleting() &&
         this.isRegionListVisible()
       ) {
         this.regionSelectorGraphicService.drawRegionLabel(

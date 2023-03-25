@@ -5,7 +5,7 @@ import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic
 import { RegionSelectorContent } from '../region-selector-content';
 import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
-import { DrawState } from './region-selector-draw-state';
+import { FreePolygonDrawState } from './region-selector-free-polygon-draw-state';
 import { RegionSelectorState } from './region-selector-state';
 
 export class DefaultState implements RegionSelectorState {
@@ -39,9 +39,8 @@ export class DefaultState implements RegionSelectorState {
 
     this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
 
-    return new DrawState(
+    return new FreePolygonDrawState(
       newContent,
-      true,
       null,
       null,
       this.snapshotService,
