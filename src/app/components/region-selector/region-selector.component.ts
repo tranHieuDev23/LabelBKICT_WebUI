@@ -596,18 +596,6 @@ export class RegionSelectorComponent implements OnInit {
       );
 
     const regionList = this.state.content.regionList;
-    // There's a high possibility that the cursor is still inside the last region it was in.
-    if (this.mouseOverRegionID !== null) {
-      const lastMouseOverRegion = regionList[this.mouseOverRegionID];
-      if (
-        this.geometryService.isPointInPolygon(
-          mouseImagePos,
-          lastMouseOverRegion.border
-        )
-      ) {
-        return;
-      }
-    }
 
     // Prioritize drawn polygon list first
     const drawnPolygonList = this.state.content.drawnPolygonList;
