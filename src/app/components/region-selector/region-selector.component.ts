@@ -613,9 +613,6 @@ export class RegionSelectorComponent implements OnInit {
     let insideRegionID = -1;
     let insideRegionArea = Infinity;
     for (let i = 0; i < regionList.length; i++) {
-      if (i === this.mouseOverRegionID) {
-        continue;
-      }
       const region = regionList[i];
       if (
         !this.geometryService.isPointInPolygon(mouseImagePos, region.border)
