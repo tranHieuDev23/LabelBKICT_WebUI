@@ -13,7 +13,7 @@ import { GeometryService } from './geometry/geometry.service';
 import { RegionSelectorGeometryService } from './geometry/region-selector-geometry.service';
 import { CanvasGraphicService } from './graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from './graphic/region-selector-graphic.service';
-import { Coordinate } from './models';
+import { Coordinate, FreePolygon } from './models';
 import { RegionSelectorContent } from './region-selector-content';
 import {
   RegionClickedEvent,
@@ -92,7 +92,7 @@ export class RegionSelectorComponent implements OnInit {
   private isCtrlDown = false;
   private lastTranslateMousePos: Coordinate | null = null;
   private mouseOverRegionID: number | null = null;
-  private isMouseOverDrawnPolygonList = false;
+  private isMouseOverDrawnShapeList = false;
 
   constructor(
     private readonly snapshotService: RegionSelectorSnapshotService,
@@ -127,7 +127,7 @@ export class RegionSelectorComponent implements OnInit {
   private getDefaultRegionSelectorContent(): RegionSelectorContent {
     return {
       cursorImagePosition: { x: 0, y: 0 },
-      drawnPolygonList: [],
+      drawnShapeList: [],
       image: null,
       imageOrigin: { x: 0, y: 0 },
       isRegionListVisible: true,
@@ -354,21 +354,18 @@ export class RegionSelectorComponent implements OnInit {
     if (!this.isInSelectedState()) {
       return;
     }
-    const drawnPolygonList = this.state.content.drawnPolygonList;
-    const densifiedDrawnPolygonList = drawnPolygonList.map((polygon) => {
-      return this.geometryService.densifyPolygon(
-        polygon,
-        VERTICES_MAX_DISTANCE
-      );
+    const drawnShapeList = this.state.content.drawnShapeList;
+    const densifiedDrawnShapeList = drawnShapeList.map((polygon) => {
+      return this.geometryService.densifyShape(polygon, VERTICES_MAX_DISTANCE);
     });
 
     this.snapshotService.clear();
     this.snapshotService.storeSnapshot(
-      new RegionSelectorSnapshot(densifiedDrawnPolygonList)
+      new RegionSelectorSnapshot(densifiedDrawnShapeList)
     );
 
     const newContent = { ...this.state.content };
-    newContent.drawnPolygonList = densifiedDrawnPolygonList;
+    newContent.drawnShapeList = densifiedDrawnShapeList;
     this.state = new DrawState(
       newContent,
       true,
@@ -390,9 +387,15 @@ export class RegionSelectorComponent implements OnInit {
 
     const region = this.state.content.regionList[regionID];
     const densifiedDrawnPolygonList = [
-      this.geometryService.densifyPolygon(region.border, VERTICES_MAX_DISTANCE),
+      this.geometryService.densifyShape(
+        new FreePolygon(region.border.vertices),
+        VERTICES_MAX_DISTANCE
+      ),
       ...region.holes.map((hole) => {
-        return this.geometryService.densifyPolygon(hole, VERTICES_MAX_DISTANCE);
+        return this.geometryService.densifyShape(
+          new FreePolygon(hole.vertices),
+          VERTICES_MAX_DISTANCE
+        );
       }),
     ];
 
@@ -402,7 +405,7 @@ export class RegionSelectorComponent implements OnInit {
     );
 
     const newContent = { ...this.state.content };
-    newContent.drawnPolygonList = densifiedDrawnPolygonList;
+    newContent.drawnShapeList = densifiedDrawnPolygonList;
     this.state = new DrawState(
       newContent,
       true,
@@ -446,23 +449,23 @@ export class RegionSelectorComponent implements OnInit {
 
     const drawState = this.state as DrawState;
     const content = drawState.content;
-    const drawnPolygonList = content.drawnPolygonList;
-    if (drawnPolygonList.length === 0) {
+    const drawnShapeList = content.drawnShapeList;
+    if (drawnShapeList.length === 0) {
       this.cancelDrawing();
       return;
     }
 
-    const sortedDrawnPolygonList = [...drawnPolygonList].sort((a, b) => {
-      return this.geometryService.getArea(b) - this.geometryService.getArea(a);
+    const sortedDrawnShapeList = [...drawnShapeList].sort((a, b) => {
+      return b.getArea() - a.getArea();
     });
-    const border = sortedDrawnPolygonList[0];
-    const holes = sortedDrawnPolygonList.slice(1);
+    const border = sortedDrawnShapeList[0];
+    const holes = sortedDrawnShapeList.slice(1);
 
-    const { border: normalizedBorder, holes: normalizedHoles } =
+    const { border: normalizedBorder, holeList: normalizedHoleList } =
       this.geometryService.normalizeRegionWithHoles(border, holes);
 
     const newContent = { ...content };
-    newContent.drawnPolygonList = [normalizedBorder, ...normalizedHoles];
+    newContent.drawnShapeList = [normalizedBorder, ...normalizedHoleList];
     this.state = new SelectedState(
       newContent,
       this.regionSelectorGeometryService,
@@ -473,14 +476,14 @@ export class RegionSelectorComponent implements OnInit {
 
     if (drawState.regionIDToEdit === null) {
       this.regionSelected.emit(
-        new RegionSelectedEvent(normalizedBorder, normalizedHoles)
+        new RegionSelectedEvent(normalizedBorder, normalizedHoleList)
       );
     } else {
       this.regionEdited.emit(
         new RegionEditedEvent(
           drawState.regionIDToEdit,
           normalizedBorder,
-          normalizedHoles
+          normalizedHoleList
         )
       );
     }
@@ -488,7 +491,7 @@ export class RegionSelectorComponent implements OnInit {
 
   public cancelDrawing(): void {
     const newContent = { ...this.state.content };
-    newContent.drawnPolygonList = [];
+    newContent.drawnShapeList = [];
     this.state = new DefaultState(
       newContent,
       this.snapshotService,
@@ -528,10 +531,10 @@ export class RegionSelectorComponent implements OnInit {
       return;
     }
     event.preventDefault();
-    if (this.mouseOverRegionID !== null || this.isMouseOverDrawnPolygonList) {
+    if (this.mouseOverRegionID !== null || this.isMouseOverDrawnShapeList) {
       this.regionDbClicked.emit(
         new RegionClickedEvent(
-          this.isMouseOverDrawnPolygonList,
+          this.isMouseOverDrawnShapeList,
           this.mouseOverRegionID,
           event
         )
@@ -543,7 +546,7 @@ export class RegionSelectorComponent implements OnInit {
     event.preventDefault();
     this.contextMenu.emit(
       new RegionClickedEvent(
-        this.isMouseOverDrawnPolygonList,
+        this.isMouseOverDrawnShapeList,
         this.mouseOverRegionID,
         event
       )
@@ -577,7 +580,7 @@ export class RegionSelectorComponent implements OnInit {
   }
 
   private loadSnapshot(snapshot: RegionSelectorSnapshot): void {
-    this.state.content.drawnPolygonList = snapshot.drawnRegionList;
+    this.state.content.drawnShapeList = snapshot.drawnShapeList;
     this.onDraw();
   }
 
@@ -596,14 +599,14 @@ export class RegionSelectorComponent implements OnInit {
       );
 
     // Prioritize drawn polygon list first
-    const drawnPolygonList = this.state.content.drawnPolygonList;
+    const drawnShapeList = this.state.content.drawnShapeList;
     const isInsideDrawnPolygon =
-      drawnPolygonList.findIndex((polygon) => {
-        return this.geometryService.isPointInPolygon(mouseImagePos, polygon);
+      drawnShapeList.findIndex((polygon) => {
+        return polygon.isPointInside(mouseImagePos);
       }) !== -1;
     if (isInsideDrawnPolygon) {
       this.mouseOverRegionID = null;
-      this.isMouseOverDrawnPolygonList = true;
+      this.isMouseOverDrawnShapeList = true;
       return;
     }
 
@@ -613,26 +616,25 @@ export class RegionSelectorComponent implements OnInit {
     let insideRegionArea = Infinity;
     for (let i = 0; i < regionList.length; i++) {
       const region = regionList[i];
-      if (
-        !this.geometryService.isPointInPolygon(mouseImagePos, region.border)
-      ) {
+      const regionPolygon = new FreePolygon(region.border.vertices);
+      if (!regionPolygon.isPointInside(mouseImagePos)) {
         continue;
       }
-      const regionArea = this.geometryService.getArea(region.border);
-      if (regionArea < insideRegionArea) {
+      const regionArea = regionPolygon.getArea();
+      if (regionPolygon.getArea() < insideRegionArea) {
         insideRegionID = i;
         insideRegionArea = regionArea;
       }
     }
     if (insideRegionID >= 0) {
       this.mouseOverRegionID = insideRegionID;
-      this.isMouseOverDrawnPolygonList = false;
+      this.isMouseOverDrawnShapeList = false;
       return;
     }
 
     // Mouse is not inside anything
     this.mouseOverRegionID = null;
-    this.isMouseOverDrawnPolygonList = false;
+    this.isMouseOverDrawnShapeList = false;
   }
 
   private onDraw(): void {

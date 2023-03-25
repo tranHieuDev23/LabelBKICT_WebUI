@@ -66,31 +66,28 @@ export class SelectedState implements RegionSelectorState {
       );
     }
 
-    this.drawSelectedPolygonList(canvas, canvasWidth, canvasHeight, ctx);
+    this.drawDrawnShapeList(canvas, canvasWidth, canvasHeight, ctx);
 
     return ctx;
   }
 
-  private drawSelectedPolygonList(
+  private drawDrawnShapeList(
     canvas: HTMLCanvasElement,
     canvasWidth: number,
     canvasHeight: number,
     ctx: CanvasRenderingContext2D
   ): void {
-    for (const drawnPolygon of this.content.drawnPolygonList) {
-      const drawnCanvasPolygon =
-        this.regionSelectorGeometryService.imageToCanvasPolygon(
+    for (const drawnPolygon of this.content.drawnShapeList) {
+      const drawnCanvasShape =
+        this.regionSelectorGeometryService.imageToCanvasShape(
           canvas,
           this.content,
           drawnPolygon
         );
-      this.canvasGraphicService.drawPolygon({
-        canvasWidth,
-        canvasHeight,
-        ctx,
-        polygon: drawnCanvasPolygon,
-        lineColor: '#1890ff',
-      });
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#1890ff';
+      ctx.fillStyle = 'transparent';
+      drawnCanvasShape.draw(canvasWidth, canvasHeight, ctx);
     }
   }
 }

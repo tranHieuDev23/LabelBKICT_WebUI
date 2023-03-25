@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Coordinate, Polygon, Rectangle } from '../models';
+import { Coordinate, FreePolygon, Rectangle, Shape } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 
 @Injectable({
@@ -97,16 +97,19 @@ export class RegionSelectorGeometryService {
     );
   }
 
-  public imageToCanvasPolygon(
+  public imageToCanvasShape(
     canvas: HTMLCanvasElement,
     content: RegionSelectorContent,
-    polygon: Polygon
-  ): Polygon {
-    return {
-      vertices: polygon.vertices.map((vertex) =>
-        this.imageToCanvasPosition(canvas, content, vertex)
-      ),
-    };
+    shape: Shape
+  ): Shape {
+    if (shape instanceof FreePolygon) {
+      const canvasVertices = shape
+        .getVertices()
+        .map((vertex) => this.imageToCanvasPosition(canvas, content, vertex));
+      return new FreePolygon(canvasVertices);
+    }
+
+    throw new Error('Unsupported shape');
   }
 
   public getMousePositionFromMouseEvent(

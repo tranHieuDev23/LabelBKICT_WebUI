@@ -35,7 +35,7 @@ export class DefaultState implements RegionSelectorState {
       ...this.content,
     };
     newContent.cursorImagePosition = cursorImagePosition;
-    newContent.drawnPolygonList = [];
+    newContent.drawnShapeList = [];
 
     this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
 

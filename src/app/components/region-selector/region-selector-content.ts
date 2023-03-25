@@ -1,5 +1,5 @@
 import { Region } from 'src/app/services/dataaccess/api';
-import { Coordinate, Polygon } from './models';
+import { Coordinate, Shape } from './models';
 
 export interface RegionSelectorContent {
   image: CanvasImageSource | null;
@@ -9,7 +9,7 @@ export interface RegionSelectorContent {
   regionList: Region[];
   isRegionListVisible: boolean;
 
-  drawnPolygonList: Polygon[];
+  drawnShapeList: Shape[];
 
   cursorImagePosition: Coordinate;
 }

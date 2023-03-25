@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Coordinate, Polygon } from '../models';
+import { Coordinate, FreePolygon } from '../models';
 
 export interface DrawCircleArguments {
   canvasWidth: number;
@@ -18,15 +18,6 @@ export interface DrawLineArguments {
   lineStart: Coordinate;
   lineEnd: Coordinate;
   lineColor: string;
-}
-
-export interface DrawPolygonArguments {
-  canvasWidth: number;
-  canvasHeight: number;
-  ctx: CanvasRenderingContext2D;
-  polygon: Polygon;
-  lineColor: string;
-  fillColor?: string;
 }
 
 export interface DrawCheckerboardArguments {
@@ -97,27 +88,6 @@ export class CanvasGraphicService {
     args.ctx.closePath();
     args.ctx.lineWidth = 2;
     args.ctx.strokeStyle = args.lineColor;
-    args.ctx.stroke();
-  }
-
-  public drawPolygon(args: DrawPolygonArguments): void {
-    const { vertices } = args.polygon;
-    const lastVertex: Coordinate = vertices[vertices.length - 1];
-    args.ctx.beginPath();
-    args.ctx.lineWidth = 2;
-    args.ctx.strokeStyle = args.lineColor;
-    args.ctx.moveTo(
-      lastVertex.x * args.canvasWidth,
-      lastVertex.y * args.canvasHeight
-    );
-    for (const vert of vertices) {
-      args.ctx.lineTo(vert.x * args.canvasWidth, vert.y * args.canvasHeight);
-    }
-    args.ctx.closePath();
-    if (args.fillColor) {
-      args.ctx.fillStyle = args.fillColor;
-      args.ctx.fill();
-    }
     args.ctx.stroke();
   }
 

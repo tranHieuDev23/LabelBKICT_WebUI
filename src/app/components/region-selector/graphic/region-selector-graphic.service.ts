@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GeometryService } from '../geometry/geometry.service';
 import { RegionSelectorGeometryService } from '../geometry/region-selector-geometry.service';
+import { FreePolygon } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { CanvasGraphicService } from './canvas-graphic.service';
 import { ColorService } from './color.service';
@@ -43,36 +44,29 @@ export class RegionSelectorGraphicService {
     const region = content.regionList[regionIndex];
     const regionLabelColor = region.label?.color || DEFAULT_REGION_LABEL_COLOR;
 
-    const borderCanvasPolygon =
-      this.regionSelectorGeometryService.imageToCanvasPolygon(
+    const borderCanvasShape =
+      this.regionSelectorGeometryService.imageToCanvasShape(
         canvas,
         content,
-        region.border
+        new FreePolygon(region.border.vertices)
       );
-    this.canvasGraphicService.drawPolygon({
-      canvasWidth: canvasWidth,
-      canvasHeight: canvasHeight,
-      ctx: ctx,
-      polygon: borderCanvasPolygon,
-      lineColor: regionLabelColor,
-    });
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = regionLabelColor;
+    ctx.fillStyle = 'transparent';
+    borderCanvasShape.draw(canvasWidth, canvasHeight, ctx);
 
     for (const hole of region.holes) {
-      const holeCanvasPolygon =
-        this.regionSelectorGeometryService.imageToCanvasPolygon(
+      const holeCanvasShape =
+        this.regionSelectorGeometryService.imageToCanvasShape(
           canvas,
           content,
-          hole
+          new FreePolygon(hole.vertices)
         );
-      this.canvasGraphicService.drawPolygon({
-        canvasWidth: canvasWidth,
-        canvasHeight: canvasHeight,
-        ctx: ctx,
-        polygon: holeCanvasPolygon,
-        lineColor: regionLabelColor,
-        fillColor:
-          this.colorService.getTransparentVersionOfColor(regionLabelColor),
-      });
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = regionLabelColor;
+      ctx.fillStyle =
+        this.colorService.getTransparentVersionOfColor(regionLabelColor);
+      holeCanvasShape.draw(canvasWidth, canvasHeight, ctx);
     }
   }
 
@@ -89,21 +83,16 @@ export class RegionSelectorGraphicService {
     const canvasHeight = canvas.height;
     const region = content.regionList[regionIndex];
 
-    const borderCanvasPolygon = {
-      vertices: region.border.vertices.map((vertex) =>
-        this.regionSelectorGeometryService.imageToCanvasPosition(
-          canvas,
-          content,
-          vertex
-        )
-      ),
-    };
-    const borderCanvasBoundingBox =
-      this.geometryService.getPolygonBoundingBox(borderCanvasPolygon);
-    const borderCanvasBoundingBoxCenter = {
-      x: borderCanvasBoundingBox.dx + borderCanvasBoundingBox.dw / 2,
-      y: borderCanvasBoundingBox.dy + borderCanvasBoundingBox.dh / 2,
-    };
+    const borderCanvasVertices = region.border.vertices.map((vertex) =>
+      this.regionSelectorGeometryService.imageToCanvasPosition(
+        canvas,
+        content,
+        vertex
+      )
+    );
+    const borderCanvasShape = new FreePolygon(borderCanvasVertices);
+    const borderCanvasShapeCenter =
+      this.geometryService.getShapeCenter(borderCanvasShape);
 
     const regionLabelDisplayName = region.label?.displayName || 'Not labeled';
     const regionLabelColor = region.label?.color || DEFAULT_REGION_LABEL_COLOR;
@@ -113,7 +102,7 @@ export class RegionSelectorGraphicService {
       canvasWidth: canvasWidth,
       canvasHeight: canvasHeight,
       ctx: ctx,
-      textBoxCenter: borderCanvasBoundingBoxCenter,
+      textBoxCenter: borderCanvasShapeCenter,
       boxColor: regionLabelColor,
       text: regionLabelDisplayName,
       fontSize: fontSize,

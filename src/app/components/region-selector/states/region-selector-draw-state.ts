@@ -2,7 +2,7 @@ import { GeometryService } from '../geometry/geometry.service';
 import { RegionSelectorGeometryService } from '../geometry/region-selector-geometry.service';
 import { CanvasGraphicService } from '../graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic.service';
-import { Coordinate } from '../models';
+import { Coordinate, FreePolygon } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
@@ -147,33 +147,41 @@ export class DrawState implements RegionSelectorState {
       );
 
     // Remove all vertices within cursor size
-    const drawnPolygonListWithNo2Openings = this.content.drawnPolygonList.map(
+    const drawnShapeListWithNo2Openings = this.content.drawnShapeList.map(
       (polygon) => {
-        return {
-          vertices: polygon.vertices.filter((vertex) => {
-            const vertexMousePos =
-              this.regionSelectorGeometryService.imageToMousePosition(
-                canvas,
-                this.content,
-                vertex
-              );
-            return (
-              this.geometryService.getDistance(vertexMousePos, mousePos) >
-              DELETE_VERTICES_MOUSE_DISTANCE
+        if (!(polygon instanceof FreePolygon)) {
+          return polygon;
+        }
+        const polygonVertices = polygon.getVertices();
+        const newPolygonVertices = polygonVertices.filter((vertex) => {
+          const vertexMousePos =
+            this.regionSelectorGeometryService.imageToMousePosition(
+              canvas,
+              this.content,
+              vertex
             );
-          }),
-        };
+          return (
+            this.geometryService.getDistance(vertexMousePos, mousePos) >
+            DELETE_VERTICES_MOUSE_DISTANCE
+          );
+        });
+        return new FreePolygon(newPolygonVertices);
       }
     );
 
     // Remove all empty polygon
-    const drawnPolygonListWithNoEmpty = drawnPolygonListWithNo2Openings.filter(
-      (polygon) => polygon.vertices.length > 0
+    const drawnShapeListWithNoEmpty = drawnShapeListWithNo2Openings.filter(
+      (polygon) => {
+        if (!(polygon instanceof FreePolygon)) {
+          return true;
+        }
+        return polygon.getVertices().length > 0;
+      }
     );
 
     const newContent = { ...this.content };
     newContent.cursorImagePosition = mouseImagePos;
-    newContent.drawnPolygonList = drawnPolygonListWithNoEmpty;
+    newContent.drawnShapeList = drawnShapeListWithNoEmpty;
     return new DrawState(
       newContent,
       false,
@@ -202,16 +210,16 @@ export class DrawState implements RegionSelectorState {
     const lastSnapshot = this.snapshotService.getCurrentSnapshot();
     if (lastSnapshot !== null) {
       let lastSnapshotVerticesCount: number;
-      if (lastSnapshot.drawnRegionList.length > this.polygonIDToAddNewVertex) {
+      if (lastSnapshot.drawnShapeList.length > this.polygonIDToAddNewVertex) {
         const lastSnapshotPolygon =
-          lastSnapshot.drawnRegionList[this.polygonIDToAddNewVertex];
-        lastSnapshotVerticesCount = lastSnapshotPolygon.vertices.length;
+          lastSnapshot.drawnShapeList[this.polygonIDToAddNewVertex];
+        lastSnapshotVerticesCount = lastSnapshotPolygon.getVertices().length;
       } else {
         lastSnapshotVerticesCount = 0;
       }
 
       const currentVerticesCount =
-        this.content.drawnPolygonList[this.polygonIDToAddNewVertex].vertices
+        this.content.drawnShapeList[this.polygonIDToAddNewVertex].getVertices()
           .length;
       if (
         currentVerticesCount <
@@ -219,11 +227,11 @@ export class DrawState implements RegionSelectorState {
       ) {
         const newContent = { ...this.content };
         if (lastSnapshotVerticesCount === 0) {
-          newContent.drawnPolygonList.splice(this.polygonIDToAddNewVertex);
+          newContent.drawnShapeList.splice(this.polygonIDToAddNewVertex);
         } else {
           const lastSnapshotPolygon =
-            lastSnapshot.drawnRegionList[this.polygonIDToAddNewVertex];
-          newContent.drawnPolygonList[this.polygonIDToAddNewVertex] =
+            lastSnapshot.drawnShapeList[this.polygonIDToAddNewVertex];
+          newContent.drawnShapeList[this.polygonIDToAddNewVertex] =
             lastSnapshotPolygon;
         }
 
@@ -242,7 +250,7 @@ export class DrawState implements RegionSelectorState {
     }
 
     this.snapshotService.storeSnapshot(
-      new RegionSelectorSnapshot(this.content.drawnPolygonList)
+      new RegionSelectorSnapshot(this.content.drawnShapeList)
     );
     return new DrawState(
       this.content,
@@ -259,10 +267,14 @@ export class DrawState implements RegionSelectorState {
 
   private onLeftMouseUpDeletingVertex(): RegionSelectorState {
     // Remove all vertices with 2 openings
-    const drawnPolygonListWithNo2Openings = this.content.drawnPolygonList.map(
+    const drawnShapeListWithNo2Openings = this.content.drawnShapeList.map(
       (polygon) => {
-        return {
-          vertices: polygon.vertices.filter((vertex, index, vertices) => {
+        if (!(polygon instanceof FreePolygon)) {
+          return polygon;
+        }
+        const polygonVertices = polygon.getVertices();
+        const newPolygonVertices = polygonVertices.filter(
+          (vertex, index, vertices) => {
             const prevIndex = index === 0 ? vertices.length - 1 : index - 1;
             const prevVertex = vertices[prevIndex];
             const nextIndex = index === vertices.length - 1 ? 0 : index + 1;
@@ -273,21 +285,28 @@ export class DrawState implements RegionSelectorState {
               this.geometryService.getDistance(vertex, nextVertex) <=
                 VERTICES_MAX_DISTANCE
             );
-          }),
-        };
+          }
+        );
+        return new FreePolygon(newPolygonVertices);
       }
     );
 
     // Remove all empty polygon
-    const drawnPolygonListWithNoEmpty = drawnPolygonListWithNo2Openings.filter(
-      (polygon) => polygon.vertices.length > 0
+    const drawnShapeListWithNoEmpty = drawnShapeListWithNo2Openings.filter(
+      (polygon) => {
+        if (!(polygon instanceof FreePolygon)) {
+          return true;
+        }
+        return polygon.getVertices().length > 0;
+      }
     );
+
     this.snapshotService.storeSnapshot(
-      new RegionSelectorSnapshot(drawnPolygonListWithNoEmpty)
+      new RegionSelectorSnapshot(drawnShapeListWithNoEmpty)
     );
 
     const newContent = { ...this.content };
-    newContent.drawnPolygonList = drawnPolygonListWithNoEmpty;
+    newContent.drawnShapeList = drawnShapeListWithNoEmpty;
     return new DrawState(
       newContent,
       false,
@@ -306,14 +325,14 @@ export class DrawState implements RegionSelectorState {
   ): RegionSelectorState {
     const newContent = { ...this.content };
     newContent.cursorImagePosition = cursorImagePosition;
-    newContent.drawnPolygonList = [...newContent.drawnPolygonList];
+    newContent.drawnShapeList = [...newContent.drawnShapeList];
 
     const nearestVertexWithOpenNeighborInfo =
       this.getNearestVertexWithOpenNeighbor(cursorImagePosition);
     if (nearestVertexWithOpenNeighborInfo === null) {
       // If there is no near vertex with open neighbor to connect to, create a new polygon with only the new vertex
-      const polygonIDToAddNewVertex = newContent.drawnPolygonList.length;
-      newContent.drawnPolygonList.push({ vertices: [cursorImagePosition] });
+      const polygonIDToAddNewVertex = newContent.drawnShapeList.length;
+      newContent.drawnShapeList.push(new FreePolygon([cursorImagePosition]));
       return new DrawState(
         newContent,
         true,
@@ -329,31 +348,30 @@ export class DrawState implements RegionSelectorState {
 
     const { polygonID, vertexID, openVertexID, isOpenVertexPrevious } =
       nearestVertexWithOpenNeighborInfo;
-    const polygonToAdd = this.content.drawnPolygonList[polygonID];
-    const vertexToConnect = polygonToAdd.vertices[vertexID];
+    const polygonToAdd = this.content.drawnShapeList[polygonID];
+    const polygonToAddVertices = polygonToAdd.getVertices();
+    const vertexToConnect = polygonToAddVertices[vertexID];
     const inBetweenPointList = this.geometryService.getInBetweenPointList(
       vertexToConnect,
       cursorImagePosition,
       VERTICES_MAX_DISTANCE
     );
     if (isOpenVertexPrevious) {
-      newContent.drawnPolygonList[polygonID] = {
-        vertices: [
-          ...polygonToAdd.vertices.slice(0, vertexID).reverse(),
-          ...polygonToAdd.vertices.slice(vertexID).reverse(),
-          ...inBetweenPointList,
-          cursorImagePosition,
-        ],
-      };
+      const vertices = [
+        ...polygonToAddVertices.slice(0, vertexID).reverse(),
+        ...polygonToAddVertices.slice(vertexID).reverse(),
+        ...inBetweenPointList,
+        cursorImagePosition,
+      ];
+      newContent.drawnShapeList[polygonID] = new FreePolygon(vertices);
     } else {
-      newContent.drawnPolygonList[polygonID] = {
-        vertices: [
-          ...polygonToAdd.vertices.slice(openVertexID),
-          ...polygonToAdd.vertices.slice(0, openVertexID),
-          ...inBetweenPointList,
-          cursorImagePosition,
-        ],
-      };
+      const vertices = [
+        ...polygonToAddVertices.slice(openVertexID),
+        ...polygonToAddVertices.slice(0, openVertexID),
+        ...inBetweenPointList,
+        cursorImagePosition,
+      ];
+      newContent.drawnShapeList[polygonID] = new FreePolygon(vertices);
     }
 
     return new DrawState(
@@ -380,9 +398,10 @@ export class DrawState implements RegionSelectorState {
     newContent.cursorImagePosition = cursorImagePosition;
 
     const polygonToAdd =
-      this.content.drawnPolygonList[this.polygonIDToAddNewVertex];
+      this.content.drawnShapeList[this.polygonIDToAddNewVertex];
+    const polygonToAddVertices = polygonToAdd.getVertices();
     const vertexToConnect =
-      polygonToAdd.vertices[polygonToAdd.vertices.length - 1];
+      polygonToAddVertices[polygonToAddVertices.length - 1];
     if (
       this.geometryService.getDistance(vertexToConnect, cursorImagePosition) <
       VERTICES_MIN_DISTANCE
@@ -395,20 +414,21 @@ export class DrawState implements RegionSelectorState {
       cursorImagePosition,
       VERTICES_MAX_DISTANCE
     );
-    newContent.drawnPolygonList = [...newContent.drawnPolygonList];
-    newContent.drawnPolygonList[this.polygonIDToAddNewVertex] = {
-      vertices: [
-        ...polygonToAdd.vertices,
-        ...inBetweenPointList,
-        cursorImagePosition,
-      ],
-    };
+    newContent.drawnShapeList = [...newContent.drawnShapeList];
+    newContent.drawnShapeList[this.polygonIDToAddNewVertex] = new FreePolygon([
+      ...polygonToAddVertices,
+      ...inBetweenPointList,
+      cursorImagePosition,
+    ]);
 
     const currentVerticesCount =
-      newContent.drawnPolygonList[this.polygonIDToAddNewVertex].vertices.length;
+      newContent.drawnShapeList[this.polygonIDToAddNewVertex].getVertices()
+        .length;
     if (currentVerticesCount > MINIMUM_NEW_VERTICES_PER_DRAW) {
       const openNeighborVertex =
-        newContent.drawnPolygonList[this.polygonIDToAddNewVertex].vertices[0];
+        newContent.drawnShapeList[
+          this.polygonIDToAddNewVertex
+        ].getVertices()[0];
       if (
         this.geometryService.getDistance(
           openNeighborVertex,
@@ -417,7 +437,7 @@ export class DrawState implements RegionSelectorState {
       ) {
         // if cursor position is close enough to the next vertex, automatically connect to that vertex and stop drawing
         this.snapshotService.storeSnapshot(
-          new RegionSelectorSnapshot(newContent.drawnPolygonList)
+          new RegionSelectorSnapshot(newContent.drawnShapeList)
         );
         return new DrawState(
           newContent,
@@ -494,7 +514,7 @@ export class DrawState implements RegionSelectorState {
       });
     }
 
-    this.drawDrawnPolygonList(canvas, canvasWidth, canvasHeight, ctx);
+    this.drawDrawnShapeList(canvas, canvasWidth, canvasHeight, ctx);
 
     if (this.isAddingVertex) {
       if (this.polygonIDToAddNewVertex === null) {
@@ -514,20 +534,25 @@ export class DrawState implements RegionSelectorState {
     return ctx;
   }
 
-  private drawDrawnPolygonList(
+  private drawDrawnShapeList(
     canvas: HTMLCanvasElement,
     canvasWidth: number,
     canvasHeight: number,
     ctx: CanvasRenderingContext2D
   ): void {
-    for (let i = 0; i < this.content.drawnPolygonList.length; i++) {
-      const polygon = this.content.drawnPolygonList[i];
+    for (let i = 0; i < this.content.drawnShapeList.length; i++) {
+      const polygon = this.content.drawnShapeList[i];
+      if (!(polygon instanceof FreePolygon)) {
+        continue;
+      }
+
+      const polygonVertices = polygon.getVertices();
       const regionColor =
         DRAWN_POLYGON_COLOR_LIST[
           Math.min(i, DRAWN_POLYGON_COLOR_LIST.length - 1)
         ];
 
-      let lastVertex = polygon.vertices[polygon.vertices.length - 1];
+      let lastVertex = polygonVertices[polygonVertices.length - 1];
       let lastVertexCanvasPos =
         this.regionSelectorGeometryService.imageToCanvasPosition(
           canvas,
@@ -535,7 +560,7 @@ export class DrawState implements RegionSelectorState {
           lastVertex
         );
 
-      for (const vertex of polygon.vertices) {
+      for (const vertex of polygonVertices) {
         const vertexCanvasPos =
           this.regionSelectorGeometryService.imageToCanvasPosition(
             canvas,
@@ -584,10 +609,9 @@ export class DrawState implements RegionSelectorState {
       return;
     }
     const polygon =
-      this.content.drawnPolygonList[
-        nearestVertexWithOpenNeighborInfo.polygonID
-      ];
-    const vertex = polygon.vertices[nearestVertexWithOpenNeighborInfo.vertexID];
+      this.content.drawnShapeList[nearestVertexWithOpenNeighborInfo.polygonID];
+    const polygonVertices = polygon.getVertices();
+    const vertex = polygonVertices[nearestVertexWithOpenNeighborInfo.vertexID];
     const vertexCanvasPos =
       this.regionSelectorGeometryService.imageToCanvasPosition(
         canvas,
@@ -615,9 +639,10 @@ export class DrawState implements RegionSelectorState {
       return;
     }
     const polygonToAdd =
-      this.content.drawnPolygonList[this.polygonIDToAddNewVertex];
+      this.content.drawnShapeList[this.polygonIDToAddNewVertex];
+    const polygonToAddVertices = polygonToAdd.getVertices();
     const lastAddedVertex =
-      polygonToAdd.vertices[polygonToAdd.vertices.length - 1];
+      polygonToAddVertices[polygonToAddVertices.length - 1];
     const lastAddedVertexCanvasPos =
       this.regionSelectorGeometryService.imageToCanvasPosition(
         canvas,
@@ -667,12 +692,17 @@ export class DrawState implements RegionSelectorState {
     let result = null;
     for (
       let polygonID = 0;
-      polygonID < this.content.drawnPolygonList.length;
+      polygonID < this.content.drawnShapeList.length;
       polygonID++
     ) {
-      const polygon = this.content.drawnPolygonList[polygonID];
-      for (let vertexID = 0; vertexID < polygon.vertices.length; vertexID++) {
-        const vertex = polygon.vertices[vertexID];
+      const polygon = this.content.drawnShapeList[polygonID];
+      if (!(polygon instanceof FreePolygon)) {
+        continue;
+      }
+
+      const polygonVertices = polygon.getVertices();
+      for (let vertexID = 0; vertexID < polygonVertices.length; vertexID++) {
+        const vertex = polygonVertices[vertexID];
         const vertexDistanceToCoordinate = this.geometryService.getDistance(
           vertex,
           coordinate

@@ -13,7 +13,7 @@ import {
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { EditableTextComponent } from 'src/app/components/editable-text/editable-text.component';
-import { Polygon } from 'src/app/components/region-selector/models';
+import { FreePolygon, Shape } from 'src/app/components/region-selector/models';
 import {
   RegionClickedEvent,
   RegionEditedEvent,
@@ -90,8 +90,8 @@ export class VerifyImageComponent implements AfterContentInit {
   public isShowingRegionSnapshot = false;
   public regionSnapshotList: Region[] = [];
 
-  public selectedRegionBorder: Polygon | undefined;
-  public selectedRegionHoles: Polygon[] = [];
+  public selectedRegionBorder: Shape | undefined;
+  public selectedRegionHoles: Shape[] = [];
 
   public isLabelRegionModalVisible = false;
 
@@ -533,7 +533,7 @@ export class VerifyImageComponent implements AfterContentInit {
 
   public onRegionSelected(event: RegionSelectedEvent): void {
     this.selectedRegionBorder = event.border;
-    this.selectedRegionHoles = event.holes;
+    this.selectedRegionHoles = event.holeList;
     this.isLabelRegionModalVisible = true;
   }
 
@@ -547,8 +547,10 @@ export class VerifyImageComponent implements AfterContentInit {
       const region = await this.regionManagementService.updateRegionBoundary(
         this.image.id,
         editedRegion.id,
-        event.newBorder,
-        event.newHoles
+        { vertices: event.newBorder.getVertices() },
+        event.newHoleList.map((hole) => {
+          return { vertices: hole.getVertices() };
+        })
       );
       this.regionList = [...this.regionList];
       this.regionList[event.regionID] = region;
@@ -580,8 +582,10 @@ export class VerifyImageComponent implements AfterContentInit {
     try {
       const region = await this.regionManagementService.createRegion(
         this.image.id,
-        this.selectedRegionBorder,
-        this.selectedRegionHoles,
+        { vertices: this.selectedRegionBorder.getVertices() },
+        this.selectedRegionHoles.map((hole) => {
+          return { vertices: hole.getVertices() };
+        }),
         regionLabel.id
       );
       this.notificationService.success('Region added successfully', '');
