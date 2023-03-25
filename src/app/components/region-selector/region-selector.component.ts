@@ -595,8 +595,6 @@ export class RegionSelectorComponent implements OnInit {
         mousePos
       );
 
-    const regionList = this.state.content.regionList;
-
     // Prioritize drawn polygon list first
     const drawnPolygonList = this.state.content.drawnPolygonList;
     const isInsideDrawnPolygon =
@@ -610,6 +608,7 @@ export class RegionSelectorComponent implements OnInit {
     }
 
     // Check region list, prioritize the smallest region first
+    const regionList = this.state.content.regionList;
     let insideRegionID = -1;
     let insideRegionArea = Infinity;
     for (let i = 0; i < regionList.length; i++) {
@@ -622,7 +621,7 @@ export class RegionSelectorComponent implements OnInit {
       const regionArea = this.geometryService.getArea(region.border);
       if (regionArea < insideRegionArea) {
         insideRegionID = i;
-        insideRegionArea = insideRegionArea;
+        insideRegionArea = regionArea;
       }
     }
     if (insideRegionID >= 0) {
