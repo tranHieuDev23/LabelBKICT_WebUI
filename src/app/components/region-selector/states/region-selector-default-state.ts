@@ -5,7 +5,7 @@ import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic
 import { RegionSelectorContent } from '../region-selector-content';
 import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
-import { DrawState } from './region-selector-draw-state';
+import { FreePolygonDrawState } from './region-selector-free-polygon-draw-state';
 import { RegionSelectorState } from './region-selector-state';
 
 export class DefaultState implements RegionSelectorState {
@@ -18,30 +18,25 @@ export class DefaultState implements RegionSelectorState {
     private readonly canvasGraphicService: CanvasGraphicService
   ) {}
 
-  public onLeftMouseDown(
-    canvas: HTMLCanvasElement,
-    event: MouseEvent | TouchEvent
-  ): RegionSelectorState {
-    const cursorMousePosition =
-      this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
-    const cursorImagePosition =
-      this.regionSelectorGeometryService.mouseToImagePosition(
-        canvas,
-        this.content,
-        cursorMousePosition
-      );
+  public onLeftMouseDown(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): RegionSelectorState {
+    const cursorMousePosition = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+    const cursorImagePosition = this.regionSelectorGeometryService.mouseToImagePosition(
+      canvas,
+      this.content,
+      cursorMousePosition
+    );
 
     const newContent = {
       ...this.content,
     };
     newContent.cursorImagePosition = cursorImagePosition;
-    newContent.drawnPolygonList = [];
+    newContent.drawnShapeList = [];
 
+    this.snapshotService.clear();
     this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
 
-    return new DrawState(
+    return new FreePolygonDrawState(
       newContent,
-      true,
       null,
       null,
       this.snapshotService,
@@ -81,26 +76,14 @@ export class DefaultState implements RegionSelectorState {
     if (!this.content.image) {
       return ctx;
     }
-    const imageDrawRegion =
-      this.regionSelectorGeometryService.calculateImageDrawRegion(
-        canvas,
-        this.content
-      );
-    ctx.drawImage(
-      this.content.image,
-      imageDrawRegion.dx,
-      imageDrawRegion.dy,
-      imageDrawRegion.dw,
-      imageDrawRegion.dh
-    );
+    const imageDrawRegion = this.regionSelectorGeometryService.calculateImageDrawRegion(canvas, this.content);
+    ctx.drawImage(this.content.image, imageDrawRegion.dx, imageDrawRegion.dy, imageDrawRegion.dw, imageDrawRegion.dh);
 
     if (this.content.isRegionListVisible) {
-      this.regionSelectorGraphicService.drawRegionList(
-        canvas,
-        ctx,
-        this.content
-      );
+      this.regionSelectorGraphicService.drawRegionList(canvas, ctx, this.content);
     }
+
+    canvas.style.cursor = 'auto';
 
     return ctx;
   }

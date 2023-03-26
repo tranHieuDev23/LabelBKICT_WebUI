@@ -1,11 +1,7 @@
 import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
-import {
-  UnauthenticatedError,
-  UnauthorizedError,
-  UnknownAPIError,
-} from './errors';
+import { UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
 import { ImageTagGroup, ImageTag, ImageType } from './schemas';
 
 export class InvalidImageTagGroupInformationError extends Error {
@@ -56,10 +52,7 @@ export class ImageTagGroupDoesNotHaveImageTypeError extends Error {
 export class ImageTagsService {
   constructor(private readonly axios: Axios) {}
 
-  public async createImageTagGroup(
-    displayName: string,
-    isSingleValue: boolean
-  ): Promise<ImageTagGroup> {
+  public async createImageTagGroup(displayName: string, isSingleValue: boolean): Promise<ImageTagGroup> {
     try {
       const response = await this.axios.post('/api/image-tag-groups', {
         display_name: displayName,
@@ -99,21 +92,19 @@ export class ImageTagsService {
         },
       });
 
-      const imageTagGroupList = response.data.image_tag_group_list.map(
-        ImageTagGroup.fromJSON
-      );
+      const imageTagGroupList = response.data.image_tag_group_list.map(ImageTagGroup.fromJSON);
 
       let imageTagList: ImageTag[][] | undefined = undefined;
       if (withImageTag) {
-        imageTagList = response.data.image_tag_list.map(
-          (ImageTagSublist: any[]) => ImageTagSublist.map(ImageTag.fromJSON)
+        imageTagList = response.data.image_tag_list.map((ImageTagSublist: any[]) =>
+          ImageTagSublist.map(ImageTag.fromJSON)
         );
       }
 
       let imageTypeList: ImageType[][] | undefined = undefined;
       if (withImageType) {
-        imageTypeList = response.data.image_type_list.map(
-          (ImageTagSublist: any[]) => ImageTagSublist.map(ImageType.fromJSON)
+        imageTypeList = response.data.image_type_list.map((ImageTagSublist: any[]) =>
+          ImageTagSublist.map(ImageType.fromJSON)
         );
       }
 
@@ -133,11 +124,7 @@ export class ImageTagsService {
     }
   }
 
-  public async updateImageTagGroup(
-    id: number,
-    displayName: string,
-    isSingleValue: boolean
-  ): Promise<ImageTagGroup> {
+  public async updateImageTagGroup(id: number, displayName: string, isSingleValue: boolean): Promise<ImageTagGroup> {
     try {
       const response = await this.axios.patch(`/api/image-tag-groups/${id}`, {
         display_name: displayName,
@@ -183,15 +170,11 @@ export class ImageTagsService {
     }
   }
 
-  public async addImageTagToImageTagGroup(
-    imageTagGroupID: number,
-    displayName: string
-  ): Promise<ImageTag> {
+  public async addImageTagToImageTagGroup(imageTagGroupID: number, displayName: string): Promise<ImageTag> {
     try {
-      const response = await this.axios.post(
-        `/api/image-tag-groups/${imageTagGroupID}/tags`,
-        { display_name: displayName }
-      );
+      const response = await this.axios.post(`/api/image-tag-groups/${imageTagGroupID}/tags`, {
+        display_name: displayName,
+      });
       return ImageTag.fromJSON(response.data);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -218,10 +201,9 @@ export class ImageTagsService {
     displayName: string
   ): Promise<ImageTag> {
     try {
-      const response = await this.axios.patch(
-        `/api/image-tag-groups/${imageTagGroupID}/tags/${ImageTagID}`,
-        { display_name: displayName }
-      );
+      const response = await this.axios.patch(`/api/image-tag-groups/${imageTagGroupID}/tags/${ImageTagID}`, {
+        display_name: displayName,
+      });
       return ImageTag.fromJSON(response.data);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -242,14 +224,9 @@ export class ImageTagsService {
     }
   }
 
-  public async removeImageTagFromImageTagGroup(
-    imageTagGroupID: number,
-    ImageTagID: number
-  ): Promise<void> {
+  public async removeImageTagFromImageTagGroup(imageTagGroupID: number, ImageTagID: number): Promise<void> {
     try {
-      await this.axios.delete(
-        `/api/image-tag-groups/${imageTagGroupID}/tags/${ImageTagID}`
-      );
+      await this.axios.delete(`/api/image-tag-groups/${imageTagGroupID}/tags/${ImageTagID}`);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -267,17 +244,11 @@ export class ImageTagsService {
     }
   }
 
-  public async addImageTypeToImageTagGroup(
-    imageTagGroupID: number,
-    imageTypeID: number
-  ): Promise<void> {
+  public async addImageTypeToImageTagGroup(imageTagGroupID: number, imageTypeID: number): Promise<void> {
     try {
-      await this.axios.post(
-        `/api/image-tag-groups/${imageTagGroupID}/image-types`,
-        {
-          image_type_id: imageTypeID,
-        }
-      );
+      await this.axios.post(`/api/image-tag-groups/${imageTagGroupID}/image-types`, {
+        image_type_id: imageTypeID,
+      });
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -299,14 +270,9 @@ export class ImageTagsService {
     }
   }
 
-  public async removeImageTypeFromImageTagGroup(
-    imageTagGroupID: number,
-    imageTypeID: number
-  ): Promise<void> {
+  public async removeImageTypeFromImageTagGroup(imageTagGroupID: number, imageTypeID: number): Promise<void> {
     try {
-      await this.axios.delete(
-        `/api/image-tag-groups/${imageTagGroupID}/image-types/${imageTypeID}`
-      );
+      await this.axios.delete(`/api/image-tag-groups/${imageTagGroupID}/image-types/${imageTypeID}`);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

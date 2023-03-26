@@ -1,18 +1,9 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import {
-  User,
-  UserRole,
-  UserPermission,
-  SessionsService,
-} from '../../dataaccess/api';
+import { User, UserRole, UserPermission, SessionsService } from '../../dataaccess/api';
 import { UnauthenticatedError } from '../../dataaccess/api/errors';
 
 export class SessionUserInfo {
-  constructor(
-    public user: User,
-    public userRoleList: UserRole[],
-    public userPermissionList: UserPermission[]
-  ) {}
+  constructor(public user: User, public userRoleList: UserRole[], public userPermissionList: UserPermission[]) {}
 }
 
 @Injectable({
@@ -21,8 +12,7 @@ export class SessionUserInfo {
 export class SessionManagementService {
   private sessionUserInfo: SessionUserInfo | null | undefined = undefined;
   private sessionUserPermissionNameSet: Set<string> = new Set<string>();
-  private readonly sessionUserInfoEventEmitter =
-    new EventEmitter<SessionUserInfo | null>();
+  private readonly sessionUserInfoEventEmitter = new EventEmitter<SessionUserInfo | null>();
 
   constructor(private readonly sessionDataAccessService: SessionsService) {}
 
@@ -37,12 +27,8 @@ export class SessionManagementService {
     return this.sessionUserPermissionNameSet.has(permissionName);
   }
 
-  public async loginWithPassword(
-    username: string,
-    password: string
-  ): Promise<SessionUserInfo> {
-    const sessionUserInfo =
-      await this.sessionDataAccessService.loginWithPassword(username, password);
+  public async loginWithPassword(username: string, password: string): Promise<SessionUserInfo> {
+    const sessionUserInfo = await this.sessionDataAccessService.loginWithPassword(username, password);
     this.setSessionUserInfo(sessionUserInfo);
     return sessionUserInfo;
   }
@@ -52,8 +38,7 @@ export class SessionManagementService {
       return this.sessionUserInfo;
     }
     try {
-      const sessionUserInfo =
-        await this.sessionDataAccessService.getUserFromSession();
+      const sessionUserInfo = await this.sessionDataAccessService.getUserFromSession();
       this.setSessionUserInfo(sessionUserInfo);
       return sessionUserInfo;
     } catch (e) {
@@ -73,16 +58,12 @@ export class SessionManagementService {
   public setSessionUserInfo(sessionUserInfo: SessionUserInfo | null): void {
     this.sessionUserInfo = sessionUserInfo;
     this.sessionUserPermissionNameSet = new Set(
-      sessionUserInfo?.userPermissionList.map(
-        (userPermission) => userPermission.permissionName
-      )
+      sessionUserInfo?.userPermissionList.map((userPermission) => userPermission.permissionName)
     );
     this.sessionUserInfoEventEmitter.emit(sessionUserInfo);
   }
 
-  public subscribeForSessionUserInfo(
-    next: (sessionUserInfo: SessionUserInfo | null) => void
-  ) {
+  public subscribeForSessionUserInfo(next: (sessionUserInfo: SessionUserInfo | null) => void) {
     this.sessionUserInfoEventEmitter.subscribe(next);
   }
 }

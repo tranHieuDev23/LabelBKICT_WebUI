@@ -2,11 +2,7 @@ import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
 import { Observable } from 'rxjs';
-import {
-  UnauthenticatedError,
-  UnauthorizedError,
-  UnknownAPIError,
-} from './errors';
+import { UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
 import {
   uploadImageBatch,
   UploadImageBatchMessage,
@@ -75,15 +71,10 @@ export class ImageHasUnlabeledRegionError extends Error {
 export class ImagesService {
   constructor(private readonly axios: Axios) {}
 
-  public createImageBatch(
-    inputList: UploadImageInput[]
-  ): Observable<UploadImageBatchMessage> {
+  public createImageBatch(inputList: UploadImageInput[]): Observable<UploadImageBatchMessage> {
     return new Observable<UploadImageBatchMessage>((subscriber) => {
       if (typeof Worker !== 'undefined') {
-        const worker = new Worker(
-          new URL('./images.worker.ts', import.meta.url),
-          { type: 'module' }
-        );
+        const worker = new Worker(new URL('./images.worker.ts', import.meta.url), { type: 'module' });
         worker.onmessage = (event: MessageEvent<UploadImageBatchMessage>) => {
           subscriber.next(event.data);
           if (event.data.type === UploadImageBatchMessageType.UPLOAD_COMPLETE) {
@@ -127,10 +118,7 @@ export class ImagesService {
     }
   }
 
-  public async updateImageMetadata(
-    id: number,
-    description: string | undefined
-  ): Promise<Image> {
+  public async updateImageMetadata(id: number, description: string | undefined): Promise<Image> {
     try {
       const response = await this.axios.patch(`/api/images/${id}`, {
         description,
@@ -176,15 +164,9 @@ export class ImagesService {
     }
   }
 
-  public async getImageRegionSnapshotList(
-    id: number,
-    status: ImageStatus
-  ): Promise<Region[]> {
+  public async getImageRegionSnapshotList(id: number, status: ImageStatus): Promise<Region[]> {
     try {
-      const response = await this.axios.get(
-        `/api/images/${id}/region-snapshots`,
-        { params: { at_status: status } }
-      );
+      const response = await this.axios.get(`/api/images/${id}/region-snapshots`, { params: { at_status: status } });
       const regionList = response.data.region_list.map(Region.fromJSON);
       return regionList;
     } catch (e) {
@@ -206,10 +188,7 @@ export class ImagesService {
     }
   }
 
-  public async updateImageImageType(
-    id: number,
-    imageTypeID: number
-  ): Promise<Image> {
+  public async updateImageImageType(id: number, imageTypeID: number): Promise<Image> {
     try {
       const response = await this.axios.patch(`/api/images/${id}/image-type`, {
         image_type_id: imageTypeID,
@@ -235,10 +214,7 @@ export class ImagesService {
     }
   }
 
-  public async updateImageStatus(
-    id: number,
-    status: ImageStatus
-  ): Promise<Image> {
+  public async updateImageStatus(id: number, status: ImageStatus): Promise<Image> {
     try {
       const response = await this.axios.patch(`/api/images/${id}/status`, {
         status: status,
@@ -266,10 +242,7 @@ export class ImagesService {
     }
   }
 
-  public async addImageTagToImage(
-    id: number,
-    imageTagID: number
-  ): Promise<void> {
+  public async addImageTagToImage(id: number, imageTagID: number): Promise<void> {
     try {
       await this.axios.post(`/api/images/${id}/tags`, {
         image_tag_id: imageTagID,
@@ -293,10 +266,7 @@ export class ImagesService {
     }
   }
 
-  public async addImageTagListToImageList(
-    imageIdList: number[],
-    imageTagIdList: number[]
-  ): Promise<void> {
+  public async addImageTagListToImageList(imageIdList: number[], imageTagIdList: number[]): Promise<void> {
     try {
       await this.axios.post(`/api/images/tags`, {
         image_id_list: imageIdList,
@@ -321,10 +291,7 @@ export class ImagesService {
     }
   }
 
-  public async removeImageTagFromImage(
-    id: number,
-    imageTagID: number
-  ): Promise<void> {
+  public async removeImageTagFromImage(id: number, imageTagID: number): Promise<void> {
     try {
       await this.axios.delete(`/api/images/${id}/tags/${imageTagID}`);
     } catch (e) {
@@ -346,10 +313,7 @@ export class ImagesService {
     }
   }
 
-  public async createImageBookmark(
-    id: number,
-    description: string
-  ): Promise<ImageBookmark> {
+  public async createImageBookmark(id: number, description: string): Promise<ImageBookmark> {
     try {
       const response = await this.axios.post(`/api/images/${id}/bookmark`, {
         description,
@@ -395,10 +359,7 @@ export class ImagesService {
     }
   }
 
-  public async updateImageBookmark(
-    id: number,
-    description: string | undefined
-  ): Promise<ImageBookmark> {
+  public async updateImageBookmark(id: number, description: string | undefined): Promise<ImageBookmark> {
     try {
       const response = await this.axios.patch(`/api/images/${id}/bookmark`, {
         description,

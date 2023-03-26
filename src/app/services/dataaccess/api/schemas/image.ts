@@ -30,13 +30,9 @@ export class Image {
       imageJSON.id || 0,
       User.fromJSON(imageJSON.uploaded_by_user),
       imageJSON.upload_time || 0,
-      imageJSON.published_by_user
-        ? User.fromJSON(imageJSON.published_by_user)
-        : null,
+      imageJSON.published_by_user ? User.fromJSON(imageJSON.published_by_user) : null,
       imageJSON.publish_time || 0,
-      imageJSON.verified_by_user
-        ? User.fromJSON(imageJSON.verified_by_user)
-        : null,
+      imageJSON.verified_by_user ? User.fromJSON(imageJSON.verified_by_user) : null,
       imageJSON.verify_time || 0,
       imageJSON.original_file_name || '',
       imageJSON.original_image_url || '',

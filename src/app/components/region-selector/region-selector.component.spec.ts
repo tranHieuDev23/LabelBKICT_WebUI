@@ -8,9 +8,8 @@ describe('RegionSelectorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ RegionSelectorComponent ]
-    })
-    .compileComponents();
+      declarations: [RegionSelectorComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

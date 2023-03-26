@@ -1,11 +1,5 @@
 import { Component } from '@angular/core';
-import {
-  AbstractControl,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
@@ -82,25 +76,13 @@ export class LoginComponent {
   public async onLoginClicked(): Promise<void> {
     const { username, password } = this.loginForm.value;
     try {
-      const { user } = await this.sessionManagementService.loginWithPassword(
-        username,
-        password
-      );
-      this.notificationService.success(
-        'Logged in successfully',
-        `Welcome, ${user.displayName}`
-      );
+      const { user } = await this.sessionManagementService.loginWithPassword(username, password);
+      this.notificationService.success('Logged in successfully', `Welcome, ${user.displayName}`);
     } catch (e) {
       if (e instanceof IncorrectPasswordError) {
-        this.notificationService.error(
-          'Failed to log in',
-          'Incorrect password'
-        );
+        this.notificationService.error('Failed to log in', 'Incorrect password');
       } else if (e instanceof UsernameNotFoundError) {
-        this.notificationService.error(
-          'Failed to log in',
-          'No user with the provided username found'
-        );
+        this.notificationService.error('Failed to log in', 'No user with the provided username found');
       } else {
         this.notificationService.error('Failed to log in', 'Unknown error');
       }
@@ -112,26 +94,13 @@ export class LoginComponent {
   public async onRegisterClicked(): Promise<void> {
     const { displayName, username, password } = this.registerForm.value;
     try {
-      const user = await this.userManagementService.createUser(
-        username,
-        displayName,
-        password
-      );
-      this.notificationService.success(
-        'Registered successfully',
-        `Welcome, ${user.displayName}`
-      );
+      const user = await this.userManagementService.createUser(username, displayName, password);
+      this.notificationService.success('Registered successfully', `Welcome, ${user.displayName}`);
     } catch (e) {
       if (e instanceof InvalidUserInformationError) {
-        this.notificationService.error(
-          'Failed to register',
-          'Invalid user information'
-        );
+        this.notificationService.error('Failed to register', 'Invalid user information');
       } else if (e instanceof UsernameTakenError) {
-        this.notificationService.error(
-          'Failed to register',
-          'Username is already taken'
-        );
+        this.notificationService.error('Failed to register', 'Username is already taken');
       } else {
         this.notificationService.error('Failed to register', 'Unknown error');
       }
@@ -142,15 +111,9 @@ export class LoginComponent {
       await this.sessionManagementService.loginWithPassword(username, password);
     } catch (e) {
       if (e instanceof IncorrectPasswordError) {
-        this.notificationService.error(
-          'Failed to log in',
-          'Incorrect password'
-        );
+        this.notificationService.error('Failed to log in', 'Incorrect password');
       } else if (e instanceof UsernameNotFoundError) {
-        this.notificationService.error(
-          'Failed to log in',
-          'No user with the provided username found'
-        );
+        this.notificationService.error('Failed to log in', 'No user with the provided username found');
       } else {
         this.notificationService.error('Failed to log in', 'Unknown error');
       }

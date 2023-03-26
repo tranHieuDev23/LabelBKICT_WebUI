@@ -6,11 +6,7 @@ import { Injectable } from '@angular/core';
 export class DelayedCallbackService {
   private readonly callbackIDToCallCountMap = new Map<string, number>();
 
-  public scheduleDelayedCallback(
-    callbackID: string,
-    callback: () => void,
-    delay: number
-  ): void {
+  public scheduleDelayedCallback(callbackID: string, callback: () => void, delay: number): void {
     this.increaseCallCount(callbackID);
     setTimeout(() => {
       const currentCallCount = this.decreaseCallCount(callbackID);

@@ -1,81 +1,127 @@
 <div class="carded-content">
-    <h1 nz-typography>
-        Manage image types
-    </h1>
+  <h1 nz-typography>Manage image types</h1>
 
-    <nz-collapse>
-        <ng-template ngFor let-imageType [ngForOf]="imageTypeList" let-i="index">
-            <ng-template #imageTypeHeader>
-                <app-editable-text [text]="imageType.displayName" (click)="$event.stopPropagation()"
-                    (textEdited)="onImageTypeDisplayNameEdited(i, $event)">
-                </app-editable-text>
-            </ng-template>
-            <nz-collapse-panel [nzHeader]="imageTypeHeader" [(nzActive)]="isImageTypeCollapsePanelOpen[i]">
-                <h3 nz-typography>Valid labels of this type</h3>
+  <nz-collapse>
+    <ng-template ngFor let-imageType [ngForOf]="imageTypeList" let-i="index">
+      <ng-template #imageTypeHeader>
+        <app-editable-text
+          [text]="imageType.displayName"
+          (click)="$event.stopPropagation()"
+          (textEdited)="onImageTypeDisplayNameEdited(i, $event)"
+        >
+        </app-editable-text>
+      </ng-template>
+      <nz-collapse-panel
+        [nzHeader]="imageTypeHeader"
+        [(nzActive)]="isImageTypeCollapsePanelOpen[i]"
+      >
+        <h3 nz-typography>Valid labels of this type</h3>
 
-                <nz-list nzItemLayout="horizontal" nzBordered="true">
-                    <nz-list-empty
-                        *ngIf="regionLabelList[i].length === 0 && !isImageTypeCollapsePanelAddingRegionLabelVisible[i]"
-                        nzNoResult="No region label value">
-                    </nz-list-empty>
+        <nz-list nzItemLayout="horizontal" nzBordered="true">
+          <nz-list-empty
+            *ngIf="
+              regionLabelList[i].length === 0 &&
+              !isImageTypeCollapsePanelAddingRegionLabelVisible[i]
+            "
+            nzNoResult="No region label value"
+          >
+          </nz-list-empty>
 
-                    <nz-list-item *ngFor="let regionLabel of regionLabelList[i]; index as j">
-                        <app-editable-text [text]="regionLabel.displayName"
-                            (textEdited)="onImageTypeRegionLabelDisplayNameEdited(i, j, $event)">
-                        </app-editable-text>
-                        <ul nz-list-item-actions class="image-type-item-region-label-item-actions">
-                            <nz-list-item-action>
-                                <app-color-box [color]="regionLabel.color"
-                                    (colorChanged)="onImageTypeRegionLabelColorChanged(i, j, $event)">
-                                </app-color-box>
-                            </nz-list-item-action>
-                            <nz-list-item-action>
-                                <button nz-button nzDanger (click)="onImageTypeRegionLabelDeleteClicked(i, j)">
-                                    <i nz-icon nzType="delete" nzTheme="outline"></i>
-                                </button>
-                            </nz-list-item-action>
-                        </ul>
-                    </nz-list-item>
-
-                    <nz-list-item *ngIf="isImageTypeCollapsePanelAddingRegionLabelVisible[i]">
-                        <app-editable-text [text]="imageTypeCollapsePanelAddingRegionLabelDisplayName[i]"
-                            [isEditing]="isImageTypeCollapsePanelAddingRegionLabelVisible[i]"
-                            (editingEnd)="onImageTypeNewRegionLabelDisplayNameEditingEnd(i)"
-                            (textEdited)="onImageTypeNewRegionLabelDisplayNameEdited(i, $event)">
-                        </app-editable-text>
-                    </nz-list-item>
-                </nz-list>
-
-                <label nz-checkbox class="image-type-item-has-predictive-model-checkbox"
-                    [(ngModel)]="imageType.hasPredictiveModel"
-                    (ngModelChange)="onImageTypeHasPredictiveModelChanged(i, $event)">
-                    Has predictive model?
-                </label>
-
-                <div class="image-type-item-actions">
-                    <button nz-button (click)="onNewRegionLabelValueClicked(i)">
-                        <i nz-icon nzType="plus" nzTheme="outline"></i> New label value
-                    </button>
-                    <button nz-button nzDanger (click)="onDeleteImageTypeClicked(i)">
-                        <i nz-icon nzType="delete" nzTheme="outline"></i> Delete image type
-                    </button>
-                </div>
-            </nz-collapse-panel>
-        </ng-template>
-
-        <ng-template #newImageTypeHeader>
-            <app-editable-text [text]="newImageTypeDisplayName" [isEditing]="isNewImageTypePanelVisible"
-                (click)="$event.stopPropagation()" (editingEnd)="onNewImageTypeDisplayNameEditingEnd()"
-                (textEdited)="onNewImageTypeDisplayNameEdited($event)">
+          <nz-list-item
+            *ngFor="let regionLabel of regionLabelList[i]; index as j"
+          >
+            <app-editable-text
+              [text]="regionLabel.displayName"
+              (textEdited)="
+                onImageTypeRegionLabelDisplayNameEdited(i, j, $event)
+              "
+            >
             </app-editable-text>
-        </ng-template>
-        <nz-collapse-panel *ngIf="isNewImageTypePanelVisible" [nzHeader]="newImageTypeHeader" nzShowArrow="false"
-            nzDisabled="true">
-        </nz-collapse-panel>
-    </nz-collapse>
+            <ul
+              nz-list-item-actions
+              class="image-type-item-region-label-item-actions"
+            >
+              <nz-list-item-action>
+                <app-color-box
+                  [color]="regionLabel.color"
+                  (colorChanged)="
+                    onImageTypeRegionLabelColorChanged(i, j, $event)
+                  "
+                >
+                </app-color-box>
+              </nz-list-item-action>
+              <nz-list-item-action>
+                <button
+                  nz-button
+                  nzDanger
+                  (click)="onImageTypeRegionLabelDeleteClicked(i, j)"
+                >
+                  <i nz-icon nzType="delete" nzTheme="outline"></i>
+                </button>
+              </nz-list-item-action>
+            </ul>
+          </nz-list-item>
 
-    <button nz-button class="add-image-type-button" [disabled]="isNewImageTypePanelVisible"
-        (click)="onNewImageTypeClicked()">
-        <i nz-icon nzType="plus" nzTheme="outline"></i> New image type
-    </button>
+          <nz-list-item
+            *ngIf="isImageTypeCollapsePanelAddingRegionLabelVisible[i]"
+          >
+            <app-editable-text
+              [text]="imageTypeCollapsePanelAddingRegionLabelDisplayName[i]"
+              [isEditing]="isImageTypeCollapsePanelAddingRegionLabelVisible[i]"
+              (editingEnd)="onImageTypeNewRegionLabelDisplayNameEditingEnd(i)"
+              (textEdited)="
+                onImageTypeNewRegionLabelDisplayNameEdited(i, $event)
+              "
+            >
+            </app-editable-text>
+          </nz-list-item>
+        </nz-list>
+
+        <label
+          nz-checkbox
+          class="image-type-item-has-predictive-model-checkbox"
+          [(ngModel)]="imageType.hasPredictiveModel"
+          (ngModelChange)="onImageTypeHasPredictiveModelChanged(i, $event)"
+        >
+          Has predictive model?
+        </label>
+
+        <div class="image-type-item-actions">
+          <button nz-button (click)="onNewRegionLabelValueClicked(i)">
+            <i nz-icon nzType="plus" nzTheme="outline"></i> New label value
+          </button>
+          <button nz-button nzDanger (click)="onDeleteImageTypeClicked(i)">
+            <i nz-icon nzType="delete" nzTheme="outline"></i> Delete image type
+          </button>
+        </div>
+      </nz-collapse-panel>
+    </ng-template>
+
+    <ng-template #newImageTypeHeader>
+      <app-editable-text
+        [text]="newImageTypeDisplayName"
+        [isEditing]="isNewImageTypePanelVisible"
+        (click)="$event.stopPropagation()"
+        (editingEnd)="onNewImageTypeDisplayNameEditingEnd()"
+        (textEdited)="onNewImageTypeDisplayNameEdited($event)"
+      >
+      </app-editable-text>
+    </ng-template>
+    <nz-collapse-panel
+      *ngIf="isNewImageTypePanelVisible"
+      [nzHeader]="newImageTypeHeader"
+      nzShowArrow="false"
+      nzDisabled="true"
+    >
+    </nz-collapse-panel>
+  </nz-collapse>
+
+  <button
+    nz-button
+    class="add-image-type-button"
+    [disabled]="isNewImageTypePanelVisible"
+    (click)="onNewImageTypeClicked()"
+  >
+    <i nz-icon nzType="plus" nzTheme="outline"></i> New image type
+  </button>
 </div>

@@ -10,12 +10,8 @@ export class FilterOptionsService {
     filterOptionsWithMetadata: UserListFilterOptionsWithMetadata
   ): UserListFilterOptions {
     const filterOptions = new UserListFilterOptions();
-    filterOptions.userRoleList = filterOptionsWithMetadata.userRoleList.map(
-      (userRole) => userRole?.id || 0
-    );
-    filterOptions.userTagList = filterOptionsWithMetadata.userTagList.map(
-      (userTag) => userTag?.id || 0
-    );
+    filterOptions.userRoleList = filterOptionsWithMetadata.userRoleList.map((userRole) => userRole?.id || 0);
+    filterOptions.userTagList = filterOptionsWithMetadata.userTagList.map((userTag) => userTag?.id || 0);
     filterOptions.usernameQuery = filterOptionsWithMetadata.usernameQuery;
     return filterOptions;
   }

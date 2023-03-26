@@ -1,5 +1,5 @@
-import { Polygon } from '../models';
+import { Shape } from '../models';
 
 export class RegionSelectorSnapshot {
-  constructor(public readonly drawnRegionList: Polygon[]) {}
+  constructor(public readonly drawnShapeList: Shape[]) {}
 }

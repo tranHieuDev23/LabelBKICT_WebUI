@@ -8,10 +8,7 @@ const BASE64_PLACEHOLDER =
   providedIn: 'root',
 })
 export class RegionImageService {
-  public async generateRegionImage(
-    imageSrc: string,
-    border: Polygon
-  ): Promise<string> {
+  public async generateRegionImage(imageSrc: string, border: Polygon): Promise<string> {
     return new Promise<string>((resolve) => {
       const { vertices } = border;
       const xs = vertices.map((item) => item.x);
@@ -51,10 +48,7 @@ export class RegionImageService {
   ): void {
     ctx.beginPath();
     const verticesCount = vertices.length;
-    ctx.moveTo(
-      (vertices[verticesCount - 1].x - left) * width,
-      (vertices[verticesCount - 1].y - top) * height
-    );
+    ctx.moveTo((vertices[verticesCount - 1].x - left) * width, (vertices[verticesCount - 1].y - top) * height);
     for (const item of vertices) {
       ctx.lineTo((item.x - left) * width, (item.y - top) * height);
     }

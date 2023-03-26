@@ -34,9 +34,7 @@ export class PinnedPagesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(
-      async (params) => await this.onQueryParamsChanged(params)
-    );
+    this.route.queryParams.subscribe(async (params) => await this.onQueryParamsChanged(params));
   }
 
   private async onQueryParamsChanged(params: Params): Promise<void> {
@@ -54,84 +52,50 @@ export class PinnedPagesComponent implements OnInit {
   }
 
   private async getPinnedPageListFromPaginationInfo(): Promise<void> {
-    const offset = this.paginationService.getPageOffset(
-      this.pageIndex,
-      this.pageSize
-    );
+    const offset = this.paginationService.getPageOffset(this.pageIndex, this.pageSize);
     try {
-      const { totalPinnedPageCount, pinnedPageList } =
-        await this.pinnedPageManagementService.getPinnedPageList(
-          offset,
-          this.pageSize
-        );
+      const { totalPinnedPageCount, pinnedPageList } = await this.pinnedPageManagementService.getPinnedPageList(
+        offset,
+        this.pageSize
+      );
       this.totalPinnedPageCount = totalPinnedPageCount;
       this.pinnedPageList = pinnedPageList;
     } catch (e) {
       if (e instanceof InvalidPinnedPageListArgument) {
-        this.notificationService.error(
-          'Failed to load pinned page list',
-          'Invalid page arguments'
-        );
+        this.notificationService.error('Failed to load pinned page list', 'Invalid page arguments');
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to load pinned page list',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to load pinned page list', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else {
-        this.notificationService.error(
-          'Failed to load pinned page list',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to load pinned page list', 'Unknown error');
       }
     }
   }
 
-  public async onPinnedPageDescriptionChanged(
-    pinnedPageIndex: number,
-    newDescription: string
-  ): Promise<void> {
+  public async onPinnedPageDescriptionChanged(pinnedPageIndex: number, newDescription: string): Promise<void> {
     const pinnedPage = this.pinnedPageList[pinnedPageIndex];
     try {
-      const updatedPinnedPage =
-        await this.pinnedPageManagementService.updatePinnedPage(
-          pinnedPage.id,
-          newDescription
-        );
+      const updatedPinnedPage = await this.pinnedPageManagementService.updatePinnedPage(pinnedPage.id, newDescription);
       this.notificationService.success('Updated pinned page successfully', '');
       this.pinnedPageList[pinnedPageIndex] = updatedPinnedPage;
       this.pinnedPageList = [...this.pinnedPageList];
     } catch (e) {
       if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update pinned page',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to update pinned page', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update pinned page',
-          'User does not have the required permission'
-        );
+        this.notificationService.error('Failed to update pinned page', 'User does not have the required permission');
         this.router.navigateByUrl('/login');
       } else if (e instanceof PinnedPageNotFoundError) {
-        this.notificationService.error(
-          'Failed to update pinned page',
-          'Cannot find pinned page'
-        );
+        this.notificationService.error('Failed to update pinned page', 'Cannot find pinned page');
       } else {
-        this.notificationService.error(
-          'Failed to update pinned page',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to update pinned page', 'Unknown error');
       }
     }
   }
 
-  public async onDeletePinnedPageClicked(
-    pinnedPageIndex: number
-  ): Promise<void> {
+  public async onDeletePinnedPageClicked(pinnedPageIndex: number): Promise<void> {
     const pinnedPage = this.pinnedPageList[pinnedPageIndex];
     try {
       await this.pinnedPageManagementService.deletePinnedPage(pinnedPage.id);
@@ -139,27 +103,15 @@ export class PinnedPagesComponent implements OnInit {
       await this.getPinnedPageListFromPaginationInfo();
     } catch (e) {
       if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to delete pinned page',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to delete pinned page', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to delete pinned page',
-          'User does not have the required permission'
-        );
+        this.notificationService.error('Failed to delete pinned page', 'User does not have the required permission');
         this.router.navigateByUrl('/login');
       } else if (e instanceof PinnedPageNotFoundError) {
-        this.notificationService.error(
-          'Failed to delete pinned page',
-          'Cannot find pinned page'
-        );
+        this.notificationService.error('Failed to delete pinned page', 'Cannot find pinned page');
       } else {
-        this.notificationService.error(
-          'Failed to delete pinned page',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to delete pinned page', 'Unknown error');
       }
     }
   }

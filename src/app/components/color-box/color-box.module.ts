@@ -6,19 +6,9 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzPopoverModule } from 'ng-zorro-antd/popover';
 
-
-
 @NgModule({
   declarations: [ColorBoxComponent],
-  imports: [
-    CommonModule,
-    ColorTwitterModule,
-    NzButtonModule,
-    NzIconModule,
-    NzPopoverModule
-  ],
-  exports: [
-    ColorBoxComponent
-  ]
+  imports: [CommonModule, ColorTwitterModule, NzButtonModule, NzIconModule, NzPopoverModule],
+  exports: [ColorBoxComponent],
 })
-export class ColorBoxModule { }
+export class ColorBoxModule {}

@@ -8,9 +8,8 @@ describe('PinnedPagesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PinnedPagesComponent ]
-    })
-    .compileComponents();
+      declarations: [PinnedPagesComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

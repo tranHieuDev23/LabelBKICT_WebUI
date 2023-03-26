@@ -20,10 +20,7 @@ import {
   ImageStatus,
 } from 'src/app/services/dataaccess/api';
 import { ExportManagementService } from 'src/app/services/module/export-management/export-management.service';
-import {
-  ImageListManagementService,
-  FilterOptionsService,
-} from 'src/app/services/module/image-list-management';
+import { ImageListManagementService, FilterOptionsService } from 'src/app/services/module/image-list-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
@@ -42,14 +39,11 @@ const DEFAULT_EXPORT_PAGE_SIZE = 10;
   styleUrls: ['./export-images.component.scss'],
 })
 export class ExportImagesComponent implements OnInit {
-  @ViewChild('contextMenu') public contextMenu:
-    | NzDropdownMenuComponent
-    | undefined;
+  @ViewChild('contextMenu') public contextMenu: NzDropdownMenuComponent | undefined;
 
   public imagePageIndex: number = DEFAULT_IMAGE_PAGE_INDEX;
   public imagePageSize: number = DEFAULT_IMAGE_PAGE_SIZE;
-  public filterOptions: ImageListFilterOptionsWithMetadata =
-    this.getDefaultImageListFilterOptions();
+  public filterOptions: ImageListFilterOptionsWithMetadata = this.getDefaultImageListFilterOptions();
   public imageListSortOption = DEFAULT_IMAGE_SORT_OPTION;
 
   public uploadedByUserOptionList: User[] = [];
@@ -116,9 +110,7 @@ export class ExportImagesComponent implements OnInit {
       this.imageListSortOption = DEFAULT_IMAGE_SORT_OPTION;
     }
     if (queryParams['filter'] !== undefined) {
-      this.filterOptions = this.jsonCompressService.decompress(
-        queryParams['filter']
-      );
+      this.filterOptions = this.jsonCompressService.decompress(queryParams['filter']);
     } else {
       this.filterOptions = this.getDefaultImageListFilterOptions();
     }
@@ -126,14 +118,8 @@ export class ExportImagesComponent implements OnInit {
 
   private async getImageListFromPaginationInfo(): Promise<void> {
     this.isLoadingImageList = true;
-    const offset = this.paginationService.getPageOffset(
-      this.imagePageIndex,
-      this.imagePageSize
-    );
-    const filterOptions =
-      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
-        this.filterOptions
-      );
+    const offset = this.paginationService.getPageOffset(this.imagePageIndex, this.imagePageSize);
+    const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     try {
       const { totalImageCount, imageList, imageTagList } =
         await this.imageListManagementService.getUserExportableImageList(
@@ -149,28 +135,16 @@ export class ExportImagesComponent implements OnInit {
       this.toImageIndex = offset + imageList.length;
     } catch (e) {
       if (e instanceof InvalidImageListFilterOptionsError) {
-        this.notificationService.error(
-          'Failed to get image list',
-          'Invalid image filter options'
-        );
+        this.notificationService.error('Failed to get image list', 'Invalid image filter options');
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to get image list',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to get image list', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to get image list',
-          'User does not have the required permission'
-        );
+        this.notificationService.error('Failed to get image list', 'User does not have the required permission');
         this.router.navigateByUrl('/welcome');
       } else {
-        this.notificationService.error(
-          'Failed to get image list',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to get image list', 'Unknown error');
       }
     } finally {
       this.isLoadingImageList = false;
@@ -182,11 +156,10 @@ export class ExportImagesComponent implements OnInit {
     if (query === '') {
       this.uploadedByUserOptionList = [];
     } else {
-      this.uploadedByUserOptionList =
-        await this.imageListManagementService.searchUserExportableImageUserList(
-          query,
-          MAX_SEARCH_USER_RESULT
-        );
+      this.uploadedByUserOptionList = await this.imageListManagementService.searchUserExportableImageUserList(
+        query,
+        MAX_SEARCH_USER_RESULT
+      );
     }
   }
 
@@ -195,11 +168,7 @@ export class ExportImagesComponent implements OnInit {
     if (query === '') {
       this.publishedByUserOptionList = [];
     } else {
-      this.publishedByUserOptionList =
-        await this.userManagementService.searchUserList(
-          query,
-          MAX_SEARCH_USER_RESULT
-        );
+      this.publishedByUserOptionList = await this.userManagementService.searchUserList(query, MAX_SEARCH_USER_RESULT);
     }
   }
 
@@ -208,50 +177,24 @@ export class ExportImagesComponent implements OnInit {
     if (query === '') {
       this.publishedByUserOptionList = [];
     } else {
-      this.verifiedByUserOptionList =
-        await this.userManagementService.searchUserList(
-          query,
-          MAX_SEARCH_USER_RESULT
-        );
+      this.verifiedByUserOptionList = await this.userManagementService.searchUserList(query, MAX_SEARCH_USER_RESULT);
     }
   }
 
-  public onImageListFilterOptionsUpdated(
-    filterOptions: ImageListFilterOptionsWithMetadata
-  ): void {
-    this.navigateToPage(
-      this.imagePageIndex,
-      this.imagePageSize,
-      this.imageListSortOption,
-      filterOptions
-    );
+  public onImageListFilterOptionsUpdated(filterOptions: ImageListFilterOptionsWithMetadata): void {
+    this.navigateToPage(this.imagePageIndex, this.imagePageSize, this.imageListSortOption, filterOptions);
   }
 
   public onImageListSortOptionUploaded(sortOption: ImageListSortOption): void {
-    this.navigateToPage(
-      this.imagePageIndex,
-      this.imagePageSize,
-      sortOption,
-      this.filterOptions
-    );
+    this.navigateToPage(this.imagePageIndex, this.imagePageSize, sortOption, this.filterOptions);
   }
 
   public onImagePageIndexChanged(newPageIndex: number): void {
-    this.navigateToPage(
-      newPageIndex,
-      this.imagePageSize,
-      this.imageListSortOption,
-      this.filterOptions
-    );
+    this.navigateToPage(newPageIndex, this.imagePageSize, this.imageListSortOption, this.filterOptions);
   }
 
   public onImagePageSizeChanged(newPageSize: number): void {
-    this.navigateToPage(
-      this.imagePageIndex,
-      newPageSize,
-      this.imageListSortOption,
-      this.filterOptions
-    );
+    this.navigateToPage(this.imagePageIndex, newPageSize, this.imageListSortOption, this.filterOptions);
   }
 
   private navigateToPage(
@@ -283,35 +226,20 @@ export class ExportImagesComponent implements OnInit {
   }
 
   private async requestExport(type: ExportType): Promise<void> {
-    const filterOptions =
-      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
-        this.filterOptions
-      );
+    const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     try {
       await this.exportManagementService.createExport(type, filterOptions);
     } catch (e) {
       if (e instanceof InvalidImageListFilterOptionsError) {
-        this.notificationService.error(
-          'Failed to request export',
-          'Invalid image filter options'
-        );
+        this.notificationService.error('Failed to request export', 'Invalid image filter options');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to request export',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to request export', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to request export',
-          'User does not have the required permission'
-        );
+        this.notificationService.error('Failed to request export', 'User does not have the required permission');
         this.router.navigateByUrl('/welcome');
       } else {
-        this.notificationService.error(
-          'Failed to request export',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to request export', 'Unknown error');
       }
       return;
     }
@@ -343,41 +271,25 @@ export class ExportImagesComponent implements OnInit {
     this.isLoadingExportList = true;
     this.totalExportCount = 0;
     this.exportList = [];
-    const offset = this.paginationService.getPageOffset(
-      this.exportPageIndex,
-      this.exportPageSize
-    );
+    const offset = this.paginationService.getPageOffset(this.exportPageIndex, this.exportPageSize);
     try {
-      const { totalExportCount, exportList } =
-        await this.exportManagementService.getExportList(
-          offset,
-          this.imagePageSize
-        );
+      const { totalExportCount, exportList } = await this.exportManagementService.getExportList(
+        offset,
+        this.imagePageSize
+      );
       this.totalExportCount = totalExportCount;
       this.exportList = exportList;
     } catch (e) {
       if (e instanceof InvalidExportListArgument) {
-        this.notificationService.error(
-          'Failed to get export list',
-          'Invalid export list arguments'
-        );
+        this.notificationService.error('Failed to get export list', 'Invalid export list arguments');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to get export list',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to get export list', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to get export list',
-          'User does not have the required permission'
-        );
+        this.notificationService.error('Failed to get export list', 'User does not have the required permission');
         this.router.navigateByUrl('/welcome');
       } else {
-        this.notificationService.error(
-          'Failed to get export list',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to get export list', 'Unknown error');
       }
       return;
     } finally {
@@ -402,28 +314,16 @@ export class ExportImagesComponent implements OnInit {
           await this.exportManagementService.deleteExport(exportRequest.id);
         } catch (e) {
           if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to delete export',
-              'User is not logged in'
-            );
+            this.notificationService.error('Failed to delete export', 'User is not logged in');
             this.router.navigateByUrl('/login');
           } else if (e instanceof UnauthorizedError) {
-            this.notificationService.error(
-              'Failed to delete export',
-              'User does not have the required permission'
-            );
+            this.notificationService.error('Failed to delete export', 'User does not have the required permission');
             this.router.navigateByUrl('/welcome');
           } else if (e instanceof ExportNotFoundError) {
-            this.notificationService.error(
-              'Failed to delete export',
-              'Export not found'
-            );
+            this.notificationService.error('Failed to delete export', 'Export not found');
             await this.getExportListFromPaginationInfo();
           } else {
-            this.notificationService.error(
-              'Failed to delete export',
-              'Unknown error'
-            );
+            this.notificationService.error('Failed to delete export', 'Unknown error');
           }
           return;
         }

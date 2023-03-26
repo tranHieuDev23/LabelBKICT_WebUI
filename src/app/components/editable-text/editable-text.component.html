@@ -1,31 +1,53 @@
 <span *ngIf="!isEditing">
-    <span class="text-display" (click)="startEditing()">
-        <span *ngIf="text !== ''" nz-typography [innerText]="text"></span>
-        <span *ngIf="text === ''" nz-typography nzType="secondary" [innerText]="placeholder"></span>
-    </span>
-    <button *ngIf="editable" nz-button nzType="text" (click)="startEditing()">
-        <i nz-icon nzType="edit" nzTheme="outline"></i>
-    </button>
+  <span class="text-display" (click)="startEditing()">
+    <span *ngIf="text !== ''" nz-typography [innerText]="text"></span>
+    <span
+      *ngIf="text === ''"
+      nz-typography
+      nzType="secondary"
+      [innerText]="placeholder"
+    ></span>
+  </span>
+  <button *ngIf="editable" nz-button nzType="text" (click)="startEditing()">
+    <i nz-icon nzType="edit" nzTheme="outline"></i>
+  </button>
 </span>
 <span *ngIf="isEditing && !multiline">
-    <form class="form single-line" nz-form [formGroup]="formGroup">
-        <input appFocusable class="text-input" nz-input formControlName="text" name="text" autocomplete="off"
-            (keyup.enter)="submit()" (keyup.esc)="stopEditing()" />
-    </form>
-    <button nz-button nzType="text" nzDanger (click)="stopEditing()">
-        <i nz-icon nzType="close" nzTheme="outline"></i>
-    </button>
+  <form class="form single-line" nz-form [formGroup]="formGroup">
+    <input
+      appFocusable
+      class="text-input"
+      nz-input
+      formControlName="text"
+      name="text"
+      autocomplete="off"
+      (keyup.enter)="submit()"
+      (keyup.esc)="stopEditing()"
+    />
+  </form>
+  <button nz-button nzType="text" nzDanger (click)="stopEditing()">
+    <i nz-icon nzType="close" nzTheme="outline"></i>
+  </button>
 </span>
 <div *ngIf="isEditing && multiline">
-    <form class="form multiline" nz-form [formGroup]="formGroup">
-        <textarea appFocusable class="text-input" nz-input nzAutosize="true" formControlName="text" name="text"
-            autocomplete="off" (keyup.esc)="stopEditing()">
-        </textarea>
-    </form><br />
-    <button nz-button nzType="link" (click)="submit()">
-        <i nz-icon nzType="check" nzTheme="outline"></i>
-    </button>
-    <button nz-button nzType="text" nzDanger (click)="stopEditing()">
-        <i nz-icon nzType="close" nzTheme="outline"></i>
-    </button>
+  <form class="form multiline" nz-form [formGroup]="formGroup">
+    <textarea
+      appFocusable
+      class="text-input"
+      nz-input
+      nzAutosize="true"
+      formControlName="text"
+      name="text"
+      autocomplete="off"
+      (keyup.esc)="stopEditing()"
+    >
+    </textarea>
+  </form>
+  <br />
+  <button nz-button nzType="link" (click)="submit()">
+    <i nz-icon nzType="check" nzTheme="outline"></i>
+  </button>
+  <button nz-button nzType="text" nzDanger (click)="stopEditing()">
+    <i nz-icon nzType="close" nzTheme="outline"></i>
+  </button>
 </div>

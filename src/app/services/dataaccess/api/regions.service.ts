@@ -1,11 +1,7 @@
 import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
-import {
-  UnauthenticatedError,
-  UnauthorizedError,
-  UnknownAPIError,
-} from './errors';
+import { UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
 import { ImageNotFoundError } from './images.service';
 import { Polygon, Region, RegionOperationLog } from './schemas';
 
@@ -114,13 +110,10 @@ export class RegionsService {
     holes: Polygon[]
   ): Promise<Region> {
     try {
-      const response = await this.axios.patch(
-        `/api/images/${imageID}/regions/${regionID}/boundary`,
-        {
-          border,
-          holes,
-        }
-      );
+      const response = await this.axios.patch(`/api/images/${imageID}/regions/${regionID}/boundary`, {
+        border,
+        holes,
+      });
       return Region.fromJSON(response.data.region);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -141,16 +134,11 @@ export class RegionsService {
     }
   }
 
-  public async updateRegionRegionLabel(
-    imageID: number,
-    regionID: number,
-    regionLabelID: number
-  ): Promise<Region> {
+  public async updateRegionRegionLabel(imageID: number, regionID: number, regionLabelID: number): Promise<Region> {
     try {
-      const response = await this.axios.patch(
-        `/api/images/${imageID}/regions/${regionID}/label`,
-        { region_label_id: regionLabelID }
-      );
+      const response = await this.axios.patch(`/api/images/${imageID}/regions/${regionID}/label`, {
+        region_label_id: regionLabelID,
+      });
       return Region.fromJSON(response.data.region);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -171,18 +159,10 @@ export class RegionsService {
     }
   }
 
-  public async getRegionOperationLogList(
-    imageID: number,
-    regionID: number
-  ): Promise<RegionOperationLog[]> {
+  public async getRegionOperationLogList(imageID: number, regionID: number): Promise<RegionOperationLog[]> {
     try {
-      const response = await this.axios.get(
-        `/api/images/${imageID}/regions/${regionID}/operation-logs`
-      );
-      const regionOperationLogList =
-        response.data.region_operation_log_list.map(
-          RegionOperationLog.fromJSON
-        );
+      const response = await this.axios.get(`/api/images/${imageID}/regions/${regionID}/operation-logs`);
+      const regionOperationLogList = response.data.region_operation_log_list.map(RegionOperationLog.fromJSON);
       return regionOperationLogList;
     } catch (e) {
       if (!axios.isAxiosError(e)) {

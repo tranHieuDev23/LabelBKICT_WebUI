@@ -1,64 +1,105 @@
 <div class="carded-content">
-    <h1 nz-typography>All images</h1>
+  <h1 nz-typography>All images</h1>
 
-    <app-image-filter-options-selector [filterOptions]="filterOptions" [sortOption]="imageListSortOption"
-        [uploadedByUserOptionList]="uploadedByUserOptionList" [publishedByUserOptionList]="publishedByUserOptionList"
-        [verifiedByUserOptionList]="verifiedByUserOptionList" (uploadedByUserSearch)="onUploadedByUserSearch($event)"
-        (publishedByUserSearch)="onPublishedByUserSearch($event)"
-        (verifiedByUserSearch)="onVerifiedByUserSearch($event)"
-        (filterOptionsUpdated)="onImageListFilterOptionsUpdated($event)"
-        (sortOptionUpdated)="onImageListSortOptionUploaded($event)">
-    </app-image-filter-options-selector>
+  <app-image-filter-options-selector
+    [filterOptions]="filterOptions"
+    [sortOption]="imageListSortOption"
+    [uploadedByUserOptionList]="uploadedByUserOptionList"
+    [publishedByUserOptionList]="publishedByUserOptionList"
+    [verifiedByUserOptionList]="verifiedByUserOptionList"
+    (uploadedByUserSearch)="onUploadedByUserSearch($event)"
+    (publishedByUserSearch)="onPublishedByUserSearch($event)"
+    (verifiedByUserSearch)="onVerifiedByUserSearch($event)"
+    (filterOptionsUpdated)="onImageListFilterOptionsUpdated($event)"
+    (sortOptionUpdated)="onImageListSortOptionUploaded($event)"
+  >
+  </app-image-filter-options-selector>
 
-    <p *ngIf="fromImageIndex !== 0" nz-typography>
-        Showing image {{ fromImageIndex }} - {{ toImageIndex }} of {{ totalImageCount }}
-    </p>
+  <p *ngIf="fromImageIndex !== 0" nz-typography>
+    Showing image {{ fromImageIndex }} - {{ toImageIndex }} of
+    {{ totalImageCount }}
+  </p>
 
-    <app-image-grid emptyText="No image" [imageList]="imageList" [imageTagList]="imageTagList"
-        [loading]="isLoadingImageList" (contextmenu)="onImageGridContextMenu($event)"
-        (imageListSelected)="onImageGridImageListSelected($event)" (imageDbClicked)="onImageDbClicked($event)">
-    </app-image-grid>
+  <app-image-grid
+    emptyText="No image"
+    [imageList]="imageList"
+    [imageTagList]="imageTagList"
+    [loading]="isLoadingImageList"
+    (contextmenu)="onImageGridContextMenu($event)"
+    (imageListSelected)="onImageGridImageListSelected($event)"
+    (imageDbClicked)="onImageDbClicked($event)"
+  >
+  </app-image-grid>
 
-    <div *ngIf="!isLoadingImageList" class="pagination">
-        <nz-pagination [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzTotal]="totalImageCount" nzShowQuickJumper
-            nzShowSizeChanger [nzPageSizeOptions]="[12, 24, 60, 120, 240]"
-            (nzPageIndexChange)="onPageIndexChanged($event)" (nzPageSizeChange)="onPageSizeChanged($event)">
-        </nz-pagination>
-    </div>
+  <div *ngIf="!isLoadingImageList" class="pagination">
+    <nz-pagination
+      [nzPageIndex]="pageIndex"
+      [nzPageSize]="pageSize"
+      [nzTotal]="totalImageCount"
+      nzShowQuickJumper
+      nzShowSizeChanger
+      [nzPageSizeOptions]="[12, 24, 60, 120, 240]"
+      (nzPageIndexChange)="onPageIndexChanged($event)"
+      (nzPageSizeChange)="onPageSizeChanged($event)"
+    >
+    </nz-pagination>
+  </div>
 </div>
 
 <nz-dropdown-menu #contextMenu>
-    <ul nz-menu>
-        <li nz-submenu nzTitle="Change image type of selected image(s) to...">
-            <ul>
-                <li *ngFor="let imageType of imageTypeList" nz-menu-item
-                    (click)="onSetImageTypeOfSelectedImagesClicked(imageType)">
-                    {{ imageType.displayName }}
-                </li>
-            </ul>
+  <ul nz-menu>
+    <li nz-submenu nzTitle="Change image type of selected image(s) to...">
+      <ul>
+        <li
+          *ngFor="let imageType of imageTypeList"
+          nz-menu-item
+          (click)="onSetImageTypeOfSelectedImagesClicked(imageType)"
+        >
+          {{ imageType.displayName }}
         </li>
-        <li nz-menu-item (click)="onAddImageTagToSelectedImageListClicked()">
-            Add image tags to selected image(s)
-        </li>
-        <li nz-menu-item (click)="onRequestRegionDetectionForSelectedImagesClicked()">
-            Request for AI-based lesion suggestion for selected image(s)
-        </li>
-        <li nz-menu-item nzDanger (click)="onDeleteSelectedImagesClicked()">
-            Delete selected image(s)
-        </li>
-    </ul>
+      </ul>
+    </li>
+    <li nz-menu-item (click)="onAddImageTagToSelectedImageListClicked()">
+      Add image tags to selected image(s)
+    </li>
+    <li
+      nz-menu-item
+      (click)="onRequestRegionDetectionForSelectedImagesClicked()"
+    >
+      Request for AI-based lesion suggestion for selected image(s)
+    </li>
+    <li nz-menu-item nzDanger (click)="onDeleteSelectedImagesClicked()">
+      Delete selected image(s)
+    </li>
+  </ul>
 </nz-dropdown-menu>
 
-<nz-modal [(nzVisible)]="isAddImageTagToSelectedImageListModalVisible" nzTitle="Add images tags to selected image(s)"
-    [nzOkDisabled]="addImageTagToSelectedImageListModalAddedImageTagList.length === 0"
-    (nzOnOk)="onAddImageTagToSelectedImageListModalOk()" (nzOnCancel)="onAddImageTagToSelectedImageListModalCancel()">
-    <ng-container *nzModalContent>
-        <app-addable-tag-list [allImageTagGroupList]="addImageTagToSelectedImageListModalImageTagGroupList"
-            [allImageTagList]="addImageTagToSelectedImageListModalImageTagList"
-            [currentImageTagList]="addImageTagToSelectedImageListModalCurrentImageTagList"
-            [addedImageTagList]="addImageTagToSelectedImageListModalAddedImageTagList"
-            (imageTagAdded)="onAddImageTagToSelectedImageListModalImageTagAdded($event)"
-            (imageTagDeleted)="onAddImageTagToSelectedImageListModalImageTagDeleted($event)">
-        </app-addable-tag-list>
-    </ng-container>
+<nz-modal
+  [(nzVisible)]="isAddImageTagToSelectedImageListModalVisible"
+  nzTitle="Add images tags to selected image(s)"
+  [nzOkDisabled]="
+    addImageTagToSelectedImageListModalAddedImageTagList.length === 0
+  "
+  (nzOnOk)="onAddImageTagToSelectedImageListModalOk()"
+  (nzOnCancel)="onAddImageTagToSelectedImageListModalCancel()"
+>
+  <ng-container *nzModalContent>
+    <app-addable-tag-list
+      [allImageTagGroupList]="
+        addImageTagToSelectedImageListModalImageTagGroupList
+      "
+      [allImageTagList]="addImageTagToSelectedImageListModalImageTagList"
+      [currentImageTagList]="
+        addImageTagToSelectedImageListModalCurrentImageTagList
+      "
+      [addedImageTagList]="addImageTagToSelectedImageListModalAddedImageTagList"
+      (imageTagAdded)="
+        onAddImageTagToSelectedImageListModalImageTagAdded($event)
+      "
+      (imageTagDeleted)="
+        onAddImageTagToSelectedImageListModalImageTagDeleted($event)
+      "
+    >
+    </app-addable-tag-list>
+  </ng-container>
 </nz-modal>

@@ -34,38 +34,21 @@ export async function uploadImage(input: UploadImageInput): Promise<void> {
   await Axios.post('/api/images', formData);
 }
 
-export function uploadImageBatch(
-  inputList: UploadImageInput[]
-): Observable<UploadImageBatchMessage> {
+export function uploadImageBatch(inputList: UploadImageInput[]): Observable<UploadImageBatchMessage> {
   return new Observable<UploadImageBatchMessage>((subscriber) => {
     const limit = pLimit(5);
     const uploadImagePromiseList = inputList.map((input, index) =>
       limit(async () => {
         try {
           await uploadImage(input);
-          subscriber.next(
-            new UploadImageBatchMessage(
-              UploadImageBatchMessageType.UPLOAD_SUCCESS,
-              index
-            )
-          );
+          subscriber.next(new UploadImageBatchMessage(UploadImageBatchMessageType.UPLOAD_SUCCESS, index));
         } catch {
-          subscriber.next(
-            new UploadImageBatchMessage(
-              UploadImageBatchMessageType.UPLOAD_FAILURE,
-              index
-            )
-          );
+          subscriber.next(new UploadImageBatchMessage(UploadImageBatchMessageType.UPLOAD_FAILURE, index));
         }
       })
     );
     Promise.all(uploadImagePromiseList).then(() => {
-      subscriber.next(
-        new UploadImageBatchMessage(
-          UploadImageBatchMessageType.UPLOAD_COMPLETE,
-          null
-        )
-      );
+      subscriber.next(new UploadImageBatchMessage(UploadImageBatchMessageType.UPLOAD_COMPLETE, null));
       subscriber.complete();
     });
   });

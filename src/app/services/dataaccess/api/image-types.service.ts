@@ -2,11 +2,7 @@ import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
 import qs from 'qs';
-import {
-  UnauthenticatedError,
-  UnauthorizedError,
-  UnknownAPIError,
-} from './errors';
+import { UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
 import { ImageType, RegionLabel, ImageTagGroupAndTagList } from './schemas';
 
 export class InvalidImageTypeInformationError extends Error {
@@ -39,10 +35,7 @@ export class RegionLabelNotFoundError extends Error {
 export class ImageTypesService {
   constructor(private readonly axios: Axios) {}
 
-  public async createImageType(
-    displayName: string,
-    hasPredictiveModel: boolean
-  ): Promise<ImageType> {
+  public async createImageType(displayName: string, hasPredictiveModel: boolean): Promise<ImageType> {
     try {
       const response = await this.axios.post('/api/image-types', {
         display_name: displayName,
@@ -77,14 +70,11 @@ export class ImageTypesService {
         },
       });
 
-      const imageTypeList = response.data.image_type_list.map(
-        ImageType.fromJSON
-      );
+      const imageTypeList = response.data.image_type_list.map(ImageType.fromJSON);
       let regionLabelList: RegionLabel[][] | undefined = undefined;
       if (withRegionLabel) {
-        regionLabelList = response.data.region_label_list.map(
-          (regionLabelSublist: any[]) =>
-            regionLabelSublist.map(RegionLabel.fromJSON)
+        regionLabelList = response.data.region_label_list.map((regionLabelSublist: any[]) =>
+          regionLabelSublist.map(RegionLabel.fromJSON)
         );
       }
 
@@ -111,9 +101,7 @@ export class ImageTypesService {
     try {
       const response = await this.axios.get(`/api/image-types/${id}`);
       const imageType = ImageType.fromJSON(response.data.image_type);
-      const regionLabelList = response.data.region_label_list.map(
-        RegionLabel.fromJSON
-      );
+      const regionLabelList = response.data.region_label_list.map(RegionLabel.fromJSON);
       return { imageType, regionLabelList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -132,11 +120,7 @@ export class ImageTypesService {
     }
   }
 
-  public async updateImageType(
-    id: number,
-    displayName: string,
-    hasPredictiveModel: boolean
-  ): Promise<ImageType> {
+  public async updateImageType(id: number, displayName: string, hasPredictiveModel: boolean): Promise<ImageType> {
     try {
       const response = await this.axios.patch(`/api/image-types/${id}`, {
         display_name: displayName,
@@ -188,13 +172,10 @@ export class ImageTypesService {
     color: string
   ): Promise<RegionLabel> {
     try {
-      const response = await this.axios.post(
-        `/api/image-types/${imageTypeID}/labels`,
-        {
-          display_name: displayName,
-          color: color,
-        }
-      );
+      const response = await this.axios.post(`/api/image-types/${imageTypeID}/labels`, {
+        display_name: displayName,
+        color: color,
+      });
       return RegionLabel.fromJSON(response.data);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -222,13 +203,10 @@ export class ImageTypesService {
     color: string
   ): Promise<RegionLabel> {
     try {
-      const response = await this.axios.patch(
-        `/api/image-types/${imageTypeID}/labels/${regionLabelID}`,
-        {
-          display_name: displayName,
-          color: color,
-        }
-      );
+      const response = await this.axios.patch(`/api/image-types/${imageTypeID}/labels/${regionLabelID}`, {
+        display_name: displayName,
+        color: color,
+      });
       return RegionLabel.fromJSON(response.data);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -249,14 +227,9 @@ export class ImageTypesService {
     }
   }
 
-  public async removeRegionLabelFromImageType(
-    imageTypeID: number,
-    regionLabelID: number
-  ): Promise<void> {
+  public async removeRegionLabelFromImageType(imageTypeID: number, regionLabelID: number): Promise<void> {
     try {
-      await this.axios.delete(
-        `/api/image-types/${imageTypeID}/labels/${regionLabelID}`
-      );
+      await this.axios.delete(`/api/image-types/${imageTypeID}/labels/${regionLabelID}`);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -274,13 +247,9 @@ export class ImageTypesService {
     }
   }
 
-  public async getImageTagGroupListOfImageType(
-    imageTypeID: number
-  ): Promise<ImageTagGroupAndTagList> {
+  public async getImageTagGroupListOfImageType(imageTypeID: number): Promise<ImageTagGroupAndTagList> {
     try {
-      const response = await this.axios.get(
-        `/api/image-types/${imageTypeID}/image-tag-groups`
-      );
+      const response = await this.axios.get(`/api/image-types/${imageTypeID}/image-tag-groups`);
       return ImageTagGroupAndTagList.fromJSON(response.data);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -297,24 +266,16 @@ export class ImageTypesService {
     }
   }
 
-  public async getImageTagGroupListOfImageTypeList(
-    imageTypeIdList: number[]
-  ): Promise<ImageTagGroupAndTagList[]> {
+  public async getImageTagGroupListOfImageTypeList(imageTypeIdList: number[]): Promise<ImageTagGroupAndTagList[]> {
     try {
-      const response = await this.axios.get(
-        '/api/image-types/image-tag-groups',
-        {
-          params: { image_type_id_list: imageTypeIdList },
-          paramsSerializer: (params) => {
-            return qs.stringify(params, { arrayFormat: 'repeat' });
-          },
-        }
-      );
-      const imageTagGroupListOfImageTypeListJSON = response.data
-        .image_tag_group_of_image_type_list as any[];
-      return imageTagGroupListOfImageTypeListJSON.map(
-        ImageTagGroupAndTagList.fromJSON
-      );
+      const response = await this.axios.get('/api/image-types/image-tag-groups', {
+        params: { image_type_id_list: imageTypeIdList },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
+        },
+      });
+      const imageTagGroupListOfImageTypeListJSON = response.data.image_tag_group_of_image_type_list as any[];
+      return imageTagGroupListOfImageTypeListJSON.map(ImageTagGroupAndTagList.fromJSON);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

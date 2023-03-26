@@ -22,10 +22,7 @@ export class RegionOperationLogListComponent {
   @Input() public set operationLogList(v: RegionOperationLog[]) {
     this._operationLogList = v;
     this.pageIndex = 1;
-    this.paginatedOperationLogList = this.getPaginatedOperationLogList(
-      this.pageIndex,
-      this.pageSize
-    );
+    this.paginatedOperationLogList = this.getPaginatedOperationLogList(this.pageIndex, this.pageSize);
   }
 
   public get operationLogList(): RegionOperationLog[] {
@@ -43,54 +40,28 @@ export class RegionOperationLogListComponent {
   }
 
   public isFirstDrawOperationLog(operationLog: RegionOperationLog): boolean {
-    if (
-      !(
-        operationLog.operationMetadata instanceof RegionOperationLogDrawMetadata
-      )
-    ) {
+    if (!(operationLog.operationMetadata instanceof RegionOperationLogDrawMetadata)) {
       return false;
     }
-    return (
-      operationLog.operationMetadata.oldBorder === null ||
-      operationLog.operationMetadata.oldHoles === null
-    );
+    return operationLog.operationMetadata.oldBorder === null || operationLog.operationMetadata.oldHoles === null;
   }
 
   public isFirstLabelOperationLog(operationLog: RegionOperationLog): boolean {
-    if (
-      !(
-        operationLog.operationMetadata instanceof
-        RegionOperationLogLabelMetadata
-      )
-    ) {
+    if (!(operationLog.operationMetadata instanceof RegionOperationLogLabelMetadata)) {
       return false;
     }
     return operationLog.operationMetadata.oldLabel === null;
   }
 
-  public getLabelOperationLogOldLabelDisplayName(
-    operationLog: RegionOperationLog
-  ): string {
-    if (
-      !(
-        operationLog.operationMetadata instanceof
-        RegionOperationLogLabelMetadata
-      )
-    ) {
+  public getLabelOperationLogOldLabelDisplayName(operationLog: RegionOperationLog): string {
+    if (!(operationLog.operationMetadata instanceof RegionOperationLogLabelMetadata)) {
       return '';
     }
     return operationLog.operationMetadata.oldLabel?.displayName || 'No type';
   }
 
-  public getLabelOperationLogNewLabelDisplayName(
-    operationLog: RegionOperationLog
-  ): string {
-    if (
-      !(
-        operationLog.operationMetadata instanceof
-        RegionOperationLogLabelMetadata
-      )
-    ) {
+  public getLabelOperationLogNewLabelDisplayName(operationLog: RegionOperationLog): string {
+    if (!(operationLog.operationMetadata instanceof RegionOperationLogLabelMetadata)) {
       return '';
     }
     return operationLog.operationMetadata.newLabel?.displayName || 'No type';
@@ -98,32 +69,17 @@ export class RegionOperationLogListComponent {
 
   public onPageIndexChanged(pageIndex: number): void {
     this.pageIndex = pageIndex;
-    this.paginatedOperationLogList = this.getPaginatedOperationLogList(
-      pageIndex,
-      this.pageSize
-    );
+    this.paginatedOperationLogList = this.getPaginatedOperationLogList(pageIndex, this.pageSize);
   }
 
   public onPageSizeChanged(pageSize: number): void {
     this.pageSize = pageSize;
-    this.paginatedOperationLogList = this.getPaginatedOperationLogList(
-      this.pageIndex,
-      pageSize
-    );
+    this.paginatedOperationLogList = this.getPaginatedOperationLogList(this.pageIndex, pageSize);
   }
 
-  private getPaginatedOperationLogList(
-    pageIndex: number,
-    pageSize: number
-  ): RegionOperationLog[] {
-    const startIndex = this.paginationService.getPageOffset(
-      pageIndex,
-      pageSize
-    );
-    const endIndex = Math.min(
-      startIndex + pageSize,
-      this._operationLogList.length
-    );
+  private getPaginatedOperationLogList(pageIndex: number, pageSize: number): RegionOperationLog[] {
+    const startIndex = this.paginationService.getPageOffset(pageIndex, pageSize);
+    const endIndex = Math.min(startIndex + pageSize, this._operationLogList.length);
     return this._operationLogList.slice(startIndex, endIndex);
   }
 }

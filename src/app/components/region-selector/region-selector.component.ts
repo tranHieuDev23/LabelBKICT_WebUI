@@ -1,32 +1,23 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  HostListener,
-  Input,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Region } from 'src/app/services/dataaccess/api';
 import { GeometryService } from './geometry/geometry.service';
 import { RegionSelectorGeometryService } from './geometry/region-selector-geometry.service';
 import { CanvasGraphicService } from './graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from './graphic/region-selector-graphic.service';
-import { Coordinate } from './models';
+import { Coordinate, FreePolygon } from './models';
 import { RegionSelectorContent } from './region-selector-content';
-import {
-  RegionClickedEvent,
-  RegionEditedEvent,
-  RegionSelectedEvent,
-} from './region-selector-events';
+import { RegionClickedEvent, RegionEditedEvent, RegionSelectedEvent } from './region-selector-events';
 import { RegionSelectorSnapshot } from './snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from './snapshot/region-selector-snapshot.service';
 import {
   DefaultState,
-  DrawState,
+  FreePolygonDrawState,
+  CircleDrawState,
+  DeleteState,
   RegionSelectorState,
   SelectedState,
+  RectangleDrawState,
+  EditState,
 } from './states';
 
 const VERTICES_MAX_DISTANCE = 1e-2;
@@ -43,9 +34,7 @@ const SCROLL_ZOOM_RATE = 0.025;
   styleUrls: ['./region-selector.component.scss'],
 })
 export class RegionSelectorComponent implements OnInit {
-  @ViewChild('canvas', { static: true }) canvas:
-    | ElementRef<HTMLCanvasElement>
-    | undefined;
+  @ViewChild('canvas', { static: true }) canvas: ElementRef<HTMLCanvasElement> | undefined;
 
   private state: RegionSelectorState;
 
@@ -92,7 +81,7 @@ export class RegionSelectorComponent implements OnInit {
   private isCtrlDown = false;
   private lastTranslateMousePos: Coordinate | null = null;
   private mouseOverRegionID: number | null = null;
-  private isMouseOverDrawnPolygonList = false;
+  private isMouseOverDrawnShapeList = false;
 
   constructor(
     private readonly snapshotService: RegionSelectorSnapshotService,
@@ -107,9 +96,7 @@ export class RegionSelectorComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.canvas) {
-      this.canvasGraphicService.resizeCanvasMatchParent(
-        this.canvas.nativeElement
-      );
+      this.canvasGraphicService.resizeCanvasMatchParent(this.canvas.nativeElement);
     }
   }
 
@@ -127,7 +114,7 @@ export class RegionSelectorComponent implements OnInit {
   private getDefaultRegionSelectorContent(): RegionSelectorContent {
     return {
       cursorImagePosition: { x: 0, y: 0 },
-      drawnPolygonList: [],
+      drawnShapeList: [],
       image: null,
       imageOrigin: { x: 0, y: 0 },
       isRegionListVisible: true,
@@ -171,10 +158,7 @@ export class RegionSelectorComponent implements OnInit {
 
     const canvasElement = this.canvas.nativeElement;
     if (this.isCtrlDown) {
-      const mousePos =
-        this.regionSelectorGeometryService.getMousePositionFromMouseEvent(
-          event
-        );
+      const mousePos = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
       this.lastTranslateMousePos = mousePos;
       return;
     }
@@ -196,29 +180,20 @@ export class RegionSelectorComponent implements OnInit {
 
     const canvasElement = this.canvas.nativeElement;
     if (this.lastTranslateMousePos && this.isMouseDown) {
-      const mousePos =
-        this.regionSelectorGeometryService.getMousePositionFromMouseEvent(
-          event
-        );
-      const mouseImagePos =
-        this.regionSelectorGeometryService.mouseToImagePosition(
-          canvasElement,
-          this.state.content,
-          mousePos
-        );
-      const lastTranslateImagePos =
-        this.regionSelectorGeometryService.mouseToImagePosition(
-          canvasElement,
-          this.state.content,
-          this.lastTranslateMousePos
-        );
+      const mousePos = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+      const mouseImagePos = this.regionSelectorGeometryService.mouseToImagePosition(
+        canvasElement,
+        this.state.content,
+        mousePos
+      );
+      const lastTranslateImagePos = this.regionSelectorGeometryService.mouseToImagePosition(
+        canvasElement,
+        this.state.content,
+        this.lastTranslateMousePos
+      );
       const newImageOrigin = {
-        x:
-          this.state.content.imageOrigin.x -
-          (mouseImagePos.x - lastTranslateImagePos.x),
-        y:
-          this.state.content.imageOrigin.y -
-          (mouseImagePos.y - lastTranslateImagePos.y),
+        x: this.state.content.imageOrigin.x - (mouseImagePos.x - lastTranslateImagePos.x),
+        y: this.state.content.imageOrigin.y - (mouseImagePos.y - lastTranslateImagePos.y),
       };
       this.state.content.imageOrigin = newImageOrigin;
       this.lastTranslateMousePos = mousePos;
@@ -227,11 +202,7 @@ export class RegionSelectorComponent implements OnInit {
     }
 
     if (this.editable) {
-      this.state = this.state.onMouseMove(
-        canvasElement,
-        event,
-        this.isMouseDown
-      );
+      this.state = this.state.onMouseMove(canvasElement, event, this.isMouseDown);
       this.onDraw();
       return;
     }
@@ -288,12 +259,8 @@ export class RegionSelectorComponent implements OnInit {
 
   public setZoomLevel(zoom: number, staticImagePos: Coordinate): void {
     const zoomDifference = zoom / this.state.content.zoom;
-    const newImageOriginX =
-      staticImagePos.x +
-      (this.state.content.imageOrigin.x - staticImagePos.x) / zoomDifference;
-    const newImageOriginY =
-      staticImagePos.y +
-      (this.state.content.imageOrigin.y - staticImagePos.y) / zoomDifference;
+    const newImageOriginX = staticImagePos.x + (this.state.content.imageOrigin.x - staticImagePos.x) / zoomDifference;
+    const newImageOriginY = staticImagePos.y + (this.state.content.imageOrigin.y - staticImagePos.y) / zoomDifference;
     const newImageOrigin = { x: newImageOriginX, y: newImageOriginY };
     this.state.content.zoom = zoom;
     this.state.content.imageOrigin = newImageOrigin;
@@ -318,12 +285,11 @@ export class RegionSelectorComponent implements OnInit {
     if (!this.canvas || !this.state.content.image) {
       return;
     }
-    const canvasCenterImagePos =
-      this.regionSelectorGeometryService.canvasToImagePosition(
-        this.canvas.nativeElement,
-        this.state.content,
-        { x: 0.5, y: 0.5 }
-      );
+    const canvasCenterImagePos = this.regionSelectorGeometryService.canvasToImagePosition(
+      this.canvas.nativeElement,
+      this.state.content,
+      { x: 0.5, y: 0.5 }
+    );
     this.state.content.imageOrigin = {
       x: this.state.content.imageOrigin.x + (0.5 - canvasCenterImagePos.x),
       y: this.state.content.imageOrigin.y + (0.5 - canvasCenterImagePos.y),
@@ -335,43 +301,128 @@ export class RegionSelectorComponent implements OnInit {
     return this.state instanceof DefaultState;
   }
 
-  public isInDrawState(): boolean {
-    return this.state instanceof DrawState;
+  public isEditing(): boolean {
+    return this.state instanceof EditState;
+  }
+
+  public isInFreePolygonDrawState(): boolean {
+    return this.state instanceof FreePolygonDrawState;
+  }
+
+  public onFreePolygonDrawStateClicked(): void {
+    if (this.isInFreePolygonDrawState()) {
+      return;
+    }
+    if (this.snapshotService.snapshotSize() === 0) {
+      this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
+    }
+    const regionIDToEdit = this.state instanceof EditState ? this.state.regionIDToEdit : null;
+    this.state = new FreePolygonDrawState(
+      this.state.content,
+      regionIDToEdit,
+      null,
+      this.snapshotService,
+      this.regionSelectorGeometryService,
+      this.geometryService,
+      this.regionSelectorGraphicService,
+      this.canvasGraphicService
+    );
+    this.onDraw();
+  }
+
+  public isInCircleDrawState(): boolean {
+    return this.state instanceof CircleDrawState;
+  }
+
+  public onCircleDrawStateClicked(): void {
+    if (this.isInCircleDrawState()) {
+      return;
+    }
+    if (this.snapshotService.snapshotSize() === 0) {
+      this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
+    }
+    const regionIDToEdit = this.state instanceof EditState ? this.state.regionIDToEdit : null;
+    this.state = new CircleDrawState(
+      this.state.content,
+      regionIDToEdit,
+      null,
+      null,
+      this.snapshotService,
+      this.regionSelectorGeometryService,
+      this.geometryService,
+      this.regionSelectorGraphicService,
+      this.canvasGraphicService
+    );
+    this.onDraw();
+  }
+
+  public isInRectangleDrawState(): boolean {
+    return this.state instanceof RectangleDrawState;
+  }
+
+  public onRectangleDrawStateClicked(): void {
+    if (this.isInRectangleDrawState()) {
+      return;
+    }
+    if (this.snapshotService.snapshotSize() === 0) {
+      this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
+    }
+    const regionIDToEdit = this.state instanceof EditState ? this.state.regionIDToEdit : null;
+    this.state = new RectangleDrawState(
+      this.state.content,
+      regionIDToEdit,
+      null,
+      null,
+      this.snapshotService,
+      this.regionSelectorGeometryService,
+      this.geometryService,
+      this.regionSelectorGraphicService,
+      this.canvasGraphicService
+    );
+    this.onDraw();
+  }
+
+  public isInDeleteState(): boolean {
+    return this.state instanceof DeleteState;
+  }
+
+  public onDeleteStateClicked(): void {
+    if (this.isInDeleteState()) {
+      return;
+    }
+    const regionIDToEdit = this.state instanceof EditState ? this.state.regionIDToEdit : null;
+    this.state = new DeleteState(
+      this.state.content,
+      regionIDToEdit,
+      this.snapshotService,
+      this.regionSelectorGeometryService,
+      this.geometryService,
+      this.regionSelectorGraphicService,
+      this.canvasGraphicService
+    );
+    this.onDraw();
   }
 
   public isInSelectedState(): boolean {
     return this.state instanceof SelectedState;
   }
 
-  public isInAddingVertexDrawState(): boolean {
-    if (!(this.state instanceof DrawState)) {
-      return false;
-    }
-    return this.state.isAddingVertex;
-  }
-
   public editSelectedRegion(): void {
     if (!this.isInSelectedState()) {
       return;
     }
-    const drawnPolygonList = this.state.content.drawnPolygonList;
-    const densifiedDrawnPolygonList = drawnPolygonList.map((polygon) => {
-      return this.geometryService.densifyPolygon(
-        polygon,
-        VERTICES_MAX_DISTANCE
-      );
+    const drawnShapeList = this.state.content.drawnShapeList;
+    const densifiedDrawnShapeList = drawnShapeList.map((polygon) => {
+      return this.geometryService.densifyShape(polygon, VERTICES_MAX_DISTANCE);
     });
 
     this.snapshotService.clear();
-    this.snapshotService.storeSnapshot(
-      new RegionSelectorSnapshot(densifiedDrawnPolygonList)
-    );
+    this.snapshotService.storeSnapshot(new RegionSelectorSnapshot(densifiedDrawnShapeList));
 
     const newContent = { ...this.state.content };
-    newContent.drawnPolygonList = densifiedDrawnPolygonList;
-    this.state = new DrawState(
+    newContent.drawnShapeList = densifiedDrawnShapeList;
+    this.state = new FreePolygonDrawState(
       newContent,
-      true,
       null,
       null,
       this.snapshotService,
@@ -390,22 +441,19 @@ export class RegionSelectorComponent implements OnInit {
 
     const region = this.state.content.regionList[regionID];
     const densifiedDrawnPolygonList = [
-      this.geometryService.densifyPolygon(region.border, VERTICES_MAX_DISTANCE),
+      this.geometryService.densifyShape(new FreePolygon(region.border.vertices), VERTICES_MAX_DISTANCE),
       ...region.holes.map((hole) => {
-        return this.geometryService.densifyPolygon(hole, VERTICES_MAX_DISTANCE);
+        return this.geometryService.densifyShape(new FreePolygon(hole.vertices), VERTICES_MAX_DISTANCE);
       }),
     ];
 
     this.snapshotService.clear();
-    this.snapshotService.storeSnapshot(
-      new RegionSelectorSnapshot(densifiedDrawnPolygonList)
-    );
+    this.snapshotService.storeSnapshot(new RegionSelectorSnapshot(densifiedDrawnPolygonList));
 
     const newContent = { ...this.state.content };
-    newContent.drawnPolygonList = densifiedDrawnPolygonList;
-    this.state = new DrawState(
+    newContent.drawnShapeList = densifiedDrawnPolygonList;
+    this.state = new FreePolygonDrawState(
       newContent,
-      true,
       regionID,
       null,
       this.snapshotService,
@@ -417,52 +465,34 @@ export class RegionSelectorComponent implements OnInit {
     this.onDraw();
   }
 
-  public toggleDrawDelete(isDrawing: boolean): void {
-    if (
-      !this.isInDrawState() ||
-      this.isInAddingVertexDrawState() === isDrawing
-    ) {
-      return;
-    }
-    const drawState = this.state as DrawState;
-    this.state = new DrawState(
-      drawState.content,
-      isDrawing,
-      drawState.regionIDToEdit,
-      null,
-      this.snapshotService,
-      this.regionSelectorGeometryService,
-      this.geometryService,
-      this.regionSelectorGraphicService,
-      this.canvasGraphicService
-    );
-    this.onDraw();
-  }
-
   public finishDrawing(): void {
-    if (!this.isInDrawState()) {
+    if (!this.isEditing()) {
       return;
     }
 
-    const drawState = this.state as DrawState;
+    const drawState = this.state as FreePolygonDrawState;
     const content = drawState.content;
-    const drawnPolygonList = content.drawnPolygonList;
-    if (drawnPolygonList.length === 0) {
+    const drawnShapeList = content.drawnShapeList;
+    if (drawnShapeList.length === 0) {
       this.cancelDrawing();
       return;
     }
 
-    const sortedDrawnPolygonList = [...drawnPolygonList].sort((a, b) => {
-      return this.geometryService.getArea(b) - this.geometryService.getArea(a);
+    const sortedDrawnShapeList = [...drawnShapeList].sort((a, b) => {
+      console.log(a, b, a.getArea(), b.getArea());
+      return b.getArea() - a.getArea();
     });
-    const border = sortedDrawnPolygonList[0];
-    const holes = sortedDrawnPolygonList.slice(1);
+    console.log(sortedDrawnShapeList);
+    const border = sortedDrawnShapeList[0];
+    const holes = sortedDrawnShapeList.slice(1);
 
-    const { border: normalizedBorder, holes: normalizedHoles } =
-      this.geometryService.normalizeRegionWithHoles(border, holes);
+    const { border: normalizedBorder, holeList: normalizedHoleList } = this.geometryService.normalizeRegionWithHoles(
+      border,
+      holes
+    );
 
     const newContent = { ...content };
-    newContent.drawnPolygonList = [normalizedBorder, ...normalizedHoles];
+    newContent.drawnShapeList = [normalizedBorder, ...normalizedHoleList];
     this.state = new SelectedState(
       newContent,
       this.regionSelectorGeometryService,
@@ -472,23 +502,15 @@ export class RegionSelectorComponent implements OnInit {
     this.onDraw();
 
     if (drawState.regionIDToEdit === null) {
-      this.regionSelected.emit(
-        new RegionSelectedEvent(normalizedBorder, normalizedHoles)
-      );
+      this.regionSelected.emit(new RegionSelectedEvent(normalizedBorder, normalizedHoleList));
     } else {
-      this.regionEdited.emit(
-        new RegionEditedEvent(
-          drawState.regionIDToEdit,
-          normalizedBorder,
-          normalizedHoles
-        )
-      );
+      this.regionEdited.emit(new RegionEditedEvent(drawState.regionIDToEdit, normalizedBorder, normalizedHoleList));
     }
   }
 
   public cancelDrawing(): void {
     const newContent = { ...this.state.content };
-    newContent.drawnPolygonList = [];
+    newContent.drawnShapeList = [];
     this.state = new DefaultState(
       newContent,
       this.snapshotService,
@@ -502,11 +524,11 @@ export class RegionSelectorComponent implements OnInit {
   }
 
   public canUndo(): boolean {
-    return this.isInDrawState() && this.snapshotService.canUndo();
+    return this.isEditing() && this.snapshotService.canUndo();
   }
 
   public canRedo(): boolean {
-    return this.isInDrawState() && this.snapshotService.canRedo();
+    return this.isEditing() && this.snapshotService.canRedo();
   }
 
   public undo(): void {
@@ -528,26 +550,14 @@ export class RegionSelectorComponent implements OnInit {
       return;
     }
     event.preventDefault();
-    if (this.mouseOverRegionID !== null || this.isMouseOverDrawnPolygonList) {
-      this.regionDbClicked.emit(
-        new RegionClickedEvent(
-          this.isMouseOverDrawnPolygonList,
-          this.mouseOverRegionID,
-          event
-        )
-      );
+    if (this.mouseOverRegionID !== null || this.isMouseOverDrawnShapeList) {
+      this.regionDbClicked.emit(new RegionClickedEvent(this.isMouseOverDrawnShapeList, this.mouseOverRegionID, event));
     }
   }
 
   public handleContextMenu(event: MouseEvent): boolean {
     event.preventDefault();
-    this.contextMenu.emit(
-      new RegionClickedEvent(
-        this.isMouseOverDrawnPolygonList,
-        this.mouseOverRegionID,
-        event
-      )
-    );
+    this.contextMenu.emit(new RegionClickedEvent(this.isMouseOverDrawnShapeList, this.mouseOverRegionID, event));
     return false;
   }
 
@@ -558,26 +568,22 @@ export class RegionSelectorComponent implements OnInit {
     event.preventDefault();
 
     const currentZoom = this.state.content.zoom;
-    let newZoom =
-      currentZoom *
-      Math.pow(ZOOM_LEVEL_CHANGE, event.deltaY * SCROLL_ZOOM_RATE);
+    let newZoom = currentZoom * Math.pow(ZOOM_LEVEL_CHANGE, event.deltaY * SCROLL_ZOOM_RATE);
     newZoom = Math.min(newZoom, MAX_ZOOM_LEVEL);
     newZoom = Math.max(newZoom, MIN_ZOOM_LEVEL);
 
-    const mousePos =
-      this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
-    const mouseImagePos =
-      this.regionSelectorGeometryService.mouseToImagePosition(
-        this.canvas.nativeElement,
-        this.state.content,
-        mousePos
-      );
+    const mousePos = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+    const mouseImagePos = this.regionSelectorGeometryService.mouseToImagePosition(
+      this.canvas.nativeElement,
+      this.state.content,
+      mousePos
+    );
 
     this.setZoomLevel(newZoom, mouseImagePos);
   }
 
   private loadSnapshot(snapshot: RegionSelectorSnapshot): void {
-    this.state.content.drawnPolygonList = snapshot.drawnRegionList;
+    this.state.content.drawnShapeList = snapshot.drawnShapeList;
     this.onDraw();
   }
 
@@ -586,24 +592,22 @@ export class RegionSelectorComponent implements OnInit {
       return;
     }
 
-    const mousePos =
-      this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
-    const mouseImagePos =
-      this.regionSelectorGeometryService.mouseToImagePosition(
-        this.canvas.nativeElement,
-        this.state.content,
-        mousePos
-      );
+    const mousePos = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+    const mouseImagePos = this.regionSelectorGeometryService.mouseToImagePosition(
+      this.canvas.nativeElement,
+      this.state.content,
+      mousePos
+    );
 
     // Prioritize drawn polygon list first
-    const drawnPolygonList = this.state.content.drawnPolygonList;
+    const drawnShapeList = this.state.content.drawnShapeList;
     const isInsideDrawnPolygon =
-      drawnPolygonList.findIndex((polygon) => {
-        return this.geometryService.isPointInPolygon(mouseImagePos, polygon);
+      drawnShapeList.findIndex((polygon) => {
+        return polygon.isPointInside(mouseImagePos);
       }) !== -1;
     if (isInsideDrawnPolygon) {
       this.mouseOverRegionID = null;
-      this.isMouseOverDrawnPolygonList = true;
+      this.isMouseOverDrawnShapeList = true;
       return;
     }
 
@@ -613,26 +617,25 @@ export class RegionSelectorComponent implements OnInit {
     let insideRegionArea = Infinity;
     for (let i = 0; i < regionList.length; i++) {
       const region = regionList[i];
-      if (
-        !this.geometryService.isPointInPolygon(mouseImagePos, region.border)
-      ) {
+      const regionPolygon = new FreePolygon(region.border.vertices);
+      if (!regionPolygon.isPointInside(mouseImagePos)) {
         continue;
       }
-      const regionArea = this.geometryService.getArea(region.border);
-      if (regionArea < insideRegionArea) {
+      const regionArea = regionPolygon.getArea();
+      if (regionPolygon.getArea() < insideRegionArea) {
         insideRegionID = i;
         insideRegionArea = regionArea;
       }
     }
     if (insideRegionID >= 0) {
       this.mouseOverRegionID = insideRegionID;
-      this.isMouseOverDrawnPolygonList = false;
+      this.isMouseOverDrawnShapeList = false;
       return;
     }
 
     // Mouse is not inside anything
     this.mouseOverRegionID = null;
-    this.isMouseOverDrawnPolygonList = false;
+    this.isMouseOverDrawnShapeList = false;
   }
 
   private onDraw(): void {
@@ -648,11 +651,7 @@ export class RegionSelectorComponent implements OnInit {
         return;
       }
 
-      if (
-        this.mouseOverRegionID !== null &&
-        !this.isInDrawState() &&
-        this.isRegionListVisible()
-      ) {
+      if (this.mouseOverRegionID !== null && !this.isEditing() && this.isRegionListVisible()) {
         this.regionSelectorGraphicService.drawRegionLabel(
           canvasElement,
           ctx,

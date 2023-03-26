@@ -2,11 +2,7 @@ import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
 import qs from 'qs';
-import {
-  UnauthenticatedError,
-  UnauthorizedError,
-  UnknownAPIError,
-} from './errors';
+import { UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
 import {
   User,
   UserCanManageUserImage,
@@ -115,11 +111,7 @@ export class UserNotInListError extends Error {
 export class UsersService {
   constructor(private readonly axios: Axios) {}
 
-  public async createUser(
-    username: string,
-    displayName: string,
-    password: string
-  ): Promise<User> {
+  public async createUser(username: string, displayName: string, password: string): Promise<User> {
     try {
       const response = await this.axios.post('/api/users', {
         username: username,
@@ -156,8 +148,7 @@ export class UsersService {
     userTagList: UserTag[][] | undefined;
   }> {
     try {
-      const filterOptionsQueryParams =
-        this.getQueryParamsFromFilterOptions(filterOptions);
+      const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
       const response = await this.axios.get('/api/users', {
         params: {
           offset: offset,
@@ -176,14 +167,10 @@ export class UsersService {
       const userList = response.data.user_list.map(User.fromJSON);
 
       const userTagJSONList = response.data.user_tag_list as any[];
-      const userTagList = userTagJSONList.map((list) =>
-        list.map(UserTag.fromJSON)
-      );
+      const userTagList = userTagJSONList.map((list) => list.map(UserTag.fromJSON));
 
       const userRoleJSONList = response.data.user_role_list as any[];
-      const userRoleList = userRoleJSONList.map((list) =>
-        list.map(UserRole.fromJSON)
-      );
+      const userRoleList = userRoleJSONList.map((list) => list.map(UserRole.fromJSON));
       return {
         totalUserCount,
         userList,
@@ -263,10 +250,7 @@ export class UsersService {
     }
   }
 
-  public async addUserRoleToUser(
-    userID: number,
-    userRoleID: number
-  ): Promise<void> {
+  public async addUserRoleToUser(userID: number, userRoleID: number): Promise<void> {
     try {
       await this.axios.post(`/api/users/${userID}/roles`, {
         user_role_id: userRoleID,
@@ -290,10 +274,7 @@ export class UsersService {
     }
   }
 
-  public async removeUserRoleFromUser(
-    userID: number,
-    userRoleID: number
-  ): Promise<void> {
+  public async removeUserRoleFromUser(userID: number, userRoleID: number): Promise<void> {
     try {
       await this.axios.delete(`/api/users/${userID}/roles/${userRoleID}`);
     } catch (e) {
@@ -315,10 +296,7 @@ export class UsersService {
     }
   }
 
-  public async addUserTagToUser(
-    userID: number,
-    userTagID: number | undefined
-  ): Promise<void> {
+  public async addUserTagToUser(userID: number, userTagID: number | undefined): Promise<void> {
     try {
       await this.axios.post(`/api/users/${userID}/tags`, {
         user_tag_id: userTagID,
@@ -342,10 +320,7 @@ export class UsersService {
     }
   }
 
-  public async removeUserTagFromUser(
-    userID: number,
-    userTagID: number
-  ): Promise<void> {
+  public async removeUserTagFromUser(userID: number, userTagID: number): Promise<void> {
     try {
       await this.axios.delete(`/api/users/${userID}/tags/${userTagID}`);
     } catch (e) {
@@ -373,13 +348,11 @@ export class UsersService {
     canEdit: boolean
   ): Promise<UserCanManageUserImage> {
     try {
-      const response = await this.axios.post(
-        `/api/users/${userID}/manageable-image-users`,
-        { image_of_user_id: imageOfUserID, can_edit: canEdit }
-      );
-      return UserCanManageUserImage.fromJSON(
-        response.data.user_can_manage_user_image
-      );
+      const response = await this.axios.post(`/api/users/${userID}/manageable-image-users`, {
+        image_of_user_id: imageOfUserID,
+        can_edit: canEdit,
+      });
+      return UserCanManageUserImage.fromJSON(response.data.user_can_manage_user_image);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -407,14 +380,11 @@ export class UsersService {
     limit: number
   ): Promise<{ totalUserCount: number; userList: UserCanManageUserImage[] }> {
     try {
-      const response = await this.axios.get(
-        `/api/users/${userID}/manageable-image-users`,
-        { params: { offset, limit } }
-      );
+      const response = await this.axios.get(`/api/users/${userID}/manageable-image-users`, {
+        params: { offset, limit },
+      });
       const totalUserCount = +response.data.total_user_count;
-      const userList = response.data.user_list.map(
-        UserCanManageUserImage.fromJSON
-      );
+      const userList = response.data.user_list.map(UserCanManageUserImage.fromJSON);
       return { totalUserCount, userList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -441,13 +411,10 @@ export class UsersService {
     canEdit: boolean | undefined
   ): Promise<UserCanManageUserImage> {
     try {
-      const response = await this.axios.patch(
-        `/api/users/${userID}/manageable-image-users/${imageOfUserID}`,
-        { can_edit: canEdit }
-      );
-      return UserCanManageUserImage.fromJSON(
-        response.data.user_can_manage_user_image
-      );
+      const response = await this.axios.patch(`/api/users/${userID}/manageable-image-users/${imageOfUserID}`, {
+        can_edit: canEdit,
+      });
+      return UserCanManageUserImage.fromJSON(response.data.user_can_manage_user_image);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -467,14 +434,9 @@ export class UsersService {
     }
   }
 
-  public async deleteUserCanManageUserImage(
-    userID: number,
-    imageOfUserID: number
-  ): Promise<void> {
+  public async deleteUserCanManageUserImage(userID: number, imageOfUserID: number): Promise<void> {
     try {
-      await this.axios.delete(
-        `/api/users/${userID}/manageable-image-users/${imageOfUserID}`
-      );
+      await this.axios.delete(`/api/users/${userID}/manageable-image-users/${imageOfUserID}`);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -494,18 +456,12 @@ export class UsersService {
     }
   }
 
-  public async createUserCanVerifyUserImage(
-    userID: number,
-    imageOfUserID: number
-  ): Promise<UserCanVerifyUserImage> {
+  public async createUserCanVerifyUserImage(userID: number, imageOfUserID: number): Promise<UserCanVerifyUserImage> {
     try {
-      const response = await this.axios.post(
-        `/api/users/${userID}/verifiable-image-users`,
-        { image_of_user_id: imageOfUserID }
-      );
-      return UserCanVerifyUserImage.fromJSON(
-        response.data.user_can_verify_user_image
-      );
+      const response = await this.axios.post(`/api/users/${userID}/verifiable-image-users`, {
+        image_of_user_id: imageOfUserID,
+      });
+      return UserCanVerifyUserImage.fromJSON(response.data.user_can_verify_user_image);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -533,14 +489,11 @@ export class UsersService {
     limit: number
   ): Promise<{ totalUserCount: number; userList: UserCanVerifyUserImage[] }> {
     try {
-      const response = await this.axios.get(
-        `/api/users/${userID}/verifiable-image-users`,
-        { params: { offset, limit } }
-      );
+      const response = await this.axios.get(`/api/users/${userID}/verifiable-image-users`, {
+        params: { offset, limit },
+      });
       const totalUserCount = +response.data.total_user_count;
-      const userList = response.data.user_list.map(
-        UserCanVerifyUserImage.fromJSON
-      );
+      const userList = response.data.user_list.map(UserCanVerifyUserImage.fromJSON);
       return { totalUserCount, userList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -561,14 +514,9 @@ export class UsersService {
     }
   }
 
-  public async deleteUserCanVerifyUserImage(
-    userID: number,
-    imageOfUserID: number
-  ): Promise<void> {
+  public async deleteUserCanVerifyUserImage(userID: number, imageOfUserID: number): Promise<void> {
     try {
-      await this.axios.delete(
-        `/api/users/${userID}/verifiable-image-users/${imageOfUserID}`
-      );
+      await this.axios.delete(`/api/users/${userID}/verifiable-image-users/${imageOfUserID}`);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -588,9 +536,7 @@ export class UsersService {
     }
   }
 
-  private getQueryParamsFromFilterOptions(
-    filterOptions: UserListFilterOptions
-  ): any {
+  private getQueryParamsFromFilterOptions(filterOptions: UserListFilterOptions): any {
     return {
       username_query: filterOptions.usernameQuery,
       filter_user_tags: filterOptions.userTagList,

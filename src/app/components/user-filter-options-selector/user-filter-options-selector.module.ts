@@ -9,14 +9,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 
 @NgModule({
   declarations: [UserFilterOptionsSelectorComponent],
-  imports: [
-    CommonModule,
-    FormsModule,
-    NzGridModule,
-    NzSelectModule,
-    NzTypographyModule,
-    NzInputModule,
-  ],
+  imports: [CommonModule, FormsModule, NzGridModule, NzSelectModule, NzTypographyModule, NzInputModule],
   exports: [UserFilterOptionsSelectorComponent],
 })
 export class UserFilterOptionsSelectorModule {}

@@ -8,9 +8,8 @@ describe('ImageGridComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ImageGridComponent ]
-    })
-    .compileComponents();
+      declarations: [ImageGridComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

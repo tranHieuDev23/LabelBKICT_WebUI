@@ -39,9 +39,7 @@ export class ImageUploadComponent {
   };
 
   public onRemove = (removedFile: NzUploadFile): boolean => {
-    this.nzFileList = this.nzFileList.filter(
-      (file) => file.uid !== removedFile.uid
-    );
+    this.nzFileList = this.nzFileList.filter((file) => file.uid !== removedFile.uid);
     return true;
   };
 
@@ -73,21 +71,14 @@ export class ImageUploadComponent {
     }
 
     try {
-      const {
-        imageTagGroupList,
-        imageTagList: imageTagListOfImageTagGroupList,
-      } = await this.imageTypeManagementService.getImageTagGroupListOfImageType(
-        imageType.id
-      );
+      const { imageTagGroupList, imageTagList: imageTagListOfImageTagGroupList } =
+        await this.imageTypeManagementService.getImageTagGroupListOfImageType(imageType.id);
       this.allowedImageTagGroupListForImageType = imageTagGroupList;
       this.allowedImageTagListForImageType = imageTagListOfImageTagGroupList;
       this.imageTagListForUploadedImage = [];
     } catch (e) {
       if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to get allowed image tag list for image type',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to get allowed image tag list for image type', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
         this.notificationService.error(
@@ -96,10 +87,7 @@ export class ImageUploadComponent {
         );
         this.router.navigateByUrl('/welcome');
       } else {
-        this.notificationService.error(
-          'Failed to get allowed image tag list for image type',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to get allowed image tag list for image type', 'Unknown error');
         this.router.navigateByUrl('/welcome');
       }
     }
@@ -113,17 +101,13 @@ export class ImageUploadComponent {
   }
 
   public onImageTagForUploadedImageAdded(addedImageTag: ImageTag): void {
-    this.imageTagListForUploadedImage = [
-      ...this.imageTagListForUploadedImage,
-      addedImageTag,
-    ];
+    this.imageTagListForUploadedImage = [...this.imageTagListForUploadedImage, addedImageTag];
   }
 
   public onImageTagForUploadedImageDeleted(deletedImageTag: ImageTag): void {
-    this.imageTagListForUploadedImage =
-      this.imageTagListForUploadedImage.filter(
-        (imageTag) => imageTag.id !== deletedImageTag.id
-      );
+    this.imageTagListForUploadedImage = this.imageTagListForUploadedImage.filter(
+      (imageTag) => imageTag.id !== deletedImageTag.id
+    );
   }
 
   public onDescriptionFileForUploadedImageSelected(event: Event): void {
@@ -151,30 +135,15 @@ export class ImageUploadComponent {
     }
     this.nzFileList = [...this.nzFileList];
 
-    const imageTypeID =
-      this.imageTypeForUploadedImage === null
-        ? null
-        : this.imageTypeForUploadedImage.id;
-    const imageTagIDList = this.imageTagListForUploadedImage.map(
-      (imageTag) => imageTag.id
-    );
+    const imageTypeID = this.imageTypeForUploadedImage === null ? null : this.imageTypeForUploadedImage.id;
+    const imageTagIDList = this.imageTagListForUploadedImage.map((imageTag) => imageTag.id);
 
     this.imageManagementService
-      .createImageBatch(
-        imageFileList,
-        imageTypeID,
-        imageTagIDList,
-        this.descriptionFileForUploadedImage
-      )
-      .subscribe((message) =>
-        this.handleUploadImageBatchMessage(imageFileList, message)
-      );
+      .createImageBatch(imageFileList, imageTypeID, imageTagIDList, this.descriptionFileForUploadedImage)
+      .subscribe((message) => this.handleUploadImageBatchMessage(imageFileList, message));
   }
 
-  private handleUploadImageBatchMessage(
-    imageFileList: NzUploadFile[],
-    message: UploadImageBatchMessage
-  ): void {
+  private handleUploadImageBatchMessage(imageFileList: NzUploadFile[], message: UploadImageBatchMessage): void {
     switch (message.type) {
       case UploadImageBatchMessageType.UPLOAD_SUCCESS:
         const successIndex: number = message.data;

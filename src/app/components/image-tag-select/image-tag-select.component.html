@@ -1,14 +1,31 @@
-<nz-tag *ngIf="!isAddImageTagSelectVisible" class="new-image-tag" nzNoAnimation (click)="showAddImageTagInput()">
-    <i nz-icon nzType="plus"></i> New image tag
+<nz-tag
+  *ngIf="!isAddImageTagSelectVisible"
+  class="new-image-tag"
+  nzNoAnimation
+  (click)="showAddImageTagInput()"
+>
+  <i nz-icon nzType="plus"></i> New image tag
 </nz-tag>
-<nz-select *ngIf="isAddImageTagSelectVisible" class="image-tag-select" nzSize="small" nzPlaceholder="Type to search"
-    [(ngModel)]="selectedImageTag" (ngModelChange)="onAddImageTag($event)">
-    <ng-template ngFor let-index [ngForOf]="allowedImageTagGroupIndexList">
-        <nz-option nzDisabled="true" nzCustomContent="true">
-            <span nz-typography nzType="secondary">{{ allImageTagGroupList[index].displayName }}</span>
-        </nz-option>
-        <nz-option *ngFor="let imageTag of allImageTagList[index]" [nzValue]="imageTag" [nzLabel]="imageTag.displayName"
-            [nzHide]="isImageTagInImageTagList(imageTag)">
-        </nz-option>
-    </ng-template>
+<nz-select
+  *ngIf="isAddImageTagSelectVisible"
+  class="image-tag-select"
+  nzSize="small"
+  nzPlaceholder="Type to search"
+  [(ngModel)]="selectedImageTag"
+  (ngModelChange)="onAddImageTag($event)"
+>
+  <ng-template ngFor let-index [ngForOf]="allowedImageTagGroupIndexList">
+    <nz-option nzDisabled="true" nzCustomContent="true">
+      <span nz-typography nzType="secondary">{{
+        allImageTagGroupList[index].displayName
+      }}</span>
+    </nz-option>
+    <nz-option
+      *ngFor="let imageTag of allImageTagList[index]"
+      [nzValue]="imageTag"
+      [nzLabel]="imageTag.displayName"
+      [nzHide]="isImageTagInImageTagList(imageTag)"
+    >
+    </nz-option>
+  </ng-template>
 </nz-select>

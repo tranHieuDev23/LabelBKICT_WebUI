@@ -16,9 +16,7 @@ export class Region {
     return new Region(
       regionJSON.id || 0,
       regionJSON.drawn_by_user ? User.fromJSON(regionJSON.drawn_by_user) : null,
-      regionJSON.labeled_by_user
-        ? User.fromJSON(regionJSON.labeled_by_user)
-        : null,
+      regionJSON.labeled_by_user ? User.fromJSON(regionJSON.labeled_by_user) : null,
       Polygon.fromJSON(regionJSON.border),
       (regionJSON.holes || []).map(Polygon.fromJSON),
       regionJSON.label ? RegionLabel.fromJSON(regionJSON.label) : null

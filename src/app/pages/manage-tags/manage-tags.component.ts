@@ -1,11 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  UntypedFormGroup,
-  UntypedFormBuilder,
-  Validators,
-  ValidatorFn,
-  AbstractControl,
-} from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
@@ -132,43 +126,27 @@ export class ManageTagsComponent implements OnInit {
   }
 
   private async loadPageUserTagList(): Promise<void> {
-    const offset = this.paginationService.getPageOffset(
-      this.pageIndex,
-      this.pageSize
-    );
+    const offset = this.paginationService.getPageOffset(this.pageIndex, this.pageSize);
     try {
-      const { totalUserTagCount, userTagList } =
-        await this.userTagManagementService.getUserTagList(
-          offset,
-          this.pageSize,
-          this.sortOrder
-        );
+      const { totalUserTagCount, userTagList } = await this.userTagManagementService.getUserTagList(
+        offset,
+        this.pageSize,
+        this.sortOrder
+      );
       this.totalUserTagCount = totalUserTagCount;
       this.userTagList = userTagList;
     } catch (e) {
       if (e instanceof InvalidUserTagListArgument) {
-        this.notificationService.error(
-          'Failed to retrieve user tag list',
-          'Invalid page arguments'
-        );
+        this.notificationService.error('Failed to retrieve user tag list', 'Invalid page arguments');
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to retrieve user tag list',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to retrieve user tag list', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to retrieve user tag list',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to retrieve user tag list', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else {
-        this.notificationService.error(
-          'Failed to retrieve user tag list',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to retrieve user tag list', 'Unknown error');
       }
     }
   }
@@ -185,11 +163,7 @@ export class ManageTagsComponent implements OnInit {
     this.navigateToPage(this.pageIndex, newPageSize, this.sortOrder);
   }
 
-  private navigateToPage(
-    pageIndex: number,
-    pageSize: number,
-    sortOrder: UserTagListSortOrder
-  ): void {
+  private navigateToPage(pageIndex: number, pageSize: number, sortOrder: UserTagListSortOrder): void {
     this.router.navigate(['/manage-tags'], {
       queryParams: {
         page: pageIndex,
@@ -212,37 +186,21 @@ export class ManageTagsComponent implements OnInit {
   }
 
   public async onCreateNewUserTagModalOk(): Promise<void> {
-    const { displayName, description } =
-      this.createNewUserTagModalFormGroup.value;
+    const { displayName, description } = this.createNewUserTagModalFormGroup.value;
     try {
-      await this.userTagManagementService.createUserTag(
-        displayName,
-        description
-      );
+      await this.userTagManagementService.createUserTag(displayName, description);
     } catch (e) {
       if (e instanceof InvalidUserTagInformationError) {
-        this.notificationService.error(
-          'Failed to create new user tag',
-          'Invalid user tag information'
-        );
+        this.notificationService.error('Failed to create new user tag', 'Invalid user tag information');
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to create new user tag',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to create new user tag', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to create new user tag',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to create new user tag', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else {
-        this.notificationService.error(
-          'Failed to create new user tag',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to create new user tag', 'Unknown error');
       }
       return;
     }
@@ -269,41 +227,22 @@ export class ManageTagsComponent implements OnInit {
   public async onEditUserTagModalSubmitClicked(): Promise<void> {
     const { displayName, description } = this.editUserTagModalFormGroup.value;
     try {
-      await this.userTagManagementService.updateUserTag(
-        this.editUserTagModalUserTagID,
-        displayName,
-        description
-      );
+      await this.userTagManagementService.updateUserTag(this.editUserTagModalUserTagID, displayName, description);
     } catch (e) {
       if (e instanceof InvalidUserTagInformationError) {
-        this.notificationService.error(
-          'Failed to update user tag',
-          'Invalid user tag information'
-        );
+        this.notificationService.error('Failed to update user tag', 'Invalid user tag information');
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update user tag',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to update user tag', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update user tag',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to update user tag', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof UserTagNotFoundError) {
-        this.notificationService.error(
-          'Failed to update user tag',
-          'Cannot find user tag'
-        );
+        this.notificationService.error('Failed to update user tag', 'Cannot find user tag');
         this.router.navigateByUrl('/welcome');
       } else {
-        this.notificationService.error(
-          'Failed to update user tag',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to update user tag', 'Unknown error');
       }
       return;
     }
@@ -321,33 +260,19 @@ export class ManageTagsComponent implements OnInit {
       nzOkDanger: true,
       nzOnOk: async () => {
         try {
-          await this.userTagManagementService.deleteUserTag(
-            this.userTagList[index].id
-          );
+          await this.userTagManagementService.deleteUserTag(this.userTagList[index].id);
         } catch (e) {
           if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to delete user tag',
-              'User is not logged in'
-            );
+            this.notificationService.error('Failed to delete user tag', 'User is not logged in');
             this.router.navigateByUrl('/login');
           } else if (e instanceof UnauthorizedError) {
-            this.notificationService.error(
-              'Failed to delete user tag',
-              "User doesn't have the required permission"
-            );
+            this.notificationService.error('Failed to delete user tag', "User doesn't have the required permission");
             this.router.navigateByUrl('/welcome');
           } else if (e instanceof UserTagNotFoundError) {
-            this.notificationService.error(
-              'Failed to delete user tag',
-              'Cannot find user tag'
-            );
+            this.notificationService.error('Failed to delete user tag', 'Cannot find user tag');
             this.router.navigateByUrl('/welcome');
           } else {
-            this.notificationService.error(
-              'Failed to delete user tag',
-              'Unknown error'
-            );
+            this.notificationService.error('Failed to delete user tag', 'Unknown error');
           }
           return;
         }

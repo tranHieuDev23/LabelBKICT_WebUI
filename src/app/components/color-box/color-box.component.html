@@ -1,9 +1,18 @@
-<button nz-button [style]="{'background': color }" nz-popover [nzPopoverContent]="pickerTemplate"
-    nzPopoverTrigger="click">
-    <i nz-icon nzType="highlight" nzTheme="outline"></i>
+<button
+  nz-button
+  [style]="{ background: color }"
+  nz-popover
+  [nzPopoverContent]="pickerTemplate"
+  nzPopoverTrigger="click"
+>
+  <i nz-icon nzType="highlight" nzTheme="outline"></i>
 </button>
 <ng-template #pickerTemplate>
-    <color-twitter [color]="color" triangle="hide" (onChangeComplete)="onColorChanged($event)"
-        (keydown.enter)="onSubmitColorInput()">
-    </color-twitter>
+  <color-twitter
+    [color]="color"
+    triangle="hide"
+    (onChangeComplete)="onColorChanged($event)"
+    (keydown.enter)="onSubmitColorInput()"
+  >
+  </color-twitter>
 </ng-template>
