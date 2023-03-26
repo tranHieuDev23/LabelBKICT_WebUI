@@ -17,6 +17,7 @@ import {
   RegionSelectorState,
   SelectedState,
   RectangleDrawState,
+  EditState,
 } from './states';
 
 const VERTICES_MAX_DISTANCE = 1e-2;
@@ -300,13 +301,8 @@ export class RegionSelectorComponent implements OnInit {
     return this.state instanceof DefaultState;
   }
 
-  public isDrawingOrDeleting(): boolean {
-    return (
-      this.isInFreePolygonDrawState() ||
-      this.isInCircleDrawState() ||
-      this.isInRectangleDrawState() ||
-      this.isInDeleteState()
-    );
+  public isEditing(): boolean {
+    return this.state instanceof EditState;
   }
 
   public isInFreePolygonDrawState(): boolean {
@@ -320,12 +316,7 @@ export class RegionSelectorComponent implements OnInit {
     if (this.snapshotService.snapshotSize() === 0) {
       this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
     }
-    const regionIDToEdit =
-      this.state instanceof CircleDrawState ||
-      this.state instanceof RectangleDrawState ||
-      this.state instanceof DeleteState
-        ? this.state.regionIDToEdit
-        : null;
+    const regionIDToEdit = this.state instanceof EditState ? this.state.regionIDToEdit : null;
     this.state = new FreePolygonDrawState(
       this.state.content,
       regionIDToEdit,
@@ -350,12 +341,7 @@ export class RegionSelectorComponent implements OnInit {
     if (this.snapshotService.snapshotSize() === 0) {
       this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
     }
-    const regionIDToEdit =
-      this.state instanceof FreePolygonDrawState ||
-      this.state instanceof RectangleDrawState ||
-      this.state instanceof DeleteState
-        ? this.state.regionIDToEdit
-        : null;
+    const regionIDToEdit = this.state instanceof EditState ? this.state.regionIDToEdit : null;
     this.state = new CircleDrawState(
       this.state.content,
       regionIDToEdit,
@@ -381,12 +367,7 @@ export class RegionSelectorComponent implements OnInit {
     if (this.snapshotService.snapshotSize() === 0) {
       this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
     }
-    const regionIDToEdit =
-      this.state instanceof FreePolygonDrawState ||
-      this.state instanceof CircleDrawState ||
-      this.state instanceof DeleteState
-        ? this.state.regionIDToEdit
-        : null;
+    const regionIDToEdit = this.state instanceof EditState ? this.state.regionIDToEdit : null;
     this.state = new RectangleDrawState(
       this.state.content,
       regionIDToEdit,
@@ -409,10 +390,7 @@ export class RegionSelectorComponent implements OnInit {
     if (this.isInDeleteState()) {
       return;
     }
-    const regionIDToEdit =
-      this.state instanceof FreePolygonDrawState || this.state instanceof CircleDrawState
-        ? this.state.regionIDToEdit
-        : null;
+    const regionIDToEdit = this.state instanceof EditState ? this.state.regionIDToEdit : null;
     this.state = new DeleteState(
       this.state.content,
       regionIDToEdit,
@@ -488,7 +466,7 @@ export class RegionSelectorComponent implements OnInit {
   }
 
   public finishDrawing(): void {
-    if (!this.isDrawingOrDeleting()) {
+    if (!this.isEditing()) {
       return;
     }
 
@@ -546,11 +524,11 @@ export class RegionSelectorComponent implements OnInit {
   }
 
   public canUndo(): boolean {
-    return this.isDrawingOrDeleting() && this.snapshotService.canUndo();
+    return this.isEditing() && this.snapshotService.canUndo();
   }
 
   public canRedo(): boolean {
-    return this.isDrawingOrDeleting() && this.snapshotService.canRedo();
+    return this.isEditing() && this.snapshotService.canRedo();
   }
 
   public undo(): void {
@@ -673,7 +651,7 @@ export class RegionSelectorComponent implements OnInit {
         return;
       }
 
-      if (this.mouseOverRegionID !== null && !this.isDrawingOrDeleting() && this.isRegionListVisible()) {
+      if (this.mouseOverRegionID !== null && !this.isEditing() && this.isRegionListVisible()) {
         this.regionSelectorGraphicService.drawRegionLabel(
           canvasElement,
           ctx,

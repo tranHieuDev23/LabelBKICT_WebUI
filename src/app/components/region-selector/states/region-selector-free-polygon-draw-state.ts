@@ -12,19 +12,29 @@ import {
   VERTICES_MIN_DISTANCE,
   VERTICES_AUTO_CONNECT_DISTANCE,
 } from './constants';
+import { EditState } from './region-selector-edit-state';
 import { RegionSelectorState } from './region-selector-state';
 
-export class FreePolygonDrawState implements RegionSelectorState {
+export class FreePolygonDrawState extends EditState {
   constructor(
-    public readonly content: RegionSelectorContent,
-    public readonly regionIDToEdit: number | null,
+    public override readonly content: RegionSelectorContent,
+    public override readonly regionIDToEdit: number | null,
     public readonly shapeIDToAddNewVertex: number | null,
     private readonly snapshotService: RegionSelectorSnapshotService,
-    private readonly regionSelectorGeometryService: RegionSelectorGeometryService,
-    private readonly geometryService: GeometryService,
-    private readonly regionSelectorGraphicService: RegionSelectorGraphicService,
-    private readonly canvasGraphicService: CanvasGraphicService
-  ) {}
+    protected override readonly regionSelectorGeometryService: RegionSelectorGeometryService,
+    protected override readonly geometryService: GeometryService,
+    protected override readonly regionSelectorGraphicService: RegionSelectorGraphicService,
+    protected override readonly canvasGraphicService: CanvasGraphicService
+  ) {
+    super(
+      content,
+      regionIDToEdit,
+      regionSelectorGeometryService,
+      geometryService,
+      regionSelectorGraphicService,
+      canvasGraphicService
+    );
+  }
 
   public onLeftMouseDown(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): RegionSelectorState {
     const cursorMousePosition = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
@@ -242,49 +252,19 @@ export class FreePolygonDrawState implements RegionSelectorState {
     );
   }
 
-  public onDraw(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
-    const ctx = canvas.getContext('2d');
+  public override onDraw(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
+    const ctx = super.onDraw(canvas);
     if (ctx === null) {
       return null;
     }
-
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
-    this.canvasGraphicService.clearCanvas({ ctx, canvasWidth, canvasHeight });
-    this.canvasGraphicService.drawCheckerboard({
-      ctx,
-      canvasWidth,
-      canvasHeight,
-      cellSize: 32,
-      blackColor: '#ccc',
-      whiteColor: '#fff',
-    });
-
-    if (!this.content.image) {
-      return ctx;
-    }
-    const imageDrawRegion = this.regionSelectorGeometryService.calculateImageDrawRegion(canvas, this.content);
-    ctx.drawImage(this.content.image, imageDrawRegion.dx, imageDrawRegion.dy, imageDrawRegion.dw, imageDrawRegion.dh);
-
-    if (this.content.isRegionListVisible) {
-      this.content.regionList.forEach((_, index) => {
-        if (index === this.regionIDToEdit) {
-          return;
-        }
-        this.regionSelectorGraphicService.drawRegion(canvas, ctx, this.content, index);
-      });
-    }
-
-    this.regionSelectorGraphicService.drawDrawnShapeList(canvas, canvasWidth, canvasHeight, ctx, this.content);
-
     if (this.shapeIDToAddNewVertex === null) {
       this.drawNearestVertexWithOpenNeighbor(canvas, canvasWidth, canvasHeight, ctx);
     } else {
       this.drawLastAddedVertex(canvas, canvasWidth, canvasHeight, ctx);
     }
-
     canvas.style.cursor = 'crosshair';
-
     return ctx;
   }
 

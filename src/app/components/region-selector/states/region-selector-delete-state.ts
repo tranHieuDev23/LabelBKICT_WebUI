@@ -2,23 +2,33 @@ import { GeometryService } from '../geometry/geometry.service';
 import { RegionSelectorGeometryService } from '../geometry/region-selector-geometry.service';
 import { CanvasGraphicService } from '../graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic.service';
-import { Circle, Coordinate, FreePolygon, Shape } from '../models';
+import { Circle, Coordinate, FreePolygon, Rectangle, Shape } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
 import { VERTICES_MAX_DISTANCE, DELETE_VERTICES_MOUSE_DISTANCE } from './constants';
+import { EditState } from './region-selector-edit-state';
 import { RegionSelectorState } from './region-selector-state';
 
-export class DeleteState implements RegionSelectorState {
+export class DeleteState extends EditState {
   constructor(
-    public readonly content: RegionSelectorContent,
-    public readonly regionIDToEdit: number | null,
+    public override readonly content: RegionSelectorContent,
+    public override readonly regionIDToEdit: number | null,
     private readonly snapshotService: RegionSelectorSnapshotService,
-    private readonly regionSelectorGeometryService: RegionSelectorGeometryService,
-    private readonly geometryService: GeometryService,
-    private readonly regionSelectorGraphicService: RegionSelectorGraphicService,
-    private readonly canvasGraphicService: CanvasGraphicService
-  ) {}
+    protected override readonly regionSelectorGeometryService: RegionSelectorGeometryService,
+    protected override readonly geometryService: GeometryService,
+    protected override readonly regionSelectorGraphicService: RegionSelectorGraphicService,
+    protected override readonly canvasGraphicService: CanvasGraphicService
+  ) {
+    super(
+      content,
+      regionIDToEdit,
+      regionSelectorGeometryService,
+      geometryService,
+      regionSelectorGraphicService,
+      canvasGraphicService
+    );
+  }
 
   public onLeftMouseDown(): RegionSelectorState {
     return new DeleteState(
@@ -96,6 +106,13 @@ export class DeleteState implements RegionSelectorState {
         }
         continue;
       }
+
+      if (shape instanceof Rectangle) {
+        if (!this.shouldDeleteRectangle(canvas, cursorImagePosition, shape)) {
+          nonDeletedShapeList.push(shape);
+        }
+        continue;
+      }
     }
     return nonDeletedShapeList;
   }
@@ -130,6 +147,66 @@ export class DeleteState implements RegionSelectorState {
       cursorImagePosition
     );
     return Math.abs(mouseCircleCenterCursorDistance - mouseCircleRadius) <= DELETE_VERTICES_MOUSE_DISTANCE;
+  }
+
+  private shouldDeleteRectangle(
+    canvas: HTMLCanvasElement,
+    cursorImagePosition: Coordinate,
+    rectangle: Rectangle
+  ): boolean {
+    const distanceToLeft = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      this.content,
+      cursorImagePosition,
+      { x: rectangle.left, y: cursorImagePosition.y }
+    );
+    if (
+      distanceToLeft <= DELETE_VERTICES_MOUSE_DISTANCE &&
+      rectangle.bottom <= cursorImagePosition.y &&
+      cursorImagePosition.y <= rectangle.top
+    ) {
+      return true;
+    }
+    const distanceToRight = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      this.content,
+      cursorImagePosition,
+      { x: rectangle.right, y: cursorImagePosition.y }
+    );
+    if (
+      distanceToRight <= DELETE_VERTICES_MOUSE_DISTANCE &&
+      rectangle.bottom <= cursorImagePosition.y &&
+      cursorImagePosition.y <= rectangle.top
+    ) {
+      return true;
+    }
+    const distanceToBottom = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      this.content,
+      cursorImagePosition,
+      { x: cursorImagePosition.x, y: rectangle.bottom }
+    );
+    if (
+      distanceToBottom <= DELETE_VERTICES_MOUSE_DISTANCE &&
+      rectangle.left <= cursorImagePosition.x &&
+      cursorImagePosition.x <= rectangle.right
+    ) {
+      return true;
+    }
+    const distanceToTop = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      this.content,
+      cursorImagePosition,
+      { x: cursorImagePosition.x, y: rectangle.top }
+    );
+    if (
+      distanceToTop <= DELETE_VERTICES_MOUSE_DISTANCE &&
+      rectangle.left <= cursorImagePosition.x &&
+      cursorImagePosition.x <= rectangle.right
+    ) {
+      return true;
+    }
+    return false;
   }
 
   public onLeftMouseUp(): RegionSelectorState {
@@ -180,42 +257,14 @@ export class DeleteState implements RegionSelectorState {
     return drawnShapeListWithNoEmpty;
   }
 
-  public onDraw(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
-    const ctx = canvas.getContext('2d');
+  public override onDraw(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
+    const ctx = super.onDraw(canvas);
     if (ctx === null) {
       return null;
     }
-
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
-    this.canvasGraphicService.clearCanvas({ ctx, canvasWidth, canvasHeight });
-    this.canvasGraphicService.drawCheckerboard({
-      ctx,
-      canvasWidth,
-      canvasHeight,
-      cellSize: 32,
-      blackColor: '#ccc',
-      whiteColor: '#fff',
-    });
-
-    if (!this.content.image) {
-      return ctx;
-    }
-    const imageDrawRegion = this.regionSelectorGeometryService.calculateImageDrawRegion(canvas, this.content);
-    ctx.drawImage(this.content.image, imageDrawRegion.dx, imageDrawRegion.dy, imageDrawRegion.dw, imageDrawRegion.dh);
-
-    if (this.content.isRegionListVisible) {
-      this.content.regionList.forEach((_, index) => {
-        if (index === this.regionIDToEdit) {
-          return;
-        }
-        this.regionSelectorGraphicService.drawRegion(canvas, ctx, this.content, index);
-      });
-    }
-
-    this.regionSelectorGraphicService.drawDrawnShapeList(canvas, canvasWidth, canvasHeight, ctx, this.content);
     this.drawDeleteCursor(canvas, canvasWidth, canvasHeight, ctx);
-
     return ctx;
   }
 
