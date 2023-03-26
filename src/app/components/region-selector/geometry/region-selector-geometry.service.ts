@@ -94,7 +94,7 @@ export class RegionSelectorGeometryService {
 
     if (shape instanceof Eclipse) {
       const pointXOnDiameter = { x: shape.center.x + shape.radiusX, y: shape.center.y };
-      const pointYOnDiameter = { x: shape.center.x, y: shape.center.y + shape.radiusX };
+      const pointYOnDiameter = { x: shape.center.x, y: shape.center.y + shape.radiusY };
       const canvasCenter = this.imageToCanvasPosition(canvas, content, shape.center);
       const canvasPointXOnDiameter = this.imageToCanvasPosition(canvas, content, pointXOnDiameter);
       const canvasPointYOnDiameter = this.imageToCanvasPosition(canvas, content, pointYOnDiameter);
