@@ -1,0 +1,16 @@
+{
+    "overrides": [
+        {
+            "files": "*.html",
+            "options": {
+                "parser": "angular"
+            }
+        },
+        {
+            "files": "*.ts",
+            "options": {
+                "printWidth": 120
+            }
+        }
+    ]
+}

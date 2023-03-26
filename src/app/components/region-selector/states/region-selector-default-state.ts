@@ -18,18 +18,13 @@ export class DefaultState implements RegionSelectorState {
     private readonly canvasGraphicService: CanvasGraphicService
   ) {}
 
-  public onLeftMouseDown(
-    canvas: HTMLCanvasElement,
-    event: MouseEvent | TouchEvent
-  ): RegionSelectorState {
-    const cursorMousePosition =
-      this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
-    const cursorImagePosition =
-      this.regionSelectorGeometryService.mouseToImagePosition(
-        canvas,
-        this.content,
-        cursorMousePosition
-      );
+  public onLeftMouseDown(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): RegionSelectorState {
+    const cursorMousePosition = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+    const cursorImagePosition = this.regionSelectorGeometryService.mouseToImagePosition(
+      canvas,
+      this.content,
+      cursorMousePosition
+    );
 
     const newContent = {
       ...this.content,
@@ -37,6 +32,7 @@ export class DefaultState implements RegionSelectorState {
     newContent.cursorImagePosition = cursorImagePosition;
     newContent.drawnShapeList = [];
 
+    this.snapshotService.clear();
     this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
 
     return new FreePolygonDrawState(
@@ -80,26 +76,14 @@ export class DefaultState implements RegionSelectorState {
     if (!this.content.image) {
       return ctx;
     }
-    const imageDrawRegion =
-      this.regionSelectorGeometryService.calculateImageDrawRegion(
-        canvas,
-        this.content
-      );
-    ctx.drawImage(
-      this.content.image,
-      imageDrawRegion.dx,
-      imageDrawRegion.dy,
-      imageDrawRegion.dw,
-      imageDrawRegion.dh
-    );
+    const imageDrawRegion = this.regionSelectorGeometryService.calculateImageDrawRegion(canvas, this.content);
+    ctx.drawImage(this.content.image, imageDrawRegion.dx, imageDrawRegion.dy, imageDrawRegion.dw, imageDrawRegion.dh);
 
     if (this.content.isRegionListVisible) {
-      this.regionSelectorGraphicService.drawRegionList(
-        canvas,
-        ctx,
-        this.content
-      );
+      this.regionSelectorGraphicService.drawRegionList(canvas, ctx, this.content);
     }
+
+    canvas.style.cursor = 'auto';
 
     return ctx;
   }

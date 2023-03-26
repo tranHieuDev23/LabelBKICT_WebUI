@@ -73,22 +73,18 @@ export class CanvasGraphicService {
     args.ctx.lineWidth = 1;
     args.ctx.strokeStyle = args.lineColor;
     args.ctx.stroke();
+    this.clearContext(args.ctx);
   }
 
   public drawLine(args: DrawLineArguments): void {
     args.ctx.beginPath();
-    args.ctx.moveTo(
-      args.lineStart.x * args.canvasWidth,
-      args.lineStart.y * args.canvasHeight
-    );
-    args.ctx.lineTo(
-      args.lineEnd.x * args.canvasWidth,
-      args.lineEnd.y * args.canvasHeight
-    );
+    args.ctx.moveTo(args.lineStart.x * args.canvasWidth, args.lineStart.y * args.canvasHeight);
+    args.ctx.lineTo(args.lineEnd.x * args.canvasWidth, args.lineEnd.y * args.canvasHeight);
     args.ctx.closePath();
     args.ctx.lineWidth = 2;
     args.ctx.strokeStyle = args.lineColor;
     args.ctx.stroke();
+    this.clearContext(args.ctx);
   }
 
   public drawCheckerboard(args: DrawCheckerboardArguments): void {
@@ -106,6 +102,7 @@ export class CanvasGraphicService {
         args.ctx.fillRect(x, y, args.cellSize, args.cellSize);
       }
     }
+    this.clearContext(args.ctx);
   }
 
   public drawTextBox(args: DrawTextBoxArguments): void {
@@ -113,9 +110,7 @@ export class CanvasGraphicService {
     const centerY = args.canvasHeight * args.textBoxCenter.y;
     args.ctx.font = `${args.fontSize}px ${args.font}`;
     const measureResult = args.ctx.measureText(args.text);
-    const textWidth =
-      Math.abs(measureResult.actualBoundingBoxLeft) +
-      Math.abs(measureResult.actualBoundingBoxRight);
+    const textWidth = Math.abs(measureResult.actualBoundingBoxLeft) + Math.abs(measureResult.actualBoundingBoxRight);
     const textHeight = args.fontSize;
     const boxWidth = textWidth + this.textBoxPadding * 2;
     const boxHeight = textHeight + this.textBoxPadding * 2;
@@ -126,11 +121,8 @@ export class CanvasGraphicService {
     args.ctx.fillRect(topLeftX, topLeftY - boxHeight, boxWidth, boxHeight);
     args.ctx.fillStyle = args.textColor;
     args.ctx.textBaseline = 'bottom';
-    args.ctx.fillText(
-      args.text,
-      topLeftX + this.textBoxPadding,
-      topLeftY - this.textBoxPadding
-    );
+    args.ctx.fillText(args.text, topLeftX + this.textBoxPadding, topLeftY - this.textBoxPadding);
+    this.clearContext(args.ctx);
   }
 
   public resizeCanvasMatchParent(canvas: HTMLCanvasElement): void {
@@ -144,5 +136,12 @@ export class CanvasGraphicService {
 
   public clearCanvas(args: ClearCanvasArguments): void {
     args.ctx.clearRect(0, 0, args.canvasWidth, args.canvasHeight);
+  }
+
+  public clearContext(ctx: CanvasRenderingContext2D): void {
+    ctx.strokeStyle = 'transparent';
+    ctx.fillStyle = 'transparent';
+    ctx.lineWidth = 0;
+    ctx.setLineDash([]);
   }
 }

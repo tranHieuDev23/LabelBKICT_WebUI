@@ -2,22 +2,12 @@ import { GeometryService } from '../geometry/geometry.service';
 import { RegionSelectorGeometryService } from '../geometry/region-selector-geometry.service';
 import { CanvasGraphicService } from '../graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic.service';
-import { FreePolygon } from '../models';
+import { Circle, Coordinate, FreePolygon, Shape } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
+import { VERTICES_MAX_DISTANCE, DELETE_VERTICES_MOUSE_DISTANCE } from './constants';
 import { RegionSelectorState } from './region-selector-state';
-
-const VERTICES_MAX_DISTANCE = 1e-2;
-const DELETE_VERTICES_MOUSE_DISTANCE = 10;
-const DRAWN_POLYGON_COLOR_LIST = [
-  '#c41d7f',
-  '#531dab',
-  '#096dd9',
-  '#faad14',
-  '#d4380d',
-  '#08979c',
-];
 
 export class DeleteState implements RegionSelectorState {
   constructor(
@@ -47,14 +37,12 @@ export class DeleteState implements RegionSelectorState {
     event: MouseEvent | TouchEvent,
     isLeftMouseDown: boolean
   ): RegionSelectorState {
-    const cursorMousePosition =
-      this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
-    const cursorImagePosition =
-      this.regionSelectorGeometryService.mouseToImagePosition(
-        canvas,
-        this.content,
-        cursorMousePosition
-      );
+    const cursorMousePosition = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+    const cursorImagePosition = this.regionSelectorGeometryService.mouseToImagePosition(
+      canvas,
+      this.content,
+      cursorMousePosition
+    );
 
     if (!isLeftMouseDown) {
       const newContent = { ...this.content };
@@ -70,44 +58,10 @@ export class DeleteState implements RegionSelectorState {
       );
     }
 
-    // Remove all vertices within cursor size
-    const drawnShapeListWithNo2Openings = this.content.drawnShapeList.map(
-      (polygon) => {
-        if (!(polygon instanceof FreePolygon)) {
-          return polygon;
-        }
-        const polygonVertices = polygon.getVertices();
-        const newPolygonVertices = polygonVertices.filter((vertex) => {
-          const vertexMousePos =
-            this.regionSelectorGeometryService.imageToMousePosition(
-              canvas,
-              this.content,
-              vertex
-            );
-          return (
-            this.geometryService.getDistance(
-              vertexMousePos,
-              cursorMousePosition
-            ) > DELETE_VERTICES_MOUSE_DISTANCE
-          );
-        });
-        return new FreePolygon(newPolygonVertices);
-      }
-    );
-
-    // Remove all empty polygon
-    const drawnShapeListWithNoEmpty = drawnShapeListWithNo2Openings.filter(
-      (polygon) => {
-        if (!(polygon instanceof FreePolygon)) {
-          return true;
-        }
-        return polygon.getVertices().length > 0;
-      }
-    );
-
+    const nonDeletedDrawnShapeList = this.getNonDeletedDrawnShapeList(canvas, cursorMousePosition, cursorImagePosition);
     const newContent = { ...this.content };
     newContent.cursorImagePosition = cursorImagePosition;
-    newContent.drawnShapeList = drawnShapeListWithNoEmpty;
+    newContent.drawnShapeList = nonDeletedDrawnShapeList;
 
     return new DeleteState(
       newContent,
@@ -120,48 +74,70 @@ export class DeleteState implements RegionSelectorState {
     );
   }
 
+  private getNonDeletedDrawnShapeList(
+    canvas: HTMLCanvasElement,
+    cursorMousePosition: Coordinate,
+    cursorImagePosition: Coordinate
+  ): Shape[] {
+    const nonDeletedShapeList: Shape[] = [];
+    for (const shape of this.content.drawnShapeList) {
+      if (shape instanceof FreePolygon) {
+        const nonDeletedFreePolygon = this.getNonDeletedFreePolygon(canvas, cursorMousePosition, shape);
+        if (nonDeletedFreePolygon === null) {
+          continue;
+        }
+        nonDeletedShapeList.push(nonDeletedFreePolygon);
+        continue;
+      }
+
+      if (shape instanceof Circle) {
+        if (!this.shouldDeleteCircle(canvas, cursorImagePosition, shape)) {
+          nonDeletedShapeList.push(shape);
+        }
+        continue;
+      }
+    }
+    return nonDeletedShapeList;
+  }
+
+  private getNonDeletedFreePolygon(
+    canvas: HTMLCanvasElement,
+    cursorMousePosition: Coordinate,
+    polygon: FreePolygon
+  ): Shape | null {
+    const polygonVertices = polygon.getVertices();
+    const newPolygonVertices = polygonVertices.filter((vertex) => {
+      const vertexMousePos = this.regionSelectorGeometryService.imageToMousePosition(canvas, this.content, vertex);
+      return this.geometryService.getDistance(vertexMousePos, cursorMousePosition) > DELETE_VERTICES_MOUSE_DISTANCE;
+    });
+    if (newPolygonVertices.length < 3) {
+      return null;
+    }
+    return new FreePolygon(newPolygonVertices);
+  }
+
+  private shouldDeleteCircle(canvas: HTMLCanvasElement, cursorImagePosition: Coordinate, circle: Circle): boolean {
+    const mouseCircleRadius = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      this.content,
+      circle.center,
+      { x: circle.center.x, y: circle.center.y + circle.radius }
+    );
+    const mouseCircleCenterCursorDistance = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      this.content,
+      circle.center,
+      cursorImagePosition
+    );
+    return Math.abs(mouseCircleCenterCursorDistance - mouseCircleRadius) <= DELETE_VERTICES_MOUSE_DISTANCE;
+  }
+
   public onLeftMouseUp(): RegionSelectorState {
-    // Remove all vertices with 2 openings
-    const drawnShapeListWithNo2Openings = this.content.drawnShapeList.map(
-      (polygon) => {
-        if (!(polygon instanceof FreePolygon)) {
-          return polygon;
-        }
-        const polygonVertices = polygon.getVertices();
-        const newPolygonVertices = polygonVertices.filter(
-          (vertex, index, vertices) => {
-            const prevIndex = index === 0 ? vertices.length - 1 : index - 1;
-            const prevVertex = vertices[prevIndex];
-            const nextIndex = index === vertices.length - 1 ? 0 : index + 1;
-            const nextVertex = vertices[nextIndex];
-            return (
-              this.geometryService.getDistance(vertex, prevVertex) <=
-                VERTICES_MAX_DISTANCE ||
-              this.geometryService.getDistance(vertex, nextVertex) <=
-                VERTICES_MAX_DISTANCE
-            );
-          }
-        );
-        return new FreePolygon(newPolygonVertices);
-      }
-    );
-
-    // Remove all empty polygon
-    const drawnShapeListWithNoEmpty = drawnShapeListWithNo2Openings.filter(
-      (polygon) => {
-        if (!(polygon instanceof FreePolygon)) {
-          return true;
-        }
-        return polygon.getVertices().length > 0;
-      }
-    );
-
-    this.snapshotService.storeSnapshot(
-      new RegionSelectorSnapshot(drawnShapeListWithNoEmpty)
-    );
+    const cleanedDrawnShapeList = this.getCleanedDrawnShapeList();
+    this.snapshotService.storeSnapshot(new RegionSelectorSnapshot(cleanedDrawnShapeList));
 
     const newContent = { ...this.content };
-    newContent.drawnShapeList = drawnShapeListWithNoEmpty;
+    newContent.drawnShapeList = cleanedDrawnShapeList;
     return new DeleteState(
       newContent,
       this.regionIDToEdit,
@@ -171,6 +147,37 @@ export class DeleteState implements RegionSelectorState {
       this.regionSelectorGraphicService,
       this.canvasGraphicService
     );
+  }
+
+  private getCleanedDrawnShapeList(): Shape[] {
+    // Remove all vertices with 2 openings
+    const drawnShapeListWithNo2Openings = this.content.drawnShapeList.map((polygon) => {
+      if (!(polygon instanceof FreePolygon)) {
+        return polygon;
+      }
+      const polygonVertices = polygon.getVertices();
+      const newPolygonVertices = polygonVertices.filter((vertex, index, vertices) => {
+        const prevIndex = index === 0 ? vertices.length - 1 : index - 1;
+        const prevVertex = vertices[prevIndex];
+        const nextIndex = index === vertices.length - 1 ? 0 : index + 1;
+        const nextVertex = vertices[nextIndex];
+        return (
+          this.geometryService.getDistance(vertex, prevVertex) <= VERTICES_MAX_DISTANCE ||
+          this.geometryService.getDistance(vertex, nextVertex) <= VERTICES_MAX_DISTANCE
+        );
+      });
+      return new FreePolygon(newPolygonVertices);
+    });
+
+    // Remove all empty polygon
+    const drawnShapeListWithNoEmpty = drawnShapeListWithNo2Openings.filter((polygon) => {
+      if (!(polygon instanceof FreePolygon)) {
+        return true;
+      }
+      return polygon.getVertices().length > 0;
+    });
+
+    return drawnShapeListWithNoEmpty;
   }
 
   public onDraw(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
@@ -194,100 +201,22 @@ export class DeleteState implements RegionSelectorState {
     if (!this.content.image) {
       return ctx;
     }
-    const imageDrawRegion =
-      this.regionSelectorGeometryService.calculateImageDrawRegion(
-        canvas,
-        this.content
-      );
-    ctx.drawImage(
-      this.content.image,
-      imageDrawRegion.dx,
-      imageDrawRegion.dy,
-      imageDrawRegion.dw,
-      imageDrawRegion.dh
-    );
+    const imageDrawRegion = this.regionSelectorGeometryService.calculateImageDrawRegion(canvas, this.content);
+    ctx.drawImage(this.content.image, imageDrawRegion.dx, imageDrawRegion.dy, imageDrawRegion.dw, imageDrawRegion.dh);
 
     if (this.content.isRegionListVisible) {
       this.content.regionList.forEach((_, index) => {
         if (index === this.regionIDToEdit) {
           return;
         }
-        this.regionSelectorGraphicService.drawRegion(
-          canvas,
-          ctx,
-          this.content,
-          index
-        );
+        this.regionSelectorGraphicService.drawRegion(canvas, ctx, this.content, index);
       });
     }
 
-    this.drawDrawnShapeList(canvas, canvasWidth, canvasHeight, ctx);
+    this.regionSelectorGraphicService.drawDrawnShapeList(canvas, canvasWidth, canvasHeight, ctx, this.content);
     this.drawDeleteCursor(canvas, canvasWidth, canvasHeight, ctx);
 
     return ctx;
-  }
-
-  private drawDrawnShapeList(
-    canvas: HTMLCanvasElement,
-    canvasWidth: number,
-    canvasHeight: number,
-    ctx: CanvasRenderingContext2D
-  ): void {
-    for (let i = 0; i < this.content.drawnShapeList.length; i++) {
-      const polygon = this.content.drawnShapeList[i];
-      if (!(polygon instanceof FreePolygon)) {
-        continue;
-      }
-
-      const polygonVertices = polygon.getVertices();
-      const regionColor =
-        DRAWN_POLYGON_COLOR_LIST[
-          Math.min(i, DRAWN_POLYGON_COLOR_LIST.length - 1)
-        ];
-
-      let lastVertex = polygonVertices[polygonVertices.length - 1];
-      let lastVertexCanvasPos =
-        this.regionSelectorGeometryService.imageToCanvasPosition(
-          canvas,
-          this.content,
-          lastVertex
-        );
-
-      for (const vertex of polygonVertices) {
-        const vertexCanvasPos =
-          this.regionSelectorGeometryService.imageToCanvasPosition(
-            canvas,
-            this.content,
-            vertex
-          );
-        this.canvasGraphicService.drawCircle({
-          canvasWidth,
-          canvasHeight,
-          ctx,
-          center: vertexCanvasPos,
-          radius: 1,
-          lineColor: regionColor,
-          fillColor: regionColor,
-        });
-
-        if (
-          this.geometryService.getDistance(lastVertex, vertex) <=
-          VERTICES_MAX_DISTANCE
-        ) {
-          this.canvasGraphicService.drawLine({
-            canvasWidth,
-            canvasHeight,
-            ctx,
-            lineStart: lastVertexCanvasPos,
-            lineEnd: vertexCanvasPos,
-            lineColor: regionColor,
-          });
-        }
-
-        lastVertex = vertex;
-        lastVertexCanvasPos = vertexCanvasPos;
-      }
-    }
   }
 
   private drawDeleteCursor(
@@ -296,12 +225,11 @@ export class DeleteState implements RegionSelectorState {
     canvasHeight: number,
     ctx: CanvasRenderingContext2D
   ): void {
-    const cursorCanvasPos =
-      this.regionSelectorGeometryService.imageToCanvasPosition(
-        canvas,
-        this.content,
-        this.content.cursorImagePosition
-      );
+    const cursorCanvasPos = this.regionSelectorGeometryService.imageToCanvasPosition(
+      canvas,
+      this.content,
+      this.content.cursorImagePosition
+    );
     this.canvasGraphicService.drawCircle({
       canvasWidth,
       canvasHeight,

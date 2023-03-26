@@ -36,34 +36,54 @@
         </nz-button-group>
     </div>
     <div *ngIf="editable" class="draw-option">
-        <nz-button-group *ngIf="isDrawingOrDeleting()">
-            <button nz-button [disabled]="isInAddingVertexDrawState()" (click)="toggleDrawDelete(true)"
-                title="Draw mode">
-                <i nz-icon nzType="edit"></i>
-            </button>
-            <button nz-button [disabled]="!isInAddingVertexDrawState()" (click)="toggleDrawDelete(false)"
-                title="Erase mode">
+        <nz-button-group *ngIf="isInDefaultState() || isDrawingOrDeleting()">
+            <button nz-button [disabled]="isInFreePolygonDrawState()" (click)="onFreePolygonDrawStateClicked()"
+                title="Draw free line">
                 <i nz-icon>
-                    <svg t="1622097402218" class="icon" viewBox="0 0 1024 1024" version="1.1"
-                        xmlns="http://www.w3.org/2000/svg" p-id="1191" width="16" height="16">
+                    <svg width="16" height="16" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M722.081 962c-5.824 0-11.889-1.456-17.349-4.49-11.407-6.286-19.007-18.232-19.007-31.953 0-6.39 1.648-12.396 4.543-17.614 66.271-121.868 227.635-466.192 177.528-592.736-7.402-18.684-19.048-30.089-36.64-35.913-56.781-18.684-139.404 79.469-212.322 166.217-75.465 89.66-146.806 174.346-222.634 180.413-29.361 2.305-56.417-7.037-80.318-27.784-74.979-64.91-24.872-188.905 19.291-298.221 23.173-57.266 54.839-135.765 43.434-159.787-0.486-1.091-1.456-3.033-7.159-4.732-44.769-13.953-156.39 123.146-228.578 254.785-9.706 17.592-31.788 24.143-49.38 14.438-17.592-9.706-24.143-31.788-14.438-49.38 42.464-77.528 190.725-327.339 313.993-289.243 23.659 7.402 41.373 22.203 51.321 43.071 24.994 52.777-5.945 129.455-41.737 218.267-33.244 82.381-74.737 185.023-39.067 215.962 11.648 10.071 20.504 10.798 26.934 10.192 45.498-3.639 113.077-83.836 172.648-154.691 92.087-109.436 187.328-222.513 290.819-188.42 38.096 12.496 66.244 39.552 81.532 78.255 71.583 180.898-155.299 606.511-181.384 654.435-6.551 12.011-19.048 18.927-32.030 18.927z" />
+                    </svg>
+                </i>
+            </button>
+            <button nz-button [disabled]="isInCircleDrawState()" (click)="onCircleDrawStateClicked()"
+                title="Draw circle">
+                <i nz-icon>
+                    <svg width="16" height="16" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16,32A16,16,0,1,0,0,16,16,16,0,0,0,16,32ZM16,2A14,14,0,1,1,2,16,14,14,0,0,1,16,2Z" />
+                    </svg>
+                </i>
+            </button>
+            <button nz-button title="Draw rectangle">
+                <i nz-icon>
+                    <svg width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 1 3 L 1 17 L 19 17 L 19 3 L 1 3 z M 2 4 L 18 4 L 18 16 L 2 16 L 2 4 z " />
+                    </svg>
+                </i>
+            </button>
+            <button nz-button [disabled]="isInDeleteState()" (click)="onDeleteStateClicked()" title="Erase">
+                <i nz-icon>
+                    <svg width="16" height="16" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
                         <path
                             d="M554.666667 665.002667L835.669333 384 640 188.330667 358.997333 469.333333 554.666667 665.002667zM494.336 725.333333L298.666667 529.664 188.330667 640 384 835.669333 494.336 725.333333z m-170.666667 170.666667L128 700.330667a85.333333 85.333333 0 0 1 0-120.661334L579.669333 128a85.333333 85.333333 0 0 1 120.661334 0L896 323.669333a85.333333 85.333333 0 0 1 0 120.661334L444.330667 896a85.333333 85.333333 0 0 1-120.661334 0zM896 853.333333a42.666667 42.666667 0 0 1 0 85.333334h-256a42.666667 42.666667 0 0 1 0-85.333334h256z"
                             p-id="1192"></path>
                     </svg>
                 </i>
             </button>
-            <button nz-button [disabled]="!canUndo()" (click)="undo()" title="Undo edit">
-                <i nz-icon nzType="undo"></i>
-            </button>
-            <button nz-button [disabled]="!canRedo()" (click)="redo()" title="Redo edit">
-                <i nz-icon nzType="redo"></i>
-            </button>
-            <button nz-button (click)="finishDrawing()" title="Finish drawing">
-                <i nz-icon nzType="check"></i>
-            </button>
-            <button nz-button (click)="cancelDrawing()" title="Cancel drawing">
-                <i nz-icon nzType="close"></i>
-            </button>
+            <ng-container *ngIf="isDrawingOrDeleting()">
+                <button nz-button [disabled]="!canUndo()" (click)="undo()" title="Undo edit">
+                    <i nz-icon nzType="undo"></i>
+                </button>
+                <button nz-button [disabled]="!canRedo()" (click)="redo()" title="Redo edit">
+                    <i nz-icon nzType="redo"></i>
+                </button>
+                <button nz-button (click)="finishDrawing()" title="Finish drawing">
+                    <i nz-icon nzType="check"></i>
+                </button>
+                <button nz-button (click)="cancelDrawing()" title="Cancel drawing">
+                    <i nz-icon nzType="close"></i>
+                </button>
+            </ng-container>
         </nz-button-group>
         <nz-button-group *ngIf="isInSelectedState()">
             <button nz-button (click)="editSelectedRegion()" title="Edit mode">

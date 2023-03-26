@@ -45,28 +45,16 @@ export class SelectedState implements RegionSelectorState {
     if (!this.content.image) {
       return ctx;
     }
-    const imageDrawRegion =
-      this.regionSelectorGeometryService.calculateImageDrawRegion(
-        canvas,
-        this.content
-      );
-    ctx.drawImage(
-      this.content.image,
-      imageDrawRegion.dx,
-      imageDrawRegion.dy,
-      imageDrawRegion.dw,
-      imageDrawRegion.dh
-    );
+    const imageDrawRegion = this.regionSelectorGeometryService.calculateImageDrawRegion(canvas, this.content);
+    ctx.drawImage(this.content.image, imageDrawRegion.dx, imageDrawRegion.dy, imageDrawRegion.dw, imageDrawRegion.dh);
 
     if (this.content.isRegionListVisible) {
-      this.regionSelectorGraphicService.drawRegionList(
-        canvas,
-        ctx,
-        this.content
-      );
+      this.regionSelectorGraphicService.drawRegionList(canvas, ctx, this.content);
     }
 
     this.drawDrawnShapeList(canvas, canvasWidth, canvasHeight, ctx);
+
+    canvas.style.cursor = 'auto';
 
     return ctx;
   }
@@ -78,16 +66,16 @@ export class SelectedState implements RegionSelectorState {
     ctx: CanvasRenderingContext2D
   ): void {
     for (const drawnPolygon of this.content.drawnShapeList) {
-      const drawnCanvasShape =
-        this.regionSelectorGeometryService.imageToCanvasShape(
-          canvas,
-          this.content,
-          drawnPolygon
-        );
+      const drawnCanvasShape = this.regionSelectorGeometryService.imageToCanvasShape(
+        canvas,
+        this.content,
+        drawnPolygon
+      );
       ctx.lineWidth = 2;
       ctx.strokeStyle = '#1890ff';
       ctx.fillStyle = 'transparent';
       drawnCanvasShape.draw(canvasWidth, canvasHeight, ctx);
+      this.canvasGraphicService.clearContext(ctx);
     }
   }
 }
