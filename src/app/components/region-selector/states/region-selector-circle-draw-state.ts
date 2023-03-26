@@ -2,7 +2,7 @@ import { GeometryService } from '../geometry/geometry.service';
 import { RegionSelectorGeometryService } from '../geometry/region-selector-geometry.service';
 import { CanvasGraphicService } from '../graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic.service';
-import { Circle, Coordinate } from '../models';
+import { Circle, Coordinate, Shape } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
@@ -41,6 +41,7 @@ export class CircleDrawState implements RegionSelectorState {
       const newContent = { ...this.content };
       const shapeIDToOperate = newContent.drawnShapeList.length;
       newContent.drawnShapeList = [...newContent.drawnShapeList, new Circle(cursorImagePosition, 0)];
+      newContent.cursorImagePosition = cursorImagePosition;
       return new CircleDrawState(
         newContent,
         this.regionIDToEdit,
@@ -97,7 +98,11 @@ export class CircleDrawState implements RegionSelectorState {
         minDistance = centerCursorDistance;
       }
 
-      const diameterCursorDistance = Math.abs(centerCursorDistance - shape.radius);
+      const mouseRadius = this.regionSelectorGeometryService.imageToMouseDistance(canvas, this.content, shape.center, {
+        x: shape.center.x,
+        y: shape.center.y + shape.radius,
+      });
+      const diameterCursorDistance = Math.abs(centerCursorDistance - mouseRadius);
       if (diameterCursorDistance < minDistance) {
         operation = CircleDrawStateOperation.RESIZE;
         shapeID = i;
@@ -117,32 +122,48 @@ export class CircleDrawState implements RegionSelectorState {
     event: MouseEvent | TouchEvent,
     isLeftMouseDown: boolean
   ): RegionSelectorState {
-    if (!isLeftMouseDown || this.operation === null || this.shapeIDToOperate === null) {
-      return this;
-    }
-    if (this.operation === CircleDrawStateOperation.MOVE) {
-      return this.onMouseMoveMove(canvas, event);
-    }
-    return this.onMouseMoveResize(canvas, event);
-  }
-
-  private onMouseMoveMove(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): RegionSelectorState {
-    const shapeToOperate = this.content.drawnShapeList[this.shapeIDToOperate || 0];
-    if (!(shapeToOperate instanceof Circle)) {
-      return this;
-    }
-
     const cursorMousePosition = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
     const cursorImagePosition = this.regionSelectorGeometryService.mouseToImagePosition(
       canvas,
       this.content,
       cursorMousePosition
     );
+
+    if (!isLeftMouseDown || this.operation === null || this.shapeIDToOperate === null) {
+      const newContent = { ...this.content };
+      newContent.cursorImagePosition = cursorImagePosition;
+      return new CircleDrawState(
+        newContent,
+        this.regionIDToEdit,
+        this.operation,
+        this.shapeIDToOperate,
+        this.snapshotService,
+        this.regionSelectorGeometryService,
+        this.geometryService,
+        this.regionSelectorGraphicService,
+        this.canvasGraphicService
+      );
+    }
+
+    if (this.operation === CircleDrawStateOperation.MOVE) {
+      return this.onMouseMoveMove(cursorImagePosition);
+    }
+
+    return this.onMouseMoveResize(cursorImagePosition);
+  }
+
+  private onMouseMoveMove(cursorImagePosition: Coordinate): RegionSelectorState {
+    const shapeToOperate = this.content.drawnShapeList[this.shapeIDToOperate || 0];
+    if (!(shapeToOperate instanceof Circle)) {
+      return this;
+    }
+
     const newShape = new Circle(cursorImagePosition, shapeToOperate.radius);
 
     const newContent = { ...this.content };
     newContent.drawnShapeList = [...newContent.drawnShapeList];
     newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    newContent.cursorImagePosition = cursorImagePosition;
 
     return new CircleDrawState(
       newContent,
@@ -157,18 +178,12 @@ export class CircleDrawState implements RegionSelectorState {
     );
   }
 
-  private onMouseMoveResize(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): RegionSelectorState {
+  private onMouseMoveResize(cursorImagePosition: Coordinate): RegionSelectorState {
     const shapeToOperate = this.content.drawnShapeList[this.shapeIDToOperate || 0];
     if (!(shapeToOperate instanceof Circle)) {
       return this;
     }
 
-    const cursorMousePosition = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
-    const cursorImagePosition = this.regionSelectorGeometryService.mouseToImagePosition(
-      canvas,
-      this.content,
-      cursorMousePosition
-    );
     const newRadius = this.geometryService.getDistance(cursorImagePosition, shapeToOperate.center);
     const newShape = new Circle(shapeToOperate.center, newRadius);
 
@@ -189,10 +204,20 @@ export class CircleDrawState implements RegionSelectorState {
     );
   }
 
-  public onLeftMouseUp(): RegionSelectorState {
+  public onLeftMouseUp(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): RegionSelectorState {
     this.snapshotService.storeSnapshot(new RegionSelectorSnapshot(this.content.drawnShapeList));
-    return new CircleDrawState(
+
+    const newContent = { ...this.content };
+    const cursorMousePosition = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+    const cursorImagePosition = this.regionSelectorGeometryService.mouseToImagePosition(
+      canvas,
       this.content,
+      cursorMousePosition
+    );
+    newContent.cursorImagePosition = cursorImagePosition;
+
+    return new CircleDrawState(
+      newContent,
       this.regionIDToEdit,
       null,
       null,
@@ -239,16 +264,14 @@ export class CircleDrawState implements RegionSelectorState {
 
     this.regionSelectorGraphicService.drawDrawnShapeList(canvas, canvasWidth, canvasHeight, ctx, this.content);
 
-    switch (this.operation) {
-      case CircleDrawStateOperation.MOVE:
-        this.onDrawMove(canvas, canvasWidth, canvasHeight, ctx);
-        break;
-      case CircleDrawStateOperation.RESIZE:
-        this.onDrawResize(canvas, canvasWidth, canvasHeight, ctx);
-        break;
-      default:
-        canvas.style.cursor = 'crosshair';
-        break;
+    if (this.operation === CircleDrawStateOperation.MOVE) {
+      const shapeToOperate = this.content.drawnShapeList[this.shapeIDToOperate || 0];
+      this.onDrawMove(canvas, canvasWidth, canvasHeight, ctx, shapeToOperate);
+    } else if (this.operation === CircleDrawStateOperation.RESIZE) {
+      const shapeToOperate = this.content.drawnShapeList[this.shapeIDToOperate || 0];
+      this.onDrawResize(canvas, canvasWidth, canvasHeight, ctx, shapeToOperate);
+    } else {
+      this.onDrawDefault(canvas, canvasWidth, canvasHeight, ctx);
     }
 
     return ctx;
@@ -258,9 +281,9 @@ export class CircleDrawState implements RegionSelectorState {
     canvas: HTMLCanvasElement,
     canvasWidth: number,
     canvasHeight: number,
-    ctx: CanvasRenderingContext2D
+    ctx: CanvasRenderingContext2D,
+    shapeToOperate: Shape
   ): void {
-    const shapeToOperate = this.content.drawnShapeList[this.shapeIDToOperate || 0];
     if (!(shapeToOperate instanceof Circle)) {
       return;
     }
@@ -285,9 +308,9 @@ export class CircleDrawState implements RegionSelectorState {
     canvas: HTMLCanvasElement,
     canvasWidth: number,
     canvasHeight: number,
-    ctx: CanvasRenderingContext2D
+    ctx: CanvasRenderingContext2D,
+    shapeToOperate: Shape
   ): void {
-    const shapeToOperate = this.content.drawnShapeList[this.shapeIDToOperate || 0];
     if (!(shapeToOperate instanceof Circle)) {
       return;
     }
@@ -298,5 +321,36 @@ export class CircleDrawState implements RegionSelectorState {
     canvasShape.draw(canvasWidth, canvasHeight, ctx);
     this.canvasGraphicService.clearContext(ctx);
     canvas.style.cursor = 'crosshair';
+  }
+
+  private onDrawDefault(
+    canvas: HTMLCanvasElement,
+    canvasWidth: number,
+    canvasHeight: number,
+    ctx: CanvasRenderingContext2D
+  ): void {
+    const cursorMousePosition = this.regionSelectorGeometryService.imageToMousePosition(
+      canvas,
+      this.content,
+      this.content.cursorImagePosition
+    );
+    const operationAndShapeIDToOperate = this.getOperationAndShapeIDToOperate(canvas, cursorMousePosition);
+    if (operationAndShapeIDToOperate === null) {
+      canvas.style.cursor = 'crosshair';
+      return;
+    }
+
+    const { operation, shapeID } = operationAndShapeIDToOperate;
+    const shapeToOperate = this.content.drawnShapeList[shapeID];
+    if (!(shapeToOperate instanceof Circle)) {
+      canvas.style.cursor = 'crosshair';
+      return;
+    }
+
+    if (operation === CircleDrawStateOperation.MOVE) {
+      this.onDrawMove(canvas, canvasWidth, canvasHeight, ctx, shapeToOperate);
+    } else {
+      this.onDrawResize(canvas, canvasWidth, canvasHeight, ctx, shapeToOperate);
+    }
   }
 }
