@@ -1,10 +1,7 @@
 import { Location } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
-import {
-  NzContextMenuService,
-  NzDropdownMenuComponent,
-} from 'ng-zorro-antd/dropdown';
+import { NzContextMenuService, NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { ImageListFilterOptionsWithMetadata } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
@@ -22,10 +19,7 @@ import {
   ImageTagGroup,
   ImageTagGroupAndTagList,
 } from 'src/app/services/dataaccess/api';
-import {
-  ImageListManagementService,
-  FilterOptionsService,
-} from 'src/app/services/module/image-list-management';
+import { ImageListManagementService, FilterOptionsService } from 'src/app/services/module/image-list-management';
 import { ImageTagManagementService } from 'src/app/services/module/image-tag-management';
 import { ImageTypeManagementService } from 'src/app/services/module/image-type-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
@@ -44,14 +38,11 @@ const MAX_SEARCH_USER_RESULT = 10;
   styleUrls: ['./all-images.component.scss'],
 })
 export class AllImagesComponent implements OnInit {
-  @ViewChild('contextMenu') public contextMenu:
-    | NzDropdownMenuComponent
-    | undefined;
+  @ViewChild('contextMenu') public contextMenu: NzDropdownMenuComponent | undefined;
 
   public pageIndex: number = DEFAULT_PAGE_INDEX;
   public pageSize: number = DEFAULT_PAGE_SIZE;
-  public filterOptions: ImageListFilterOptionsWithMetadata =
-    this.getDefaultImageListFilterOptions();
+  public filterOptions: ImageListFilterOptionsWithMetadata = this.getDefaultImageListFilterOptions();
   public imageListSortOption = DEFAULT_SORT_OPTION;
 
   public uploadedByUserOptionList: User[] = [];
@@ -75,11 +66,9 @@ export class AllImagesComponent implements OnInit {
   private selectedIndexList: number[] = [];
 
   public isAddImageTagToSelectedImageListModalVisible: boolean = false;
-  public addImageTagToSelectedImageListModalImageTagGroupList: ImageTagGroup[] =
-    [];
+  public addImageTagToSelectedImageListModalImageTagGroupList: ImageTagGroup[] = [];
   public addImageTagToSelectedImageListModalImageTagList: ImageTag[][] = [];
-  public addImageTagToSelectedImageListModalCurrentImageTagList: ImageTag[] =
-    [];
+  public addImageTagToSelectedImageListModalCurrentImageTagList: ImageTag[] = [];
   public addImageTagToSelectedImageListModalAddedImageTagList: ImageTag[] = [];
 
   constructor(
@@ -126,9 +115,7 @@ export class AllImagesComponent implements OnInit {
       this.imageListSortOption = DEFAULT_SORT_OPTION;
     }
     if (queryParams['filter'] !== undefined) {
-      this.filterOptions = this.jsonCompressService.decompress(
-        queryParams['filter']
-      );
+      this.filterOptions = this.jsonCompressService.decompress(queryParams['filter']);
     } else {
       this.filterOptions = this.getDefaultImageListFilterOptions();
     }
@@ -136,14 +123,8 @@ export class AllImagesComponent implements OnInit {
 
   private async getImageListFromPaginationInfo(): Promise<void> {
     this.isLoadingImageList = true;
-    const offset = this.paginationService.getPageOffset(
-      this.pageIndex,
-      this.pageSize
-    );
-    const filterOptions =
-      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
-        this.filterOptions
-      );
+    const offset = this.paginationService.getPageOffset(this.pageIndex, this.pageSize);
+    const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     try {
       const { totalImageCount, imageList, imageTagList } =
         await this.imageListManagementService.getUserManageableImageList(
@@ -169,11 +150,10 @@ export class AllImagesComponent implements OnInit {
     if (query === '') {
       this.uploadedByUserOptionList = [];
     } else {
-      this.uploadedByUserOptionList =
-        await this.imageListManagementService.searchUserManageableImageUserList(
-          query,
-          MAX_SEARCH_USER_RESULT
-        );
+      this.uploadedByUserOptionList = await this.imageListManagementService.searchUserManageableImageUserList(
+        query,
+        MAX_SEARCH_USER_RESULT
+      );
     }
   }
 
@@ -182,11 +162,7 @@ export class AllImagesComponent implements OnInit {
     if (query === '') {
       this.publishedByUserOptionList = [];
     } else {
-      this.publishedByUserOptionList =
-        await this.userManagementService.searchUserList(
-          query,
-          MAX_SEARCH_USER_RESULT
-        );
+      this.publishedByUserOptionList = await this.userManagementService.searchUserList(query, MAX_SEARCH_USER_RESULT);
     }
   }
 
@@ -195,50 +171,24 @@ export class AllImagesComponent implements OnInit {
     if (query === '') {
       this.publishedByUserOptionList = [];
     } else {
-      this.verifiedByUserOptionList =
-        await this.userManagementService.searchUserList(
-          query,
-          MAX_SEARCH_USER_RESULT
-        );
+      this.verifiedByUserOptionList = await this.userManagementService.searchUserList(query, MAX_SEARCH_USER_RESULT);
     }
   }
 
-  public onImageListFilterOptionsUpdated(
-    filterOptions: ImageListFilterOptionsWithMetadata
-  ): void {
-    this.navigateToPage(
-      this.pageIndex,
-      this.pageSize,
-      this.imageListSortOption,
-      filterOptions
-    );
+  public onImageListFilterOptionsUpdated(filterOptions: ImageListFilterOptionsWithMetadata): void {
+    this.navigateToPage(this.pageIndex, this.pageSize, this.imageListSortOption, filterOptions);
   }
 
   public onImageListSortOptionUploaded(sortOption: ImageListSortOption): void {
-    this.navigateToPage(
-      this.pageIndex,
-      this.pageSize,
-      sortOption,
-      this.filterOptions
-    );
+    this.navigateToPage(this.pageIndex, this.pageSize, sortOption, this.filterOptions);
   }
 
   public onPageIndexChanged(newPageIndex: number): void {
-    this.navigateToPage(
-      newPageIndex,
-      this.pageSize,
-      this.imageListSortOption,
-      this.filterOptions
-    );
+    this.navigateToPage(newPageIndex, this.pageSize, this.imageListSortOption, this.filterOptions);
   }
 
   public onPageSizeChanged(newPageSize: number): void {
-    this.navigateToPage(
-      this.pageIndex,
-      newPageSize,
-      this.imageListSortOption,
-      this.filterOptions
-    );
+    this.navigateToPage(this.pageIndex, newPageSize, this.imageListSortOption, this.filterOptions);
   }
 
   private navigateToPage(
@@ -272,8 +222,7 @@ export class AllImagesComponent implements OnInit {
     (async () => {
       if (this.imageTypeList.length === 0) {
         try {
-          const { imageTypeList } =
-            await this.imageTypeManagementService.getImageTypeList();
+          const { imageTypeList } = await this.imageTypeManagementService.getImageTypeList();
           this.imageTypeList = imageTypeList;
         } catch (e) {
           this.handleError('Failed to get image type list', e);
@@ -288,9 +237,7 @@ export class AllImagesComponent implements OnInit {
   }
 
   public onSetImageTypeOfSelectedImagesClicked(imageType: ImageType): void {
-    const selectedImageIDList = this.selectedIndexList.map(
-      (index) => this.imageList[index].id
-    );
+    const selectedImageIDList = this.selectedIndexList.map((index) => this.imageList[index].id);
     this.modalService.create({
       nzTitle: 'Change image type of selected image(s)',
       nzContent:
@@ -299,20 +246,11 @@ export class AllImagesComponent implements OnInit {
       nzOkDanger: true,
       nzOnOk: async () => {
         try {
-          await this.imageListManagementService.updateImageListImageType(
-            selectedImageIDList,
-            imageType.id
-          );
+          await this.imageListManagementService.updateImageListImageType(selectedImageIDList, imageType.id);
           await this.getImageListFromPaginationInfo();
-          this.notificationService.success(
-            'Changed image type of selected image(s) successfully',
-            ''
-          );
+          this.notificationService.success('Changed image type of selected image(s) successfully', '');
         } catch (e) {
-          this.handleError(
-            'Failed to change image type of selected image(s)',
-            e
-          );
+          this.handleError('Failed to change image type of selected image(s)', e);
         }
       },
     });
@@ -324,9 +262,7 @@ export class AllImagesComponent implements OnInit {
     }
 
     const hasImageWithNoType =
-      this.selectedIndexList.findIndex(
-        (index) => this.imageList[index].imageType === null
-      ) != -1;
+      this.selectedIndexList.findIndex((index) => this.imageList[index].imageType === null) != -1;
     if (hasImageWithNoType) {
       this.notificationService.info(
         'Cannot assign image tags because one or more selected images does not have an image type',
@@ -336,49 +272,38 @@ export class AllImagesComponent implements OnInit {
     }
 
     const selectedImageTypeIDList = getUniqueValueList(
-      this.selectedIndexList.map(
-        (index) => this.imageList[index].imageType?.id || 0
-      )
+      this.selectedIndexList.map((index) => this.imageList[index].imageType?.id || 0)
     );
     let imageTagGroupAndTagListOfImageTypeList: ImageTagGroupAndTagList[] = [];
     try {
       imageTagGroupAndTagListOfImageTypeList =
-        await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(
-          selectedImageTypeIDList
-        );
+        await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(selectedImageTypeIDList);
     } catch (e) {
       this.handleError('Failed to retrieve eligible image tag group list', e);
       return;
     }
 
     const intersectionImageTagGroupAndTagListOfImageTypeList =
-      this.imageTagManagementService.getIntersectionImageTagGroupAndTagList(
-        imageTagGroupAndTagListOfImageTypeList
-      );
+      this.imageTagManagementService.getIntersectionImageTagGroupAndTagList(imageTagGroupAndTagListOfImageTypeList);
     this.isAddImageTagToSelectedImageListModalVisible = true;
     this.addImageTagToSelectedImageListModalImageTagGroupList =
       intersectionImageTagGroupAndTagListOfImageTypeList.imageTagGroupList;
     this.addImageTagToSelectedImageListModalImageTagList =
       intersectionImageTagGroupAndTagListOfImageTypeList.imageTagList;
-    this.addImageTagToSelectedImageListModalCurrentImageTagList =
-      this.imageTagManagementService.getUnionImageTagList(
-        this.selectedIndexList.map((index) => this.imageTagList[index])
-      );
+    this.addImageTagToSelectedImageListModalCurrentImageTagList = this.imageTagManagementService.getUnionImageTagList(
+      this.selectedIndexList.map((index) => this.imageTagList[index])
+    );
     this.addImageTagToSelectedImageListModalAddedImageTagList = [];
   }
 
-  public onAddImageTagToSelectedImageListModalImageTagAdded(
-    addedImageTag: ImageTag
-  ): void {
+  public onAddImageTagToSelectedImageListModalImageTagAdded(addedImageTag: ImageTag): void {
     this.addImageTagToSelectedImageListModalAddedImageTagList = [
       ...this.addImageTagToSelectedImageListModalAddedImageTagList,
       addedImageTag,
     ];
   }
 
-  public onAddImageTagToSelectedImageListModalImageTagDeleted(
-    deletedImageTag: ImageTag
-  ): void {
+  public onAddImageTagToSelectedImageListModalImageTagDeleted(deletedImageTag: ImageTag): void {
     this.addImageTagToSelectedImageListModalAddedImageTagList =
       this.addImageTagToSelectedImageListModalAddedImageTagList.filter(
         (imageTag) => imageTag.id !== deletedImageTag.id
@@ -386,22 +311,13 @@ export class AllImagesComponent implements OnInit {
   }
 
   public async onAddImageTagToSelectedImageListModalOk(): Promise<void> {
-    const selectedImageIDList = this.selectedIndexList.map(
-      (index) => this.imageList[index].id
+    const selectedImageIDList = this.selectedIndexList.map((index) => this.imageList[index].id);
+    const addedImageTagIDList = this.addImageTagToSelectedImageListModalAddedImageTagList.map(
+      (imageTag) => imageTag.id
     );
-    const addedImageTagIDList =
-      this.addImageTagToSelectedImageListModalAddedImageTagList.map(
-        (imageTag) => imageTag.id
-      );
     try {
-      await this.imageListManagementService.addImageTagListToImageList(
-        selectedImageIDList,
-        addedImageTagIDList
-      );
-      this.notificationService.success(
-        'Added image tags to selected image(s) successfully',
-        ''
-      );
+      await this.imageListManagementService.addImageTagListToImageList(selectedImageIDList, addedImageTagIDList);
+      this.notificationService.success('Added image tags to selected image(s) successfully', '');
       this.isAddImageTagToSelectedImageListModalVisible = false;
       await this.getImageListFromPaginationInfo();
     } catch (e) {
@@ -414,25 +330,17 @@ export class AllImagesComponent implements OnInit {
   }
 
   public onDeleteSelectedImagesClicked(): void {
-    const selectedImageIDList = this.selectedIndexList.map(
-      (index) => this.imageList[index].id
-    );
+    const selectedImageIDList = this.selectedIndexList.map((index) => this.imageList[index].id);
     this.modalService.create({
       nzTitle: 'Delete selected image(s)',
       nzContent:
-        'Are you sure? This will also delete all region extracted from them. ' +
-        'This action is <b>IRREVERSIBLE</b>.',
+        'Are you sure? This will also delete all region extracted from them. ' + 'This action is <b>IRREVERSIBLE</b>.',
       nzOkDanger: true,
       nzOnOk: async () => {
         try {
-          await this.imageListManagementService.deleteImageList(
-            selectedImageIDList
-          );
+          await this.imageListManagementService.deleteImageList(selectedImageIDList);
           await this.getImageListFromPaginationInfo();
-          this.notificationService.success(
-            'Delete selected image(s) successfully',
-            ''
-          );
+          this.notificationService.success('Delete selected image(s) successfully', '');
         } catch (e) {
           this.handleError('Failed to delete selected image(s)', e);
         }
@@ -441,27 +349,17 @@ export class AllImagesComponent implements OnInit {
   }
 
   public async onRequestRegionDetectionForSelectedImagesClicked() {
-    const selectedImageIDList = this.selectedIndexList.map(
-      (index) => this.imageList[index].id
-    );
+    const selectedImageIDList = this.selectedIndexList.map((index) => this.imageList[index].id);
     this.modalService.create({
       nzTitle: 'Request for lesion suggestion for selected image(s)',
       nzContent: 'Are you sure?',
       nzOnOk: async () => {
         try {
-          await this.imageListManagementService.createImageDetectionTaskList(
-            selectedImageIDList
-          );
+          await this.imageListManagementService.createImageDetectionTaskList(selectedImageIDList);
           await this.getImageListFromPaginationInfo();
-          this.notificationService.success(
-            'Requested for lesion suggestion for selected image(s) successfully',
-            ''
-          );
+          this.notificationService.success('Requested for lesion suggestion for selected image(s) successfully', '');
         } catch (e) {
-          this.handleError(
-            'Failed to requested for lesion suggestion for selected image(s)',
-            e
-          );
+          this.handleError('Failed to requested for lesion suggestion for selected image(s)', e);
         }
       },
     });
@@ -469,10 +367,7 @@ export class AllImagesComponent implements OnInit {
 
   public onImageDbClicked(imageIndex: number): void {
     const image = this.imageList[imageIndex];
-    const filterOptions =
-      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
-        this.filterOptions
-      );
+    const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     this.router.navigate([`/manage-image/${image.id}`], {
       queryParams: {
         sort: this.imageListSortOption,
@@ -483,41 +378,26 @@ export class AllImagesComponent implements OnInit {
 
   private handleError(notificationTitle: string, e: any): void {
     if (e instanceof UnauthenticatedError) {
-      this.notificationService.error(
-        notificationTitle,
-        'User is not logged in'
-      );
+      this.notificationService.error(notificationTitle, 'User is not logged in');
       this.router.navigateByUrl('/login');
       return;
     }
     if (e instanceof UnauthorizedError) {
-      this.notificationService.error(
-        notificationTitle,
-        'User does not have the required permission'
-      );
+      this.notificationService.error(notificationTitle, 'User does not have the required permission');
       this.router.navigateByUrl('/welcome');
       return;
     }
     if (e instanceof InvalidImageListFilterOptionsError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Invalid image filter options'
-      );
+      this.notificationService.error(notificationTitle, 'Invalid image filter options');
       this.location.back();
       return;
     }
     if (e instanceof OneOrMoreImagesNotFoundError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Invalid image filter options'
-      );
+      this.notificationService.error(notificationTitle, 'Invalid image filter options');
       return;
     }
     if (e instanceof TooManyImagesError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Too many images selected'
-      );
+      this.notificationService.error(notificationTitle, 'Too many images selected');
       return;
     }
     this.notificationService.error(notificationTitle, 'Unknown error');

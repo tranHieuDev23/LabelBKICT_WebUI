@@ -1,12 +1,7 @@
 import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
-import {
-  InvalidImageListFilterOptionsError,
-  UnauthenticatedError,
-  UnauthorizedError,
-  UnknownAPIError,
-} from './errors';
+import { InvalidImageListFilterOptionsError, UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
 import { Export, ExportType, ImageListFilterOptions } from './schemas';
 
 export class InvalidExportListArgument extends Error {
@@ -27,10 +22,7 @@ export class ExportNotFoundError extends Error {
 export class ExportsService {
   constructor(private readonly axios: Axios) {}
 
-  public async createExport(
-    type: ExportType,
-    filterOptions: ImageListFilterOptions
-  ): Promise<Export> {
+  public async createExport(type: ExportType, filterOptions: ImageListFilterOptions): Promise<Export> {
     try {
       const response = await this.axios.post('/api/exports', {
         type: type,
@@ -82,9 +74,7 @@ export class ExportsService {
         params: { offset, limit },
       });
       const totalExportCount = response.data.total_export_count || 0;
-      const exportList = response.data.export_list.map((exportJSON: any) =>
-        Export.fromJSON(exportJSON)
-      );
+      const exportList = response.data.export_list.map((exportJSON: any) => Export.fromJSON(exportJSON));
       return { totalExportCount, exportList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {

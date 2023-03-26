@@ -42,44 +42,27 @@ export class ManageImageTypesComponent implements OnInit {
   ngOnInit(): void {
     (async () => {
       try {
-        const { imageTypeList, regionLabelList } =
-          await this.imageTypeManagementService.getImageTypeList();
+        const { imageTypeList, regionLabelList } = await this.imageTypeManagementService.getImageTypeList();
         this.imageTypeList = imageTypeList;
         this.regionLabelList = regionLabelList;
-        this.isImageTypeCollapsePanelOpen = new Array<boolean>(
-          imageTypeList.length
-        ).fill(false);
-        this.isImageTypeCollapsePanelAddingRegionLabelVisible =
-          new Array<boolean>(imageTypeList.length).fill(false);
-        this.imageTypeCollapsePanelAddingRegionLabelDisplayName =
-          new Array<string>(imageTypeList.length).fill('');
+        this.isImageTypeCollapsePanelOpen = new Array<boolean>(imageTypeList.length).fill(false);
+        this.isImageTypeCollapsePanelAddingRegionLabelVisible = new Array<boolean>(imageTypeList.length).fill(false);
+        this.imageTypeCollapsePanelAddingRegionLabelDisplayName = new Array<string>(imageTypeList.length).fill('');
       } catch (e) {
         if (e instanceof UnauthenticatedError) {
-          this.notificationService.error(
-            'Failed to get image type list',
-            'User is not logged in'
-          );
+          this.notificationService.error('Failed to get image type list', 'User is not logged in');
           this.router.navigateByUrl('/login');
         } else if (e instanceof UnauthorizedError) {
-          this.notificationService.error(
-            'Failed to get image type list',
-            "User doesn't have the required permission"
-          );
+          this.notificationService.error('Failed to get image type list', "User doesn't have the required permission");
           this.router.navigateByUrl('/welcome');
         } else {
-          this.notificationService.error(
-            'Failed to get image type list',
-            'Unknown error'
-          );
+          this.notificationService.error('Failed to get image type list', 'Unknown error');
         }
       }
     })().then();
   }
 
-  public async onImageTypeDisplayNameEdited(
-    index: number,
-    newDisplayName: string
-  ): Promise<void> {
+  public async onImageTypeDisplayNameEdited(index: number, newDisplayName: string): Promise<void> {
     let imageType: ImageType;
     try {
       imageType = await this.imageTypeManagementService.updateImageType(
@@ -89,32 +72,17 @@ export class ManageImageTypesComponent implements OnInit {
       );
     } catch (e) {
       if (e instanceof InvalidImageTypeInformationError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'Invalid image type information'
-        );
+        this.notificationService.error('Failed to update image type', 'Invalid image type information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to update image type', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to update image type', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof ImageTypeNotFoundError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'Cannot find image type'
-        );
+        this.notificationService.error('Failed to update image type', 'Cannot find image type');
       } else {
-        this.notificationService.error(
-          'Failed to update image type',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to update image type', 'Unknown error');
       }
       return;
     }
@@ -131,41 +99,25 @@ export class ManageImageTypesComponent implements OnInit {
   ): Promise<void> {
     let regionLabel: RegionLabel;
     try {
-      regionLabel =
-        await this.imageTypeManagementService.updateRegionLabelOfImageType(
-          this.imageTypeList[imageTypeIndex].id,
-          this.regionLabelList[imageTypeIndex][regionLabelIndex].id,
-          newDisplayName,
-          this.regionLabelList[imageTypeIndex][regionLabelIndex].color
-        );
+      regionLabel = await this.imageTypeManagementService.updateRegionLabelOfImageType(
+        this.imageTypeList[imageTypeIndex].id,
+        this.regionLabelList[imageTypeIndex][regionLabelIndex].id,
+        newDisplayName,
+        this.regionLabelList[imageTypeIndex][regionLabelIndex].color
+      );
     } catch (e) {
       if (e instanceof InvalidRegionLabelInformationError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          'Invalid region label information'
-        );
+        this.notificationService.error('Failed to update region label', 'Invalid region label information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to update region label', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to update region label', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof RegionLabelNotFoundError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          'Cannot find region label'
-        );
+        this.notificationService.error('Failed to update region label', 'Cannot find region label');
       } else {
-        this.notificationService.error(
-          'Failed to update region label',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to update region label', 'Unknown error');
       }
       return;
     }
@@ -182,41 +134,25 @@ export class ManageImageTypesComponent implements OnInit {
   ): Promise<void> {
     let regionLabel: RegionLabel;
     try {
-      regionLabel =
-        await this.imageTypeManagementService.updateRegionLabelOfImageType(
-          this.imageTypeList[imageTypeIndex].id,
-          this.regionLabelList[imageTypeIndex][regionLabelIndex].id,
-          this.regionLabelList[imageTypeIndex][regionLabelIndex].displayName,
-          newColor
-        );
+      regionLabel = await this.imageTypeManagementService.updateRegionLabelOfImageType(
+        this.imageTypeList[imageTypeIndex].id,
+        this.regionLabelList[imageTypeIndex][regionLabelIndex].id,
+        this.regionLabelList[imageTypeIndex][regionLabelIndex].displayName,
+        newColor
+      );
     } catch (e) {
       if (e instanceof InvalidRegionLabelInformationError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          'Invalid region label information'
-        );
+        this.notificationService.error('Failed to update region label', 'Invalid region label information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to update region label', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to update region label', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof RegionLabelNotFoundError) {
-        this.notificationService.error(
-          'Failed to update region label',
-          'Cannot find region label'
-        );
+        this.notificationService.error('Failed to update region label', 'Cannot find region label');
       } else {
-        this.notificationService.error(
-          'Failed to update region label',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to update region label', 'Unknown error');
       }
       return;
     }
@@ -226,10 +162,7 @@ export class ManageImageTypesComponent implements OnInit {
     this.refreshAllArray();
   }
 
-  public onImageTypeRegionLabelDeleteClicked(
-    imageTypeIndex: number,
-    regionLabelIndex: number
-  ): void {
+  public onImageTypeRegionLabelDeleteClicked(imageTypeIndex: number, regionLabelIndex: number): void {
     this.modalService.warning({
       nzTitle: 'Delete region label',
       nzContent: 'Are you sure? This action <b>CANNOT</b> be undone.',
@@ -242,15 +175,9 @@ export class ManageImageTypesComponent implements OnInit {
           );
         } catch (e) {
           if (e instanceof InvalidRegionLabelInformationError) {
-            this.notificationService.error(
-              'Failed to delete region label',
-              'Invalid region label information'
-            );
+            this.notificationService.error('Failed to delete region label', 'Invalid region label information');
           } else if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to delete region label',
-              'User is not logged in'
-            );
+            this.notificationService.error('Failed to delete region label', 'User is not logged in');
             this.router.navigateByUrl('/login');
           } else if (e instanceof UnauthorizedError) {
             this.notificationService.error(
@@ -259,23 +186,14 @@ export class ManageImageTypesComponent implements OnInit {
             );
             this.router.navigateByUrl('/welcome');
           } else if (e instanceof RegionLabelNotFoundError) {
-            this.notificationService.error(
-              'Failed to delete region label',
-              'Cannot find region label'
-            );
+            this.notificationService.error('Failed to delete region label', 'Cannot find region label');
           } else {
-            this.notificationService.error(
-              'Failed to delete region label',
-              'Unknown error'
-            );
+            this.notificationService.error('Failed to delete region label', 'Unknown error');
           }
           return;
         }
 
-        this.notificationService.success(
-          'Deleted region label successfully',
-          ''
-        );
+        this.notificationService.success('Deleted region label successfully', '');
         this.regionLabelList[imageTypeIndex].splice(regionLabelIndex, 1);
         this.refreshAllArray();
       },
@@ -286,47 +204,28 @@ export class ManageImageTypesComponent implements OnInit {
     this.isImageTypeCollapsePanelAddingRegionLabelVisible[index] = false;
   }
 
-  public async onImageTypeNewRegionLabelDisplayNameEdited(
-    index: number,
-    newDisplayName: string
-  ): Promise<void> {
+  public async onImageTypeNewRegionLabelDisplayNameEdited(index: number, newDisplayName: string): Promise<void> {
     const color = this.randomColorService.getRandomColor();
     let regionLabel: RegionLabel;
     try {
-      regionLabel =
-        await this.imageTypeManagementService.addRegionLabelToImageType(
-          this.imageTypeList[index].id,
-          newDisplayName,
-          color
-        );
+      regionLabel = await this.imageTypeManagementService.addRegionLabelToImageType(
+        this.imageTypeList[index].id,
+        newDisplayName,
+        color
+      );
     } catch (e) {
       if (e instanceof InvalidRegionLabelInformationError) {
-        this.notificationService.error(
-          'Failed to create region label',
-          'Invalid region label information'
-        );
+        this.notificationService.error('Failed to create region label', 'Invalid region label information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to create region label',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to create region label', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to create region label',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to create region label', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof RegionLabelNotFoundError) {
-        this.notificationService.error(
-          'Failed to create region label',
-          'Cannot find image type'
-        );
+        this.notificationService.error('Failed to create region label', 'Cannot find image type');
       } else {
-        this.notificationService.error(
-          'Failed to create region label',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to create region label', 'Unknown error');
       }
       return;
     }
@@ -341,10 +240,7 @@ export class ManageImageTypesComponent implements OnInit {
     this.isImageTypeCollapsePanelAddingRegionLabelVisible[index] = true;
   }
 
-  public async onImageTypeHasPredictiveModelChanged(
-    index: number,
-    newHasPredictiveModel: boolean
-  ): Promise<void> {
+  public async onImageTypeHasPredictiveModelChanged(index: number, newHasPredictiveModel: boolean): Promise<void> {
     let imageType: ImageType;
     try {
       imageType = await this.imageTypeManagementService.updateImageType(
@@ -354,32 +250,17 @@ export class ManageImageTypesComponent implements OnInit {
       );
     } catch (e) {
       if (e instanceof InvalidImageTypeInformationError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'Invalid image type information'
-        );
+        this.notificationService.error('Failed to update image type', 'Invalid image type information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to update image type', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to update image type', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof ImageTypeNotFoundError) {
-        this.notificationService.error(
-          'Failed to update image type',
-          'Cannot find image type'
-        );
+        this.notificationService.error('Failed to update image type', 'Cannot find image type');
       } else {
-        this.notificationService.error(
-          'Failed to update image type',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to update image type', 'Unknown error');
       }
       return;
     }
@@ -397,32 +278,18 @@ export class ManageImageTypesComponent implements OnInit {
       nzOkDanger: true,
       nzOnOk: async () => {
         try {
-          await this.imageTypeManagementService.deleteImageType(
-            this.imageTypeList[index].id
-          );
+          await this.imageTypeManagementService.deleteImageType(this.imageTypeList[index].id);
         } catch (e) {
           if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to delete image type',
-              'User is not logged in'
-            );
+            this.notificationService.error('Failed to delete image type', 'User is not logged in');
             this.router.navigateByUrl('/login');
           } else if (e instanceof UnauthorizedError) {
-            this.notificationService.error(
-              'Failed to delete image type',
-              "User doesn't have the required permission"
-            );
+            this.notificationService.error('Failed to delete image type', "User doesn't have the required permission");
             this.router.navigateByUrl('/welcome');
           } else if (e instanceof ImageTypeNotFoundError) {
-            this.notificationService.error(
-              'Failed to delete image type',
-              'Cannot find image type'
-            );
+            this.notificationService.error('Failed to delete image type', 'Cannot find image type');
           } else {
-            this.notificationService.error(
-              'Failed to delete image type',
-              'Unknown error'
-            );
+            this.notificationService.error('Failed to delete image type', 'Unknown error');
           }
           return;
         }
@@ -432,10 +299,7 @@ export class ManageImageTypesComponent implements OnInit {
         this.regionLabelList.splice(index, 1);
         this.isImageTypeCollapsePanelOpen.splice(index, 1);
         this.isImageTypeCollapsePanelAddingRegionLabelVisible.splice(index, 1);
-        this.imageTypeCollapsePanelAddingRegionLabelDisplayName.splice(
-          index,
-          1
-        );
+        this.imageTypeCollapsePanelAddingRegionLabelDisplayName.splice(index, 1);
         this.refreshAllArray();
       },
     });
@@ -445,38 +309,21 @@ export class ManageImageTypesComponent implements OnInit {
     this.isNewImageTypePanelVisible = false;
   }
 
-  public async onNewImageTypeDisplayNameEdited(
-    newDisplayName: string
-  ): Promise<void> {
+  public async onNewImageTypeDisplayNameEdited(newDisplayName: string): Promise<void> {
     let imageType: ImageType;
     try {
-      imageType = await this.imageTypeManagementService.createImageType(
-        newDisplayName,
-        false
-      );
+      imageType = await this.imageTypeManagementService.createImageType(newDisplayName, false);
     } catch (e) {
       if (e instanceof InvalidImageTypeInformationError) {
-        this.notificationService.error(
-          'Failed to create image type',
-          'Invalid image type information'
-        );
+        this.notificationService.error('Failed to create image type', 'Invalid image type information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to create image type',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to create image type', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to create image type',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to create image type', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else {
-        this.notificationService.error(
-          'Failed to create image type',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to create image type', 'Unknown error');
       }
       return;
     }
@@ -499,9 +346,7 @@ export class ManageImageTypesComponent implements OnInit {
     this.imageTypeList = [...this.imageTypeList];
     this.regionLabelList = [...this.regionLabelList];
     this.isImageTypeCollapsePanelOpen = [...this.isImageTypeCollapsePanelOpen];
-    this.isImageTypeCollapsePanelAddingRegionLabelVisible = [
-      ...this.isImageTypeCollapsePanelAddingRegionLabelVisible,
-    ];
+    this.isImageTypeCollapsePanelAddingRegionLabelVisible = [...this.isImageTypeCollapsePanelAddingRegionLabelVisible];
     this.imageTypeCollapsePanelAddingRegionLabelDisplayName = [
       ...this.imageTypeCollapsePanelAddingRegionLabelDisplayName,
     ];

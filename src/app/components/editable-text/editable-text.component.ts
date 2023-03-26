@@ -1,11 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { FocusableDirective } from './focusable.directive';
 
@@ -15,9 +8,7 @@ import { FocusableDirective } from './focusable.directive';
   styleUrls: ['./editable-text.component.scss'],
 })
 export class EditableTextComponent {
-  @ViewChild(FocusableDirective) private textInput:
-    | FocusableDirective
-    | undefined;
+  @ViewChild(FocusableDirective) private textInput: FocusableDirective | undefined;
   @Input() public text = '';
   @Input() public editable = true;
   @Input() public placeholder = '';
@@ -46,10 +37,7 @@ export class EditableTextComponent {
 
   public formGroup: UntypedFormGroup;
 
-  constructor(
-    formBuilder: UntypedFormBuilder,
-    private changeDetector: ChangeDetectorRef
-  ) {
+  constructor(formBuilder: UntypedFormBuilder, private changeDetector: ChangeDetectorRef) {
     this.formGroup = formBuilder.group({
       text: ['', []],
     });

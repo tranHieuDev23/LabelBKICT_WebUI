@@ -13,28 +13,17 @@ import {
   providedIn: 'root',
 })
 export class ImageListManagementService {
-  constructor(
-    private readonly imageListService: ImageListService,
-    private readonly imagesService: ImagesService
-  ) {}
+  constructor(private readonly imageListService: ImageListService, private readonly imagesService: ImagesService) {}
 
-  public async updateImageListImageType(
-    imageIDList: number[],
-    imageTypeID: number
-  ): Promise<void> {
-    await this.imageListService.updateImageListImageType(
-      imageIDList,
-      imageTypeID
-    );
+  public async updateImageListImageType(imageIDList: number[], imageTypeID: number): Promise<void> {
+    await this.imageListService.updateImageListImageType(imageIDList, imageTypeID);
   }
 
   public async deleteImageList(imageIDList: number[]): Promise<void> {
     await this.imageListService.deleteImageList(imageIDList);
   }
 
-  public async createImageDetectionTaskList(
-    imageIDList: number[]
-  ): Promise<void> {
+  public async createImageDetectionTaskList(imageIDList: number[]): Promise<void> {
     await this.imageListService.createImageDetectionTaskList(imageIDList);
   }
 
@@ -49,24 +38,12 @@ export class ImageListManagementService {
     imageTagList: ImageTag[][];
   }> {
     filterOptions.uploadedByUserIDList = [];
-    filterOptions.originalFilenameQuery =
-      filterOptions.originalFilenameQuery.trim();
-    return await this.imageListService.getUserImageList(
-      offset,
-      limit,
-      sortOption,
-      filterOptions
-    );
+    filterOptions.originalFilenameQuery = filterOptions.originalFilenameQuery.trim();
+    return await this.imageListService.getUserImageList(offset, limit, sortOption, filterOptions);
   }
 
-  public async searchUserManageableImageUserList(
-    query: string,
-    limit: number
-  ): Promise<User[]> {
-    return await this.imageListService.getUserManageableImageUserList(
-      query.trim(),
-      limit
-    );
+  public async searchUserManageableImageUserList(query: string, limit: number): Promise<User[]> {
+    return await this.imageListService.getUserManageableImageUserList(query.trim(), limit);
   }
 
   public async getUserManageableImageList(
@@ -79,24 +56,12 @@ export class ImageListManagementService {
     imageList: Image[];
     imageTagList: ImageTag[][];
   }> {
-    filterOptions.originalFilenameQuery =
-      filterOptions.originalFilenameQuery.trim();
-    return await this.imageListService.getUserManageableImageList(
-      offset,
-      limit,
-      sortOption,
-      filterOptions
-    );
+    filterOptions.originalFilenameQuery = filterOptions.originalFilenameQuery.trim();
+    return await this.imageListService.getUserManageableImageList(offset, limit, sortOption, filterOptions);
   }
 
-  public async searchUserVerifiableImageUserList(
-    query: string,
-    limit: number
-  ): Promise<User[]> {
-    return await this.imageListService.getUserVerifiableImageUserList(
-      query.trim(),
-      limit
-    );
+  public async searchUserVerifiableImageUserList(query: string, limit: number): Promise<User[]> {
+    return await this.imageListService.getUserVerifiableImageUserList(query.trim(), limit);
   }
 
   public async getUserVerifiableImageList(
@@ -109,24 +74,12 @@ export class ImageListManagementService {
     imageList: Image[];
     imageTagList: ImageTag[][];
   }> {
-    filterOptions.originalFilenameQuery =
-      filterOptions.originalFilenameQuery.trim();
-    return await this.imageListService.getUserVerifiableImageList(
-      offset,
-      limit,
-      sortOption,
-      filterOptions
-    );
+    filterOptions.originalFilenameQuery = filterOptions.originalFilenameQuery.trim();
+    return await this.imageListService.getUserVerifiableImageList(offset, limit, sortOption, filterOptions);
   }
 
-  public async searchUserExportableImageUserList(
-    query: string,
-    limit: number
-  ): Promise<User[]> {
-    return await this.imageListService.getUserExportableImageUserList(
-      query.trim(),
-      limit
-    );
+  public async searchUserExportableImageUserList(query: string, limit: number): Promise<User[]> {
+    return await this.imageListService.getUserExportableImageUserList(query.trim(), limit);
   }
 
   public async getUserExportableImageList(
@@ -139,14 +92,8 @@ export class ImageListManagementService {
     imageList: Image[];
     imageTagList: ImageTag[][];
   }> {
-    filterOptions.originalFilenameQuery =
-      filterOptions.originalFilenameQuery.trim();
-    return await this.imageListService.getUserExportableImageList(
-      offset,
-      limit,
-      sortOption,
-      filterOptions
-    );
+    filterOptions.originalFilenameQuery = filterOptions.originalFilenameQuery.trim();
+    return await this.imageListService.getUserExportableImageList(offset, limit, sortOption, filterOptions);
   }
 
   public async getImagePositionInList(
@@ -159,23 +106,13 @@ export class ImageListManagementService {
     prevImageID: number | undefined;
     nextImageID: number | undefined;
   }> {
-    return await this.imageListService.getImagePositionInList(
-      imageID,
-      sortOption,
-      filterOptions
-    );
+    return await this.imageListService.getImagePositionInList(imageID, sortOption, filterOptions);
   }
 
-  public async addImageTagListToImageList(
-    imageIDList: number[],
-    imageTagIDList: number[]
-  ): Promise<void> {
+  public async addImageTagListToImageList(imageIDList: number[], imageTagIDList: number[]): Promise<void> {
     if (imageIDList.length === 0 || imageTagIDList.length === 0) {
       return;
     }
-    await this.imagesService.addImageTagListToImageList(
-      imageIDList,
-      imageTagIDList
-    );
+    await this.imagesService.addImageTagListToImageList(imageIDList, imageTagIDList);
   }
 }

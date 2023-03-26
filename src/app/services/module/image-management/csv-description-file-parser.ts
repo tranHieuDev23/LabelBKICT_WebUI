@@ -1,8 +1,5 @@
 import { parse } from 'papaparse';
-import {
-  DescriptionFileParser,
-  FilenameWithDescription,
-} from './description-file-parser';
+import { DescriptionFileParser, FilenameWithDescription } from './description-file-parser';
 
 export class CsvDescriptionFileParser implements DescriptionFileParser {
   public async parseFile(file: File): Promise<FilenameWithDescription[]> {

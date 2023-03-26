@@ -9,14 +9,7 @@ import { NzTypographyModule } from 'ng-zorro-antd/typography';
 
 @NgModule({
   declarations: [ImageTagSelectComponent],
-  imports: [
-    CommonModule,
-    NzIconModule,
-    NzSelectModule,
-    NzTagModule,
-    FormsModule,
-    NzTypographyModule,
-  ],
+  imports: [CommonModule, NzIconModule, NzSelectModule, NzTagModule, FormsModule, NzTypographyModule],
   exports: [ImageTagSelectComponent],
 })
 export class ImageTagSelectModule {}

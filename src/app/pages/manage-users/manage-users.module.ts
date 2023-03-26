@@ -40,7 +40,7 @@ import { UserFilterOptionsSelectorModule } from 'src/app/components/user-filter-
     NzCheckboxModule,
     NzTagModule,
     UserSearchBoxModule,
-    UserFilterOptionsSelectorModule
+    UserFilterOptionsSelectorModule,
   ],
   exports: [ManageUsersComponent],
 })

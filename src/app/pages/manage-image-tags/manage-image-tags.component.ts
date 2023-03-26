@@ -57,23 +57,17 @@ export class ManageImageTagsComponent implements OnInit {
         this.imageTagGroupList = imageTagGroupList;
         this.imageTagList = imageTagList;
         this.imageTypeList = imageTypeList;
-        this.isImageTagGroupCollapsePanelOpen = new Array<boolean>(
-          imageTagGroupList.length
-        ).fill(false);
-        this.isImageTagGroupCollapsePanelAddingImageTagVisible =
-          new Array<boolean>(imageTagGroupList.length).fill(false);
-        this.imageTagGroupCollapsePanelAddingImageTagDisplayName =
-          new Array<string>(imageTagGroupList.length).fill('');
+        this.isImageTagGroupCollapsePanelOpen = new Array<boolean>(imageTagGroupList.length).fill(false);
+        this.isImageTagGroupCollapsePanelAddingImageTagVisible = new Array<boolean>(imageTagGroupList.length).fill(
+          false
+        );
+        this.imageTagGroupCollapsePanelAddingImageTagDisplayName = new Array<string>(imageTagGroupList.length).fill('');
 
-        const { imageTypeList: addImageTypeModalImageTypeList } =
-          await this.imageTypesService.getImageTypeList(false);
+        const { imageTypeList: addImageTypeModalImageTypeList } = await this.imageTypesService.getImageTypeList(false);
         this.addImageTypeModalAllImageTypeList = addImageTypeModalImageTypeList;
       } catch (e) {
         if (e instanceof UnauthenticatedError) {
-          this.notificationService.error(
-            'Failed to get image tag group list',
-            'User is not logged in'
-          );
+          this.notificationService.error('Failed to get image tag group list', 'User is not logged in');
           this.router.navigateByUrl('/login');
         } else if (e instanceof UnauthorizedError) {
           this.notificationService.error(
@@ -82,19 +76,13 @@ export class ManageImageTagsComponent implements OnInit {
           );
           this.router.navigateByUrl('/welcome');
         } else {
-          this.notificationService.error(
-            'Failed to get image tag group list',
-            'Unknown error'
-          );
+          this.notificationService.error('Failed to get image tag group list', 'Unknown error');
         }
       }
     })().then();
   }
 
-  public async onImageTagGroupDisplayNameEdited(
-    index: number,
-    newDisplayName: string
-  ): Promise<void> {
+  public async onImageTagGroupDisplayNameEdited(index: number, newDisplayName: string): Promise<void> {
     let imageTagGroup: ImageTagGroup;
     try {
       imageTagGroup = await this.imageTagManagementService.updateImageTagGroup(
@@ -104,40 +92,22 @@ export class ManageImageTagsComponent implements OnInit {
       );
     } catch (e) {
       if (e instanceof InvalidImageTagGroupInformationError) {
-        this.notificationService.error(
-          'Failed to update image tag group',
-          'Invalid image tag group information'
-        );
+        this.notificationService.error('Failed to update image tag group', 'Invalid image tag group information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update image tag group',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to update image tag group', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update image tag group',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to update image tag group', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof ImageTagGroupNotFoundError) {
-        this.notificationService.error(
-          'Failed to update image tag group',
-          'Cannot find image tag group'
-        );
+        this.notificationService.error('Failed to update image tag group', 'Cannot find image tag group');
       } else {
-        this.notificationService.error(
-          'Failed to update image tag group',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to update image tag group', 'Unknown error');
       }
       return;
     }
 
-    this.notificationService.success(
-      'Updated image tag group successfully',
-      ''
-    );
+    this.notificationService.success('Updated image tag group successfully', '');
     this.imageTagGroupList[index] = imageTagGroup;
     this.refreshAllArray();
   }
@@ -158,10 +128,7 @@ export class ManageImageTagsComponent implements OnInit {
           'Invalid image tag information'
         );
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to remove image type from image tag group',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to remove image type from image tag group', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
         this.notificationService.error(
@@ -180,18 +147,12 @@ export class ManageImageTagsComponent implements OnInit {
           'Image tag group does not have image type'
         );
       } else {
-        this.notificationService.error(
-          'Failed to remove image type from image tag group',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to remove image type from image tag group', 'Unknown error');
       }
       return;
     }
 
-    this.notificationService.success(
-      'Removed image type from image tag group successfully',
-      ''
-    );
+    this.notificationService.success('Removed image type from image tag group successfully', '');
     this.imageTypeList[imageTagGroupIndex].splice(imageTypeIndex, 1);
     this.refreshAllArray();
   }
@@ -203,16 +164,13 @@ export class ManageImageTagsComponent implements OnInit {
     }
 
     this.addImageTypeModalImageTagGroupIndex = index;
-    this.addImageTypeModalImageTypeList =
-      this.addImageTypeModalAllImageTypeList.filter((imageType) => {
-        return !addedImageTypeIDSet.has(imageType.id);
-      });
+    this.addImageTypeModalImageTypeList = this.addImageTypeModalAllImageTypeList.filter((imageType) => {
+      return !addedImageTypeIDSet.has(imageType.id);
+    });
     this.isAddImageTypeModalVisible = true;
   }
 
-  public async onAddImageTypeModalImageTypeClicked(
-    imageType: ImageType
-  ): Promise<void> {
+  public async onAddImageTypeModalImageTypeClicked(imageType: ImageType): Promise<void> {
     try {
       await this.imageTagManagementService.addImageTypeToImageTagGroup(
         this.imageTagGroupList[this.addImageTypeModalImageTagGroupIndex].id,
@@ -220,15 +178,9 @@ export class ManageImageTagsComponent implements OnInit {
       );
     } catch (e) {
       if (e instanceof InvalidImageTagInformationError) {
-        this.notificationService.error(
-          'Failed to add image type to image tag group',
-          'Invalid image tag information'
-        );
+        this.notificationService.error('Failed to add image type to image tag group', 'Invalid image tag information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to add image type to image tag group',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to add image type to image tag group', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
         this.notificationService.error(
@@ -247,21 +199,13 @@ export class ManageImageTagsComponent implements OnInit {
           'Image tag group already has image type'
         );
       } else {
-        this.notificationService.error(
-          'Failed to add image type to image tag group',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to add image type to image tag group', 'Unknown error');
       }
       return;
     }
 
-    this.notificationService.success(
-      'Added image type to image tag group successfully',
-      ''
-    );
-    this.imageTypeList[this.addImageTypeModalImageTagGroupIndex].push(
-      imageType
-    );
+    this.notificationService.success('Added image type to image tag group successfully', '');
+    this.imageTypeList[this.addImageTypeModalImageTagGroupIndex].push(imageType);
     this.isAddImageTypeModalVisible = false;
     this.refreshAllArray();
   }
@@ -277,40 +221,24 @@ export class ManageImageTagsComponent implements OnInit {
   ): Promise<void> {
     let imageTag: ImageTag;
     try {
-      imageTag =
-        await this.imageTagManagementService.updateImageTagOfImageTagGroup(
-          this.imageTagGroupList[imageTagGroupIndex].id,
-          this.imageTagList[imageTagGroupIndex][imageTagIndex].id,
-          newDisplayName
-        );
+      imageTag = await this.imageTagManagementService.updateImageTagOfImageTagGroup(
+        this.imageTagGroupList[imageTagGroupIndex].id,
+        this.imageTagList[imageTagGroupIndex][imageTagIndex].id,
+        newDisplayName
+      );
     } catch (e) {
       if (e instanceof InvalidImageTagInformationError) {
-        this.notificationService.error(
-          'Failed to update image tag',
-          'Invalid image tag information'
-        );
+        this.notificationService.error('Failed to update image tag', 'Invalid image tag information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update image tag',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to update image tag', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update image tag',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to update image tag', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof ImageTagNotFoundError) {
-        this.notificationService.error(
-          'Failed to update image tag',
-          'Cannot find image tag'
-        );
+        this.notificationService.error('Failed to update image tag', 'Cannot find image tag');
       } else {
-        this.notificationService.error(
-          'Failed to update image tag',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to update image tag', 'Unknown error');
       }
       return;
     }
@@ -320,10 +248,7 @@ export class ManageImageTagsComponent implements OnInit {
     this.refreshAllArray();
   }
 
-  public onImageTagGroupImageTagDeleteClicked(
-    imageTagGroupIndex: number,
-    imageTagIndex: number
-  ): void {
+  public onImageTagGroupImageTagDeleteClicked(imageTagGroupIndex: number, imageTagIndex: number): void {
     this.modalService.warning({
       nzTitle: 'Delete image tag',
       nzContent: 'Are you sure? This action <b>CANNOT</b> be undone.',
@@ -337,32 +262,17 @@ export class ManageImageTagsComponent implements OnInit {
           );
         } catch (e) {
           if (e instanceof InvalidImageTagInformationError) {
-            this.notificationService.error(
-              'Failed to delete image tag',
-              'Invalid image tag information'
-            );
+            this.notificationService.error('Failed to delete image tag', 'Invalid image tag information');
           } else if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to delete image tag',
-              'User is not logged in'
-            );
+            this.notificationService.error('Failed to delete image tag', 'User is not logged in');
             this.router.navigateByUrl('/login');
           } else if (e instanceof UnauthorizedError) {
-            this.notificationService.error(
-              'Failed to delete image tag',
-              "User doesn't have the required permission"
-            );
+            this.notificationService.error('Failed to delete image tag', "User doesn't have the required permission");
             this.router.navigateByUrl('/welcome');
           } else if (e instanceof ImageTagNotFoundError) {
-            this.notificationService.error(
-              'Failed to delete image tag',
-              'Cannot find image tag'
-            );
+            this.notificationService.error('Failed to delete image tag', 'Cannot find image tag');
           } else {
-            this.notificationService.error(
-              'Failed to delete image tag',
-              'Unknown error'
-            );
+            this.notificationService.error('Failed to delete image tag', 'Unknown error');
           }
           return;
         }
@@ -378,45 +288,26 @@ export class ManageImageTagsComponent implements OnInit {
     this.isImageTagGroupCollapsePanelAddingImageTagVisible[index] = false;
   }
 
-  public async onImageTagGroupNewImageTagDisplayNameEdited(
-    index: number,
-    newDisplayName: string
-  ): Promise<void> {
+  public async onImageTagGroupNewImageTagDisplayNameEdited(index: number, newDisplayName: string): Promise<void> {
     let imageTag: ImageTag;
     try {
-      imageTag =
-        await this.imageTagManagementService.addImageTagToImageTagGroup(
-          this.imageTagGroupList[index].id,
-          newDisplayName
-        );
+      imageTag = await this.imageTagManagementService.addImageTagToImageTagGroup(
+        this.imageTagGroupList[index].id,
+        newDisplayName
+      );
     } catch (e) {
       if (e instanceof InvalidImageTagInformationError) {
-        this.notificationService.error(
-          'Failed to create image tag',
-          'Invalid image tag information'
-        );
+        this.notificationService.error('Failed to create image tag', 'Invalid image tag information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to create image tag',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to create image tag', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to create image tag',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to create image tag', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof ImageTagNotFoundError) {
-        this.notificationService.error(
-          'Failed to create image tag',
-          'Cannot find image tag group'
-        );
+        this.notificationService.error('Failed to create image tag', 'Cannot find image tag group');
       } else {
-        this.notificationService.error(
-          'Failed to create image tag',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to create image tag', 'Unknown error');
       }
       return;
     }
@@ -431,10 +322,7 @@ export class ManageImageTagsComponent implements OnInit {
     this.isImageTagGroupCollapsePanelAddingImageTagVisible[index] = true;
   }
 
-  public async onImageTagGroupIsSingleValueChanged(
-    index: number,
-    newIsSingleValue: boolean
-  ): Promise<void> {
+  public async onImageTagGroupIsSingleValueChanged(index: number, newIsSingleValue: boolean): Promise<void> {
     let imageTagGroup: ImageTagGroup;
     try {
       imageTagGroup = await this.imageTagManagementService.updateImageTagGroup(
@@ -444,40 +332,22 @@ export class ManageImageTagsComponent implements OnInit {
       );
     } catch (e) {
       if (e instanceof InvalidImageTagGroupInformationError) {
-        this.notificationService.error(
-          'Failed to update image tag group',
-          'Invalid image tag group information'
-        );
+        this.notificationService.error('Failed to update image tag group', 'Invalid image tag group information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to update image tag group',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to update image tag group', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to update image tag group',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to update image tag group', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof ImageTagGroupNotFoundError) {
-        this.notificationService.error(
-          'Failed to update image tag group',
-          'Cannot find image tag group'
-        );
+        this.notificationService.error('Failed to update image tag group', 'Cannot find image tag group');
       } else {
-        this.notificationService.error(
-          'Failed to update image tag group',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to update image tag group', 'Unknown error');
       }
       return;
     }
 
-    this.notificationService.success(
-      'Updated image tag group successfully',
-      ''
-    );
+    this.notificationService.success('Updated image tag group successfully', '');
     this.imageTagGroupList[index] = imageTagGroup;
     this.refreshAllArray();
   }
@@ -489,15 +359,10 @@ export class ManageImageTagsComponent implements OnInit {
       nzCancelText: 'Cancel',
       nzOnOk: async () => {
         try {
-          await this.imageTagManagementService.deleteImageTagGroup(
-            this.imageTagGroupList[index].id
-          );
+          await this.imageTagManagementService.deleteImageTagGroup(this.imageTagGroupList[index].id);
         } catch (e) {
           if (e instanceof UnauthenticatedError) {
-            this.notificationService.error(
-              'Failed to delete image tag group',
-              'User is not logged in'
-            );
+            this.notificationService.error('Failed to delete image tag group', 'User is not logged in');
             this.router.navigateByUrl('/login');
           } else if (e instanceof UnauthorizedError) {
             this.notificationService.error(
@@ -506,32 +371,20 @@ export class ManageImageTagsComponent implements OnInit {
             );
             this.router.navigateByUrl('/welcome');
           } else if (e instanceof ImageTagGroupNotFoundError) {
-            this.notificationService.error(
-              'Failed to delete image tag group',
-              'Cannot find image tag group'
-            );
+            this.notificationService.error('Failed to delete image tag group', 'Cannot find image tag group');
           } else {
-            this.notificationService.error(
-              'Failed to delete image tag group',
-              'Unknown error'
-            );
+            this.notificationService.error('Failed to delete image tag group', 'Unknown error');
           }
           return;
         }
 
-        this.notificationService.success(
-          'Deleted image tag group successfully',
-          ''
-        );
+        this.notificationService.success('Deleted image tag group successfully', '');
         this.imageTagGroupList.splice(index, 1);
         this.imageTagList.splice(index, 1);
         this.imageTypeList.splice(index, 1);
         this.isImageTagGroupCollapsePanelOpen.splice(index, 1);
         this.isImageTagGroupCollapsePanelAddingImageTagVisible.splice(index, 1);
-        this.imageTagGroupCollapsePanelAddingImageTagDisplayName.splice(
-          index,
-          1
-        );
+        this.imageTagGroupCollapsePanelAddingImageTagDisplayName.splice(index, 1);
         this.refreshAllArray();
       },
     });
@@ -541,46 +394,26 @@ export class ManageImageTagsComponent implements OnInit {
     this.isNewImageTagGroupPanelVisible = false;
   }
 
-  public async onNewImageTagGroupDisplayNameEdited(
-    newDisplayName: string
-  ): Promise<void> {
+  public async onNewImageTagGroupDisplayNameEdited(newDisplayName: string): Promise<void> {
     let imageTagGroup: ImageTagGroup;
     try {
-      imageTagGroup = await this.imageTagManagementService.createImageTagGroup(
-        newDisplayName,
-        false
-      );
+      imageTagGroup = await this.imageTagManagementService.createImageTagGroup(newDisplayName, false);
     } catch (e) {
       if (e instanceof InvalidImageTagGroupInformationError) {
-        this.notificationService.error(
-          'Failed to create image tag group',
-          'Invalid image tag group information'
-        );
+        this.notificationService.error('Failed to create image tag group', 'Invalid image tag group information');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to create image tag group',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to create image tag group', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to create image tag group',
-          "User doesn't have the required permission"
-        );
+        this.notificationService.error('Failed to create image tag group', "User doesn't have the required permission");
         this.router.navigateByUrl('/welcome');
       } else {
-        this.notificationService.error(
-          'Failed to create image tag group',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to create image tag group', 'Unknown error');
       }
       return;
     }
 
-    this.notificationService.success(
-      'Created image tag group successfully',
-      ''
-    );
+    this.notificationService.success('Created image tag group successfully', '');
     this.imageTagGroupList.push(imageTagGroup);
     this.imageTagList.push([]);
     this.imageTypeList.push([]);
@@ -599,9 +432,7 @@ export class ManageImageTagsComponent implements OnInit {
     this.imageTagGroupList = [...this.imageTagGroupList];
     this.imageTagList = [...this.imageTagList];
     this.imageTypeList = [...this.imageTypeList];
-    this.isImageTagGroupCollapsePanelOpen = [
-      ...this.isImageTagGroupCollapsePanelOpen,
-    ];
+    this.isImageTagGroupCollapsePanelOpen = [...this.isImageTagGroupCollapsePanelOpen];
     this.isImageTagGroupCollapsePanelAddingImageTagVisible = [
       ...this.isImageTagGroupCollapsePanelAddingImageTagVisible,
     ];

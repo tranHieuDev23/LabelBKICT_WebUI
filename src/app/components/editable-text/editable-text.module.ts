@@ -10,14 +10,7 @@ import { FocusableDirective } from './focusable.directive';
 
 @NgModule({
   declarations: [EditableTextComponent, FocusableDirective],
-  imports: [
-    CommonModule,
-    NzTypographyModule,
-    NzIconModule,
-    NzInputModule,
-    NzButtonModule,
-    ReactiveFormsModule,
-  ],
+  imports: [CommonModule, NzTypographyModule, NzIconModule, NzInputModule, NzButtonModule, ReactiveFormsModule],
   exports: [EditableTextComponent],
 })
 export class EditableTextModule {}

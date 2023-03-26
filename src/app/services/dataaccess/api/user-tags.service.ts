@@ -1,11 +1,7 @@
 import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
-import {
-  UnauthenticatedError,
-  UnauthorizedError,
-  UnknownAPIError,
-} from './errors';
+import { UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
 import { UserTag } from './schemas';
 
 export enum UserTagListSortOrder {
@@ -39,10 +35,7 @@ export class UserTagNotFoundError extends Error {
 export class UserTagsService {
   constructor(private readonly axios: Axios) {}
 
-  public async createUserTag(
-    displayName: string,
-    description: string
-  ): Promise<UserTag> {
+  public async createUserTag(displayName: string, description: string): Promise<UserTag> {
     try {
       const response = await this.axios.post('/api/user-tags', {
         display_name: displayName,
