@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Circle, Coordinate, Eclipse, FreePolygon, Rectangle, Shape } from '../models';
+import { Coordinate, Eclipse, FreePolygon, Rectangle, Shape } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { GeometryService } from './geometry.service';
 
@@ -112,6 +112,34 @@ export class RegionSelectorGeometryService {
     }
 
     throw new Error('Unsupported shape');
+  }
+
+  public mouseToCanvasDistance(canvas: HTMLCanvasElement, from: Coordinate, to: Coordinate): number {
+    const canvasFrom = this.mouseToCanvasPosition(canvas, from);
+    const canvasTo = this.mouseToCanvasPosition(canvas, to);
+    return this.geometryService.getDistance(canvasFrom, canvasTo);
+  }
+
+  public canvasToImageDistance(
+    canvas: HTMLCanvasElement,
+    content: RegionSelectorContent,
+    from: Coordinate,
+    to: Coordinate
+  ): number {
+    const imageFrom = this.canvasToImagePosition(canvas, content, from);
+    const imageTo = this.canvasToImagePosition(canvas, content, to);
+    return this.geometryService.getDistance(imageFrom, imageTo);
+  }
+
+  public mouseToImageDistance(
+    canvas: HTMLCanvasElement,
+    content: RegionSelectorContent,
+    from: Coordinate,
+    to: Coordinate
+  ): number {
+    const canvasFrom = this.mouseToCanvasPosition(canvas, from);
+    const canvasTo = this.mouseToCanvasPosition(canvas, to);
+    return this.canvasToImageDistance(canvas, content, canvasFrom, canvasTo);
   }
 
   public imageToCanvasDistance(

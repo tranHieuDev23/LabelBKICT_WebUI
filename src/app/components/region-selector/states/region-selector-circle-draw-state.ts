@@ -2,7 +2,7 @@ import { GeometryService } from '../geometry/geometry.service';
 import { RegionSelectorGeometryService } from '../geometry/region-selector-geometry.service';
 import { CanvasGraphicService } from '../graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic.service';
-import { Circle, Coordinate, Shape } from '../models';
+import { Coordinate, Eclipse, Shape } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
@@ -46,11 +46,11 @@ export class CircleDrawState extends EditState {
       cursorMousePosition
     );
 
-    const operationAndShapeIDToOperate = this.getOperationAndShapeIDToOperate(canvas, cursorMousePosition);
+    const operationAndShapeIDToOperate = this.getOperationAndShapeIDToOperate(canvas, cursorImagePosition);
     if (operationAndShapeIDToOperate === null) {
       const newContent = { ...this.content };
       const shapeIDToOperate = newContent.drawnShapeList.length;
-      newContent.drawnShapeList = [...newContent.drawnShapeList, new Circle(cursorImagePosition, 0)];
+      newContent.drawnShapeList = [...newContent.drawnShapeList, new Eclipse(cursorImagePosition, 0, 0)];
       newContent.cursorImagePosition = cursorImagePosition;
       return new CircleDrawState(
         newContent,
@@ -81,7 +81,7 @@ export class CircleDrawState extends EditState {
 
   private getOperationAndShapeIDToOperate(
     canvas: HTMLCanvasElement,
-    cursorMousePosition: Coordinate
+    cursorImagePosition: Coordinate
   ): {
     operation: CircleDrawStateOperation;
     shapeID: number;
@@ -92,16 +92,16 @@ export class CircleDrawState extends EditState {
 
     for (let i = 0; i < this.content.drawnShapeList.length; i++) {
       const shape = this.content.drawnShapeList[i];
-      if (!(shape instanceof Circle)) {
+      if (!(shape instanceof Eclipse)) {
         continue;
       }
 
-      const centerMousePosition = this.regionSelectorGeometryService.imageToMousePosition(
+      const centerCursorDistance = this.regionSelectorGeometryService.imageToMouseDistance(
         canvas,
         this.content,
+        cursorImagePosition,
         shape.center
       );
-      const centerCursorDistance = this.geometryService.getDistance(centerMousePosition, cursorMousePosition);
       if (centerCursorDistance < minDistance) {
         operation = CircleDrawStateOperation.MOVE;
         shapeID = i;
@@ -109,8 +109,8 @@ export class CircleDrawState extends EditState {
       }
 
       const mouseRadius = this.regionSelectorGeometryService.imageToMouseDistance(canvas, this.content, shape.center, {
-        x: shape.center.x,
-        y: shape.center.y + shape.radius,
+        x: shape.center.x + shape.radiusX,
+        y: shape.center.y,
       });
       const diameterCursorDistance = Math.abs(centerCursorDistance - mouseRadius);
       if (diameterCursorDistance < minDistance) {
@@ -159,16 +159,16 @@ export class CircleDrawState extends EditState {
       return this.onMouseMoveMove(cursorImagePosition);
     }
 
-    return this.onMouseMoveResize(cursorImagePosition);
+    return this.onMouseMoveResize(canvas, cursorImagePosition);
   }
 
   private onMouseMoveMove(cursorImagePosition: Coordinate): RegionSelectorState {
     const shapeToOperate = this.content.drawnShapeList[this.shapeIDToOperate || 0];
-    if (!(shapeToOperate instanceof Circle)) {
+    if (!(shapeToOperate instanceof Eclipse)) {
       return this;
     }
 
-    const newShape = new Circle(cursorImagePosition, shapeToOperate.radius);
+    const newShape = new Eclipse(cursorImagePosition, shapeToOperate.radiusX, shapeToOperate.radiusY);
 
     const newContent = { ...this.content };
     newContent.drawnShapeList = [...newContent.drawnShapeList];
@@ -188,18 +188,41 @@ export class CircleDrawState extends EditState {
     );
   }
 
-  private onMouseMoveResize(cursorImagePosition: Coordinate): RegionSelectorState {
+  private onMouseMoveResize(canvas: HTMLCanvasElement, cursorImagePosition: Coordinate): RegionSelectorState {
     const shapeToOperate = this.content.drawnShapeList[this.shapeIDToOperate || 0];
-    if (!(shapeToOperate instanceof Circle)) {
+    if (!(shapeToOperate instanceof Eclipse)) {
       return this;
     }
 
-    const newRadius = this.geometryService.getDistance(cursorImagePosition, shapeToOperate.center);
-    const newShape = new Circle(shapeToOperate.center, newRadius);
+    const centerMousePosition = this.regionSelectorGeometryService.imageToMousePosition(
+      canvas,
+      this.content,
+      shapeToOperate.center
+    );
+    const centerCursorDistance = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      this.content,
+      cursorImagePosition,
+      shapeToOperate.center
+    );
+    const newRadiusX = this.regionSelectorGeometryService.mouseToImageDistance(
+      canvas,
+      this.content,
+      centerMousePosition,
+      { x: centerMousePosition.x + centerCursorDistance, y: centerMousePosition.y }
+    );
+    const newRadiusY = this.regionSelectorGeometryService.mouseToImageDistance(
+      canvas,
+      this.content,
+      centerMousePosition,
+      { x: centerMousePosition.x, y: centerMousePosition.y + centerCursorDistance }
+    );
+    const newShape = new Eclipse(shapeToOperate.center, newRadiusX, newRadiusY);
 
     const newContent = { ...this.content };
     newContent.drawnShapeList = [...newContent.drawnShapeList];
     newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    newContent.cursorImagePosition = cursorImagePosition;
 
     return new CircleDrawState(
       newContent,
@@ -265,7 +288,7 @@ export class CircleDrawState extends EditState {
     ctx: CanvasRenderingContext2D,
     shapeToOperate: Shape
   ): void {
-    if (!(shapeToOperate instanceof Circle)) {
+    if (!(shapeToOperate instanceof Eclipse)) {
       return;
     }
     const canvasShapeCenter = this.regionSelectorGeometryService.imageToCanvasPosition(
@@ -292,7 +315,7 @@ export class CircleDrawState extends EditState {
     ctx: CanvasRenderingContext2D,
     shapeToOperate: Shape
   ): void {
-    if (!(shapeToOperate instanceof Circle)) {
+    if (!(shapeToOperate instanceof Eclipse)) {
       return;
     }
     const canvasShape = this.regionSelectorGeometryService.imageToCanvasShape(canvas, this.content, shapeToOperate);
@@ -310,12 +333,7 @@ export class CircleDrawState extends EditState {
     canvasHeight: number,
     ctx: CanvasRenderingContext2D
   ): void {
-    const cursorMousePosition = this.regionSelectorGeometryService.imageToMousePosition(
-      canvas,
-      this.content,
-      this.content.cursorImagePosition
-    );
-    const operationAndShapeIDToOperate = this.getOperationAndShapeIDToOperate(canvas, cursorMousePosition);
+    const operationAndShapeIDToOperate = this.getOperationAndShapeIDToOperate(canvas, this.content.cursorImagePosition);
     if (operationAndShapeIDToOperate === null) {
       canvas.style.cursor = 'crosshair';
       return;
@@ -323,7 +341,7 @@ export class CircleDrawState extends EditState {
 
     const { operation, shapeID } = operationAndShapeIDToOperate;
     const shapeToOperate = this.content.drawnShapeList[shapeID];
-    if (!(shapeToOperate instanceof Circle)) {
+    if (!(shapeToOperate instanceof Eclipse)) {
       canvas.style.cursor = 'crosshair';
       return;
     }

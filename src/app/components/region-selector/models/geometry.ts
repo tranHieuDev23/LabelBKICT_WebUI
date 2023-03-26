@@ -149,12 +149,6 @@ export class Eclipse implements Shape {
   }
 }
 
-export class Circle extends Eclipse {
-  constructor(public override readonly center: Coordinate, public readonly radius: number) {
-    super(center, radius, radius);
-  }
-}
-
 export class Rectangle implements Shape {
   constructor(
     public readonly left: number,

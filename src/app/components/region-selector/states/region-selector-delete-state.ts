@@ -2,7 +2,7 @@ import { GeometryService } from '../geometry/geometry.service';
 import { RegionSelectorGeometryService } from '../geometry/region-selector-geometry.service';
 import { CanvasGraphicService } from '../graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic.service';
-import { Circle, Coordinate, FreePolygon, Rectangle, Shape } from '../models';
+import { Coordinate, Eclipse, FreePolygon, Rectangle, Shape } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
@@ -100,8 +100,8 @@ export class DeleteState extends EditState {
         continue;
       }
 
-      if (shape instanceof Circle) {
-        if (!this.shouldDeleteCircle(canvas, cursorImagePosition, shape)) {
+      if (shape instanceof Eclipse) {
+        if (!this.shouldDeleteEclipse(canvas, cursorImagePosition, shape)) {
           nonDeletedShapeList.push(shape);
         }
         continue;
@@ -133,20 +133,18 @@ export class DeleteState extends EditState {
     return new FreePolygon(newPolygonVertices);
   }
 
-  private shouldDeleteCircle(canvas: HTMLCanvasElement, cursorImagePosition: Coordinate, circle: Circle): boolean {
-    const mouseCircleRadius = this.regionSelectorGeometryService.imageToMouseDistance(
+  private shouldDeleteEclipse(canvas: HTMLCanvasElement, cursorImagePosition: Coordinate, eclipse: Eclipse): boolean {
+    const mouseRadius = this.regionSelectorGeometryService.imageToMouseDistance(canvas, this.content, eclipse.center, {
+      x: eclipse.center.x + eclipse.radiusX,
+      y: eclipse.center.y,
+    });
+    const centerCursorDistance = this.regionSelectorGeometryService.imageToMouseDistance(
       canvas,
       this.content,
-      circle.center,
-      { x: circle.center.x, y: circle.center.y + circle.radius }
-    );
-    const mouseCircleCenterCursorDistance = this.regionSelectorGeometryService.imageToMouseDistance(
-      canvas,
-      this.content,
-      circle.center,
+      eclipse.center,
       cursorImagePosition
     );
-    return Math.abs(mouseCircleCenterCursorDistance - mouseCircleRadius) <= DELETE_VERTICES_MOUSE_DISTANCE;
+    return Math.abs(centerCursorDistance - mouseRadius) <= DELETE_VERTICES_MOUSE_DISTANCE;
   }
 
   private shouldDeleteRectangle(
