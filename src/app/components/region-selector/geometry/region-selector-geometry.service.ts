@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Circle, Coordinate, Eclipse, FreePolygon, Shape } from '../models';
+import { Circle, Coordinate, Eclipse, FreePolygon, Rectangle, Shape } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { GeometryService } from './geometry.service';
 
@@ -101,6 +101,14 @@ export class RegionSelectorGeometryService {
       const canvasRadiusX = this.geometryService.getDistance(canvasCenter, canvasPointXOnDiameter);
       const canvasRadiusY = this.geometryService.getDistance(canvasCenter, canvasPointYOnDiameter);
       return new Eclipse(canvasCenter, canvasRadiusX, canvasRadiusY);
+    }
+
+    if (shape instanceof Rectangle) {
+      const bottomLeft = shape.getBottomLeft();
+      const topRight = shape.getTopRight();
+      const canvasBottomLeft = this.imageToCanvasPosition(canvas, content, bottomLeft);
+      const canvasTopRight = this.imageToCanvasPosition(canvas, content, topRight);
+      return new Rectangle(canvasBottomLeft.x, canvasTopRight.x, canvasBottomLeft.y, canvasTopRight.y);
     }
 
     throw new Error('Unsupported shape');

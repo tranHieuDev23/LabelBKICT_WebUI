@@ -12,29 +12,12 @@ import {
   area,
   Position,
 } from '@turf/turf';
-import { Coordinate, Shape, FreePolygon, Eclipse } from '../models';
+import { Coordinate, Shape, FreePolygon, Eclipse, Rectangle } from '../models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GeometryService {
-  public getShapeCenter(shape: Shape): Coordinate {
-    if (shape instanceof FreePolygon) {
-      const vertices = shape.getVertices();
-      const minX: number = Math.min(...vertices.map((item) => item.x));
-      const maxX: number = Math.max(...vertices.map((item) => item.x));
-      const minY: number = Math.min(...vertices.map((item) => item.y));
-      const maxY: number = Math.max(...vertices.map((item) => item.y));
-      return { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
-    }
-
-    if (shape instanceof Eclipse) {
-      return shape.center;
-    }
-
-    throw new Error('Unsupported shape');
-  }
-
   public getDistance(from: Coordinate, to: Coordinate): number {
     return Math.sqrt((from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y));
   }

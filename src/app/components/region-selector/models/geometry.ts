@@ -14,11 +14,13 @@ export interface Shape {
   getVertices(): Coordinate[];
   getArea(): number;
   isPointInside(point: Coordinate): boolean;
+  getCenter(): Coordinate;
   draw(canvasWidth: number, canvasHeight: number, ctx: CanvasRenderingContext2D): void;
 }
 
 export class FreePolygon implements Shape {
   private turfPolygon: TurfPolygon | undefined = undefined;
+  private center: Coordinate | undefined = undefined;
 
   constructor(private vertices: Coordinate[]) {}
 
@@ -66,6 +68,20 @@ export class FreePolygon implements Shape {
     return booleanPointInPolygon(turfPoint, turfPolygon);
   }
 
+  public getCenter(): Coordinate {
+    if (this.center) {
+      return { x: this.center.x, y: this.center.y };
+    }
+    const xs = this.vertices.map((item) => item.x);
+    const ys = this.vertices.map((item) => item.y);
+    const minX: number = Math.min(...xs);
+    const maxX: number = Math.max(...xs);
+    const minY: number = Math.min(...ys);
+    const maxY: number = Math.max(...ys);
+    this.center = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+    return this.center;
+  }
+
   public draw(canvasWidth: number, canvasHeight: number, ctx: CanvasRenderingContext2D): void {
     const lastVertex: Coordinate = this.vertices[this.vertices.length - 1];
     ctx.beginPath();
@@ -111,6 +127,10 @@ export class Eclipse implements Shape {
     return radiusXSquare * radiusYSquare >= deltaXSquare * radiusYSquare + deltaYSquare * radiusXSquare;
   }
 
+  public getCenter(): Coordinate {
+    return { x: this.center.x, y: this.center.y };
+  }
+
   public draw(canvasWidth: number, canvasHeight: number, ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
     ctx.ellipse(
@@ -137,26 +157,22 @@ export class Circle extends Eclipse {
 
 export class Rectangle implements Shape {
   constructor(
-    public readonly bottomLeft: Coordinate,
-    public readonly width: number,
-    public readonly height: number,
-    public readonly angle: number
+    public readonly left: number,
+    public readonly right: number,
+    public readonly bottom: number,
+    public readonly top: number
   ) {}
 
   public getVertices(): Coordinate[] {
-    return [this.bottomLeft, this.getBottomRight(), this.getTopRight(), this.getTopLeft()];
+    return [this.getBottomLeft(), this.getBottomRight(), this.getTopRight(), this.getTopLeft()];
   }
 
   public getArea(): number {
-    return this.width * this.height;
+    return Math.abs((this.top - this.bottom) * (this.right - this.left));
   }
 
   public isPointInside(point: Coordinate): boolean {
-    const vertices = this.getVertices();
-    const coordinateList = [...vertices.map((vertex) => [vertex.x, vertex.y]), [vertices[0].x, vertices[0].y]];
-    const turfPolygon = toTurfPolygon([coordinateList]).geometry;
-    const turfPoint = [point.x, point.y];
-    return booleanPointInPolygon(turfPoint, turfPolygon);
+    return this.left <= point.x && point.x <= this.right && this.bottom <= point.y && point.y <= this.top;
   }
 
   public draw(canvasWidth: number, canvasHeight: number, ctx: CanvasRenderingContext2D): void {
@@ -172,21 +188,74 @@ export class Rectangle implements Shape {
     ctx.stroke();
   }
 
-  private getBottomRight(): Coordinate {
-    const x = this.bottomLeft.x + this.width * Math.cos(this.angle);
-    const y = this.bottomLeft.y + this.width * Math.sin(this.angle);
-    return { x, y };
+  public getBottomLeft(): Coordinate {
+    return {
+      x: this.left,
+      y: this.bottom,
+    };
   }
 
-  private getTopLeft(): Coordinate {
-    const x = this.bottomLeft.x - this.height * Math.sin(this.angle);
-    const y = this.bottomLeft.y + this.height * Math.cos(this.angle);
-    return { x, y };
+  public getBottomMiddle(): Coordinate {
+    return {
+      x: (this.left + this.right) / 2,
+      y: this.bottom,
+    };
   }
 
-  private getTopRight(): Coordinate {
-    const x = this.bottomLeft.x + this.width * Math.cos(this.angle) - this.height * Math.sin(this.angle);
-    const y = this.bottomLeft.y + this.width * Math.sin(this.angle) + this.height * Math.cos(this.angle);
-    return { x, y };
+  public getBottomRight(): Coordinate {
+    return {
+      x: this.right,
+      y: this.bottom,
+    };
+  }
+
+  public getTopLeft(): Coordinate {
+    return {
+      x: this.left,
+      y: this.top,
+    };
+  }
+
+  public getTopMiddle(): Coordinate {
+    return {
+      x: (this.left + this.right) / 2,
+      y: this.top,
+    };
+  }
+
+  public getTopRight(): Coordinate {
+    return {
+      x: this.right,
+      y: this.top,
+    };
+  }
+
+  public getMiddleLeft(): Coordinate {
+    return {
+      x: this.left,
+      y: (this.bottom + this.top) / 2,
+    };
+  }
+
+  public getMiddleRight(): Coordinate {
+    return {
+      x: this.right,
+      y: (this.bottom + this.top) / 2,
+    };
+  }
+
+  public getCenter(): Coordinate {
+    return {
+      x: (this.left + this.right) / 2,
+      y: (this.bottom + this.top) / 2,
+    };
+  }
+
+  public getNormalizedRectangle(): Rectangle {
+    const left = Math.min(this.left, this.right);
+    const right = Math.max(this.left, this.right);
+    const bottom = Math.min(this.bottom, this.top);
+    const top = Math.max(this.bottom, this.top);
+    return new Rectangle(left, right, bottom, top);
   }
 }

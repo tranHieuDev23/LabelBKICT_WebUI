@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GeometryService } from '../geometry/geometry.service';
 import { RegionSelectorGeometryService } from '../geometry/region-selector-geometry.service';
-import { Eclipse, FreePolygon } from '../models';
+import { Eclipse, FreePolygon, Rectangle } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { CanvasGraphicService } from './canvas-graphic.service';
 import { ColorService } from './color.service';
@@ -87,7 +87,7 @@ export class RegionSelectorGraphicService {
       this.regionSelectorGeometryService.imageToCanvasPosition(canvas, content, vertex)
     );
     const borderCanvasShape = new FreePolygon(borderCanvasVertices);
-    const borderCanvasShapeCenter = this.geometryService.getShapeCenter(borderCanvasShape);
+    const borderCanvasShapeCenter = borderCanvasShape.getCenter();
 
     const regionLabelDisplayName = region.label?.displayName || 'Not labeled';
     const regionLabelColor = region.label?.color || DEFAULT_REGION_LABEL_COLOR;
@@ -115,13 +115,19 @@ export class RegionSelectorGraphicService {
   ): void {
     for (let i = 0; i < content.drawnShapeList.length; i++) {
       const shape = content.drawnShapeList[i];
+      const shapeColor = DRAWN_POLYGON_COLOR_LIST[Math.min(i, DRAWN_POLYGON_COLOR_LIST.length - 1)];
+
       if (shape instanceof FreePolygon) {
-        this.drawDrawnFreePolygon(canvas, canvasWidth, canvasHeight, ctx, content, i, shape);
+        this.drawDrawnFreePolygon(canvas, canvasWidth, canvasHeight, ctx, content, shape, shapeColor);
         continue;
       }
 
       if (shape instanceof Eclipse) {
-        this.drawDrawnEclipse(canvas, canvasWidth, canvasHeight, ctx, content, i, shape);
+        this.drawDrawnEclipse(canvas, canvasWidth, canvasHeight, ctx, content, shape, shapeColor);
+      }
+
+      if (shape instanceof Rectangle) {
+        this.drawDrawnRectangle(canvas, canvasWidth, canvasHeight, ctx, content, shape, shapeColor);
       }
     }
   }
@@ -132,16 +138,13 @@ export class RegionSelectorGraphicService {
     canvasHeight: number,
     ctx: CanvasRenderingContext2D,
     content: RegionSelectorContent,
-    index: number,
-    polygon: FreePolygon
+    polygon: FreePolygon,
+    color: string
   ): void {
-    const polygonVertices = polygon.getVertices();
-    const polygonColor = DRAWN_POLYGON_COLOR_LIST[Math.min(index, DRAWN_POLYGON_COLOR_LIST.length - 1)];
-
-    let lastVertex = polygonVertices[polygonVertices.length - 1];
+    const vertices = polygon.getVertices();
+    let lastVertex = vertices[vertices.length - 1];
     let lastVertexCanvasPos = this.regionSelectorGeometryService.imageToCanvasPosition(canvas, content, lastVertex);
-
-    for (const vertex of polygonVertices) {
+    for (const vertex of vertices) {
       const vertexCanvasPos = this.regionSelectorGeometryService.imageToCanvasPosition(canvas, content, vertex);
       this.canvasGraphicService.drawCircle({
         canvasWidth,
@@ -149,8 +152,8 @@ export class RegionSelectorGraphicService {
         ctx,
         center: vertexCanvasPos,
         radius: 1,
-        lineColor: polygonColor,
-        fillColor: polygonColor,
+        lineColor: color,
+        fillColor: color,
       });
 
       if (this.geometryService.getDistance(lastVertex, vertex) <= VERTICES_MAX_DISTANCE) {
@@ -160,7 +163,7 @@ export class RegionSelectorGraphicService {
           ctx,
           lineStart: lastVertexCanvasPos,
           lineEnd: vertexCanvasPos,
-          lineColor: polygonColor,
+          lineColor: color,
         });
       }
 
@@ -175,13 +178,12 @@ export class RegionSelectorGraphicService {
     canvasHeight: number,
     ctx: CanvasRenderingContext2D,
     content: RegionSelectorContent,
-    index: number,
-    eclipse: Eclipse
+    eclipse: Eclipse,
+    color: string
   ): void {
     const canvasShape = this.regionSelectorGeometryService.imageToCanvasShape(canvas, content, eclipse);
-    const shapeColor = DRAWN_POLYGON_COLOR_LIST[Math.min(index, DRAWN_POLYGON_COLOR_LIST.length - 1)];
     ctx.lineWidth = 2;
-    ctx.strokeStyle = shapeColor;
+    ctx.strokeStyle = color;
     canvasShape.draw(canvasWidth, canvasHeight, ctx);
     this.canvasGraphicService.clearContext(ctx);
 
@@ -192,7 +194,45 @@ export class RegionSelectorGraphicService {
       ctx,
       center: canvasCenter,
       radius: 2,
-      lineColor: shapeColor,
+      lineColor: color,
     });
+  }
+
+  private drawDrawnRectangle(
+    canvas: HTMLCanvasElement,
+    canvasWidth: number,
+    canvasHeight: number,
+    ctx: CanvasRenderingContext2D,
+    content: RegionSelectorContent,
+    rectangle: Rectangle,
+    color: string
+  ): void {
+    const canvasShape = this.regionSelectorGeometryService.imageToCanvasShape(canvas, content, rectangle);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = color;
+    canvasShape.draw(canvasWidth, canvasHeight, ctx);
+    this.canvasGraphicService.clearContext(ctx);
+
+    for (const imagePosition of [
+      rectangle.getCenter(),
+      rectangle.getBottomLeft(),
+      rectangle.getBottomRight(),
+      rectangle.getTopLeft(),
+      rectangle.getTopRight(),
+      rectangle.getBottomMiddle(),
+      rectangle.getTopMiddle(),
+      rectangle.getMiddleLeft(),
+      rectangle.getMiddleRight(),
+    ]) {
+      const canvasPosition = this.regionSelectorGeometryService.imageToCanvasPosition(canvas, content, imagePosition);
+      this.canvasGraphicService.drawCircle({
+        canvasHeight,
+        canvasWidth,
+        ctx,
+        center: canvasPosition,
+        radius: 2,
+        lineColor: color,
+      });
+    }
   }
 }

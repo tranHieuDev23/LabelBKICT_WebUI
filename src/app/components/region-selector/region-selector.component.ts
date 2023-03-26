@@ -16,6 +16,7 @@ import {
   DeleteState,
   RegionSelectorState,
   SelectedState,
+  RectangleDrawState,
 } from './states';
 
 const VERTICES_MAX_DISTANCE = 1e-2;
@@ -300,7 +301,12 @@ export class RegionSelectorComponent implements OnInit {
   }
 
   public isDrawingOrDeleting(): boolean {
-    return this.isInFreePolygonDrawState() || this.isInCircleDrawState() || this.isInDeleteState();
+    return (
+      this.isInFreePolygonDrawState() ||
+      this.isInCircleDrawState() ||
+      this.isInRectangleDrawState() ||
+      this.isInDeleteState()
+    );
   }
 
   public isInFreePolygonDrawState(): boolean {
@@ -315,7 +321,11 @@ export class RegionSelectorComponent implements OnInit {
       this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
     }
     const regionIDToEdit =
-      this.state instanceof CircleDrawState || this.state instanceof DeleteState ? this.state.regionIDToEdit : null;
+      this.state instanceof CircleDrawState ||
+      this.state instanceof RectangleDrawState ||
+      this.state instanceof DeleteState
+        ? this.state.regionIDToEdit
+        : null;
     this.state = new FreePolygonDrawState(
       this.state.content,
       regionIDToEdit,
@@ -341,10 +351,43 @@ export class RegionSelectorComponent implements OnInit {
       this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
     }
     const regionIDToEdit =
-      this.state instanceof FreePolygonDrawState || this.state instanceof DeleteState
+      this.state instanceof FreePolygonDrawState ||
+      this.state instanceof RectangleDrawState ||
+      this.state instanceof DeleteState
         ? this.state.regionIDToEdit
         : null;
     this.state = new CircleDrawState(
+      this.state.content,
+      regionIDToEdit,
+      null,
+      null,
+      this.snapshotService,
+      this.regionSelectorGeometryService,
+      this.geometryService,
+      this.regionSelectorGraphicService,
+      this.canvasGraphicService
+    );
+    this.onDraw();
+  }
+
+  public isInRectangleDrawState(): boolean {
+    return this.state instanceof RectangleDrawState;
+  }
+
+  public onRectangleDrawStateClicked(): void {
+    if (this.isInRectangleDrawState()) {
+      return;
+    }
+    if (this.snapshotService.snapshotSize() === 0) {
+      this.snapshotService.storeSnapshot(new RegionSelectorSnapshot([]));
+    }
+    const regionIDToEdit =
+      this.state instanceof FreePolygonDrawState ||
+      this.state instanceof CircleDrawState ||
+      this.state instanceof DeleteState
+        ? this.state.regionIDToEdit
+        : null;
+    this.state = new RectangleDrawState(
       this.state.content,
       regionIDToEdit,
       null,
