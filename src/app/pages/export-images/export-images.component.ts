@@ -263,7 +263,7 @@ export class ExportImagesComponent implements OnInit {
   }
 
   public async onExportPageSizeChanged(newPageSize: number): Promise<void> {
-    this.exportPageIndex = newPageSize;
+    this.exportPageSize = newPageSize;
     await this.getExportListFromPaginationInfo();
   }
 
@@ -275,7 +275,7 @@ export class ExportImagesComponent implements OnInit {
     try {
       const { totalExportCount, exportList } = await this.exportManagementService.getExportList(
         offset,
-        this.imagePageSize
+        this.exportPageSize
       );
       this.totalExportCount = totalExportCount;
       this.exportList = exportList;
