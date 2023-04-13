@@ -421,9 +421,8 @@ export class RegionSelectorComponent implements OnInit {
 
     const newContent = { ...this.state.content };
     newContent.drawnShapeList = densifiedDrawnShapeList;
-    this.state = new FreePolygonDrawState(
+    this.state = new DeleteState(
       newContent,
-      null,
       null,
       this.snapshotService,
       this.regionSelectorGeometryService,
@@ -452,10 +451,9 @@ export class RegionSelectorComponent implements OnInit {
 
     const newContent = { ...this.state.content };
     newContent.drawnShapeList = densifiedDrawnPolygonList;
-    this.state = new FreePolygonDrawState(
+    this.state = new DeleteState(
       newContent,
       regionID,
-      null,
       this.snapshotService,
       this.regionSelectorGeometryService,
       this.geometryService,

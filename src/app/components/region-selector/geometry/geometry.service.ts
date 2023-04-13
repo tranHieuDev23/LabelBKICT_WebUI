@@ -96,6 +96,10 @@ export class GeometryService {
     let turfBorder = this.convertShapeToTurfPolygon(border);
     let turfHoles = holeList.map((hole) => this.convertShapeToTurfPolygon(hole));
 
+    // Fix out-of-bound vertices
+    turfBorder = this.fixTurfPolygonOutOfBound(turfBorder);
+    turfHoles = turfHoles.map((hole) => this.fixTurfPolygonOutOfBound(hole));
+
     // Remove redundant vertices
     turfBorder = cleanCoords(turfBorder);
     turfHoles = turfHoles.map((hole) => cleanCoords(hole));
@@ -128,6 +132,14 @@ export class GeometryService {
       border: normalizedBorder,
       holeList: normalizedHoles,
     };
+  }
+
+  private fixTurfPolygonOutOfBound(polygon: TurfPolygon): TurfPolygon {
+    const boundedPointList = polygon.coordinates[0].map((position) => {
+      const [x, y] = position;
+      return [Math.max(0, Math.min(1, x)), Math.max(0, Math.min(1, y))];
+    });
+    return toTurfPolygon([boundedPointList]).geometry;
   }
 
   private fixSelfIntersectedTurfPolygon(polygon: TurfPolygon): TurfPolygon {
