@@ -24,6 +24,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
   User,
+  ClassificationType,
 } from 'src/app/services/dataaccess/api';
 import {
   FilterOptionsService,
@@ -475,8 +476,14 @@ export class MyImagesComponent implements OnInit {
       nzContent: 'Are you sure?',
       nzOnOk:async () => {
         try {
+          let classificationType: ClassificationType;
+          if (classificationTypeInx == 0) classificationType = ClassificationType.ANATOMICAL_SITE;
+          else if (classificationTypeInx == 1) classificationType = ClassificationType.LESION_TYPE;
+          else classificationType = ClassificationType.HP;
+
           await this.imageListManagementService.createImageClassificationTaskList(
-            selectedImageIDList
+            selectedImageIDList,
+            classificationType,
           );
           await this.getImageListFromPaginationInfo();
           this.notificationService.success(

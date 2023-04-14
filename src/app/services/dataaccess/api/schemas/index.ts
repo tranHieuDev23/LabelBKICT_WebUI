@@ -19,3 +19,4 @@ export * from './export';
 export * from './pinned_page';
 export * from './user_can_manage_user_image';
 export * from './user_can_verify_user_image';
+export * from './classification_type';

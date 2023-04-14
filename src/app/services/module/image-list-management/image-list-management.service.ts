@@ -7,6 +7,7 @@ import {
   ImageListService,
   ImageListSortOption,
   ImagesService,
+  ClassificationType,
 } from '../../dataaccess/api';
 
 @Injectable({
@@ -39,9 +40,10 @@ export class ImageListManagementService {
   }
 
   public async createImageClassificationTaskList(
-    imageIDList: number[]
+    imageIDList: number[],
+    classificationType: ClassificationType
   ): Promise<void> {
-    await this.imageListService.createImageClassificationTaskList(imageIDList);
+    await this.imageListService.createImageClassificationTaskList(imageIDList, classificationType);
   }
 
   public async getUserImageList(

@@ -9,6 +9,7 @@ import {
   UnknownAPIError,
 } from './errors';
 import {
+  ClassificationType,
   Image,
   ImageListFilterOptions,
   ImageListSortOption,
@@ -133,11 +134,13 @@ export class ImageListService {
   }
 
   public async createImageClassificationTaskList(
-    imageIdList: number[]
+    imageIdList: number[],
+    classificationType: ClassificationType
   ): Promise<void> {
     try {
       await this.axios.post(`/api/images/classification-task`, {
         image_id_list: imageIdList,
+        classification_type: classificationType,
       });
     } catch (e) {
       if (!axios.isAxiosError(e)) {
