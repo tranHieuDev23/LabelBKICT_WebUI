@@ -96,7 +96,7 @@ export class ImageListManagementService {
     return await this.imageListService.getUserExportableImageList(offset, limit, sortOption, filterOptions);
   }
 
-  public async getImagePositionInList(
+  public async getImagePositionInUserManageableImageList(
     imageID: number,
     sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
@@ -106,7 +106,20 @@ export class ImageListManagementService {
     prevImageID: number | undefined;
     nextImageID: number | undefined;
   }> {
-    return await this.imageListService.getImagePositionInList(imageID, sortOption, filterOptions);
+    return await this.imageListService.getImagePositionInUserManageableImageList(imageID, sortOption, filterOptions);
+  }
+
+  public async getImagePositionInUserVerifiableImageList(
+    imageID: number,
+    sortOption: ImageListSortOption,
+    filterOptions: ImageListFilterOptions
+  ): Promise<{
+    position: number;
+    totalImageCount: number;
+    prevImageID: number | undefined;
+    nextImageID: number | undefined;
+  }> {
+    return await this.imageListService.getImagePositionInUserVerifiableImageList(imageID, sortOption, filterOptions);
   }
 
   public async addImageTagListToImageList(imageIDList: number[], imageTagIDList: number[]): Promise<void> {

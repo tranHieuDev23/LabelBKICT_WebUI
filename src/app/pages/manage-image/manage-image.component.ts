@@ -230,7 +230,11 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
 
     try {
       const { position, totalImageCount, prevImageID, nextImageID } =
-        await this.imageListManagementService.getImagePositionInList(imageID, sortOption, filterOptions);
+        await this.imageListManagementService.getImagePositionInUserManageableImageList(
+          imageID,
+          sortOption,
+          filterOptions
+        );
       this.position = position;
       this.totalImageCount = totalImageCount;
       this.prevImageID = prevImageID;

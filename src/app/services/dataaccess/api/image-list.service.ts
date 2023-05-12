@@ -377,7 +377,7 @@ export class ImageListService {
     }
   }
 
-  public async getImagePositionInList(
+  public async getImagePositionInUserManageableImageList(
     imageID: number,
     sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
@@ -389,7 +389,51 @@ export class ImageListService {
   }> {
     try {
       const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
-      const response = await this.axios.get(`/api/images/${imageID}/position`, {
+      const response = await this.axios.get(`/api/images/${imageID}/manageable-images-position`, {
+        params: {
+          sort_order: sortOption,
+          ...filterOptionsQueryParams,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
+        },
+      });
+
+      const position = +response.data.position;
+      const totalImageCount = +response.data.total_image_count;
+      const prevImageID = response.data.prev_image_id;
+      const nextImageID = response.data.next_image_id;
+      return { position, totalImageCount, prevImageID, nextImageID };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidImageListFilterOptionsError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getImagePositionInUserVerifiableImageList(
+    imageID: number,
+    sortOption: ImageListSortOption,
+    filterOptions: ImageListFilterOptions
+  ): Promise<{
+    position: number;
+    totalImageCount: number;
+    prevImageID: number | undefined;
+    nextImageID: number | undefined;
+  }> {
+    try {
+      const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
+      const response = await this.axios.get(`/api/images/${imageID}/verifiable-images-position`, {
         params: {
           sort_order: sortOption,
           ...filterOptionsQueryParams,

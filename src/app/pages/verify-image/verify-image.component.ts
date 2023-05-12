@@ -205,7 +205,11 @@ export class VerifyImageComponent implements AfterContentInit {
 
     try {
       const { position, totalImageCount, prevImageID, nextImageID } =
-        await this.imageListManagementService.getImagePositionInList(imageID, sortOption, filterOptions);
+        await this.imageListManagementService.getImagePositionInUserVerifiableImageList(
+          imageID,
+          sortOption,
+          filterOptions
+        );
       this.position = position;
       this.totalImageCount = totalImageCount;
       this.prevImageID = prevImageID;
