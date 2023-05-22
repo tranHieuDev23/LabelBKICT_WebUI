@@ -386,6 +386,34 @@
       Show regions
     </li>
     <li
+      *ngIf="isDrawMarginsEnabled()"
+      nz-menu-item
+      (click)="onContextMenuHideDrawMarginsClicked()"
+    >
+      Hide draw margins
+    </li>
+    <li
+      *ngIf="!isDrawMarginsEnabled()"
+      nz-menu-item
+      (click)="onContextMenuShowDrawMarginsClicked()"
+    >
+      Show draw margins
+    </li>
+    <li
+      *ngIf="isDrawBoundaryEnabled()"
+      nz-menu-item
+      (click)="onContextMenuHideDrawBoundaryClicked()"
+    >
+      Hide draw boundary
+    </li>
+    <li
+      *ngIf="!isDrawBoundaryEnabled()"
+      nz-menu-item
+      (click)="onContextMenuShowDrawBoundaryClicked()"
+    >
+      Show draw boundary
+    </li>
+    <li
       *ngIf="isRegionSelectorDrawingOrDeleting()"
       nz-menu-item
       (click)="regionSelector?.finishDrawing()"

@@ -144,6 +144,22 @@ export class RectangleDrawState extends EditState {
       cursorMousePosition
     );
 
+    if (!this.isPointInsideMarginAndBoundary(cursorImagePosition)) {
+      const newContent = { ...this.content };
+      newContent.cursorImagePosition = cursorImagePosition;
+      return new RectangleDrawState(
+        newContent,
+        this.regionIDToEdit,
+        this.operation,
+        this.shapeIDToOperate,
+        this.snapshotService,
+        this.regionSelectorGeometryService,
+        this.geometryService,
+        this.regionSelectorGraphicService,
+        this.canvasGraphicService
+      );
+    }
+
     const operationAndShapeIDToOperate = this.getOperationAndShapeIDToOperate(canvas, cursorImagePosition);
     if (operationAndShapeIDToOperate === null) {
       const newContent = { ...this.content };
@@ -181,6 +197,18 @@ export class RectangleDrawState extends EditState {
       this.regionSelectorGraphicService,
       this.canvasGraphicService
     );
+  }
+
+  private isPointInsideMarginAndBoundary(position: Coordinate): boolean {
+    if (this.content.drawMarginEnabled && !this.content.drawMargin.isPointInside(position)) {
+      return false;
+    }
+
+    if (this.content.drawBoundaryEnabled && !this.content.drawBoundary.isPointInside(position)) {
+      return false;
+    }
+
+    return true;
   }
 
   private getOperationAndShapeIDToOperate(
@@ -276,8 +304,10 @@ export class RectangleDrawState extends EditState {
     );
 
     const newContent = { ...this.content };
-    newContent.drawnShapeList = [...newContent.drawnShapeList];
-    newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    if (this.isRectangleInsideMarginAndBoundary(newShape)) {
+      newContent.drawnShapeList = [...newContent.drawnShapeList];
+      newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    }
     newContent.cursorImagePosition = cursorImagePosition;
 
     return new RectangleDrawState(
@@ -310,8 +340,10 @@ export class RectangleDrawState extends EditState {
     );
 
     const newContent = { ...this.content };
-    newContent.drawnShapeList = [...newContent.drawnShapeList];
-    newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    if (this.isRectangleInsideMarginAndBoundary(newShape)) {
+      newContent.drawnShapeList = [...newContent.drawnShapeList];
+      newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    }
     newContent.cursorImagePosition = cursorImagePosition;
 
     return new RectangleDrawState(
@@ -360,8 +392,10 @@ export class RectangleDrawState extends EditState {
     const newShape = new Rectangle(newLeft, newRight, newBottom, newTop);
 
     const newContent = { ...this.content };
-    newContent.drawnShapeList = [...newContent.drawnShapeList];
-    newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    if (this.isRectangleInsideMarginAndBoundary(newShape)) {
+      newContent.drawnShapeList = [...newContent.drawnShapeList];
+      newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    }
     newContent.cursorImagePosition = cursorImagePosition;
 
     return new RectangleDrawState(
@@ -375,6 +409,27 @@ export class RectangleDrawState extends EditState {
       this.regionSelectorGraphicService,
       this.canvasGraphicService
     );
+  }
+
+  private isRectangleInsideMarginAndBoundary(rectangle: Rectangle): boolean {
+    const vertices = rectangle.getVertices();
+    if (this.content.drawMarginEnabled) {
+      for (const vertex of vertices) {
+        if (!this.content.drawMargin.isPointInside(vertex)) {
+          return false;
+        }
+      }
+    }
+
+    if (this.content.drawBoundaryEnabled) {
+      for (const vertex of vertices) {
+        if (!this.content.drawBoundary.isPointInside(vertex)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   public onLeftMouseUp(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): RegionSelectorState {
@@ -456,8 +511,8 @@ export class RectangleDrawState extends EditState {
       canvasHeight,
       ctx,
       center: canvasPosition,
-      lineColor: '#f5222d',
-      fillColor: '#a8071a',
+      strokeStyle: '#f5222d',
+      fillStyle: '#a8071a',
       radius: 5,
     });
 

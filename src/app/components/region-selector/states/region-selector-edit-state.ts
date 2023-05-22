@@ -4,7 +4,7 @@ import { CanvasGraphicService } from '../graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from '../graphic/region-selector-graphic.service';
 import { FreePolygon, Eclipse, Rectangle } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
-import { DRAWN_POLYGON_COLOR_LIST, VERTICES_MAX_DISTANCE } from './constants';
+import { DRAWN_POLYGON_COLOR_LIST, VERTICES_MAX_DISTANCE } from '../common/constants';
 import { RegionSelectorState } from './region-selector-state';
 
 export abstract class EditState implements RegionSelectorState {
@@ -109,8 +109,8 @@ export abstract class EditState implements RegionSelectorState {
         ctx,
         center: vertexCanvasPos,
         radius: 1,
-        lineColor: color,
-        fillColor: color,
+        strokeStyle: color,
+        fillStyle: color,
       });
 
       if (this.geometryService.getDistance(lastVertex, vertex) <= VERTICES_MAX_DISTANCE) {
@@ -120,7 +120,7 @@ export abstract class EditState implements RegionSelectorState {
           ctx,
           lineStart: lastVertexCanvasPos,
           lineEnd: vertexCanvasPos,
-          lineColor: color,
+          strokeStyle: color,
         });
       }
 
@@ -151,7 +151,7 @@ export abstract class EditState implements RegionSelectorState {
       ctx,
       center: canvasCenter,
       radius: 2,
-      lineColor: color,
+      strokeStyle: color,
     });
   }
 
@@ -188,7 +188,7 @@ export abstract class EditState implements RegionSelectorState {
         ctx,
         center: canvasPosition,
         radius: 2,
-        lineColor: color,
+        strokeStyle: color,
       });
     }
   }

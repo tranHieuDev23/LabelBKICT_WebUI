@@ -4,7 +4,7 @@ import { GeometryService } from './geometry/geometry.service';
 import { RegionSelectorGeometryService } from './geometry/region-selector-geometry.service';
 import { CanvasGraphicService } from './graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from './graphic/region-selector-graphic.service';
-import { Coordinate, FreePolygon } from './models';
+import { Coordinate, Eclipse, FreePolygon, Rectangle } from './models';
 import { RegionSelectorContent } from './region-selector-content';
 import { RegionClickedEvent, RegionEditedEvent, RegionSelectedEvent } from './region-selector-events';
 import { RegionSelectorSnapshot } from './snapshot/region-selector-editor-snapshot';
@@ -19,14 +19,24 @@ import {
   RectangleDrawState,
   EditState,
 } from './states';
+import { MAX_OPERATION_MOUSE_DISTANCE, RegionSelectorElement } from './common/constants';
 
 const VERTICES_MAX_DISTANCE = 1e-2;
 
 const MOUSE_LEFT_BUTTON = 0;
 const MAX_ZOOM_LEVEL = 100;
 const MIN_ZOOM_LEVEL = 0.01;
+const DEFAULT_ZOOM_LEVEL = 0.9;
 const ZOOM_LEVEL_CHANGE = 1.2;
 const SCROLL_ZOOM_RATE = 0.025;
+const MIN_MARGIN_DISTANCE = 0.05;
+
+enum RegionSelectorMouseMoveOperation {
+  TRANSLATE = 1,
+  ADJUST_DRAW_MARGIN = 2,
+  ADJUST_DRAW_BOUNDARY = 3,
+  STATE_OPERATION = 4,
+}
 
 @Component({
   selector: 'app-region-selector',
@@ -45,9 +55,11 @@ export class RegionSelectorComponent implements OnInit {
     image.onload = () => {
       this.state.content.image = image;
       this.centerImage();
+      this.centerDrawBoundary();
       // HACK: This allows the DOM to initialize the image properly and fixes incorrect centering.
       setTimeout(() => {
         this.centerImage();
+        this.centerDrawBoundary();
       }, 0);
     };
     image.src = v;
@@ -81,7 +93,8 @@ export class RegionSelectorComponent implements OnInit {
   private isCtrlDown = false;
   private lastTranslateMousePos: Coordinate | null = null;
   private mouseOverRegionID: number | null = null;
-  private isMouseOverDrawnShapeList = false;
+  private mouseOverElement: RegionSelectorElement | null = null;
+  private mouseMoveOperation: RegionSelectorMouseMoveOperation = RegionSelectorMouseMoveOperation.STATE_OPERATION;
 
   constructor(
     private readonly snapshotService: RegionSelectorSnapshotService,
@@ -119,7 +132,11 @@ export class RegionSelectorComponent implements OnInit {
       imageOrigin: { x: 0, y: 0 },
       isRegionListVisible: true,
       regionList: [],
-      zoom: 1,
+      zoom: DEFAULT_ZOOM_LEVEL,
+      drawMarginEnabled: true,
+      drawMargin: new Rectangle(0, 1, 0, 1),
+      drawBoundaryEnabled: false,
+      drawBoundary: new Eclipse({ x: 0.5, y: 0.5 }, 0.5, 0.5),
     };
   }
 
@@ -157,16 +174,42 @@ export class RegionSelectorComponent implements OnInit {
     event.preventDefault();
 
     const canvasElement = this.canvas.nativeElement;
-    if (this.isCtrlDown) {
-      const mousePos = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+    const mousePos = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+
+    if (this.shouldEnterTranslateOperation()) {
+      this.mouseMoveOperation = RegionSelectorMouseMoveOperation.TRANSLATE;
       this.lastTranslateMousePos = mousePos;
-      return;
+    } else if (this.shouldEnterStateOperation()) {
+      this.mouseMoveOperation = RegionSelectorMouseMoveOperation.STATE_OPERATION;
+      this.state = this.state.onLeftMouseDown(canvasElement, event);
+    } else if (this.shouldEnterAdjustDrawMarginOperation()) {
+      this.mouseMoveOperation = RegionSelectorMouseMoveOperation.ADJUST_DRAW_MARGIN;
+    } else if (this.shouldEnterAdjustDrawBoundaryOperation()) {
+      this.mouseMoveOperation = RegionSelectorMouseMoveOperation.ADJUST_DRAW_BOUNDARY;
     }
 
-    if (this.editable) {
-      this.state = this.state.onLeftMouseDown(canvasElement, event);
-      this.onDraw();
-    }
+    this.onDraw();
+  }
+
+  private shouldEnterTranslateOperation(): boolean {
+    return this.isCtrlDown;
+  }
+
+  private shouldEnterAdjustDrawMarginOperation(): boolean {
+    return (
+      this.mouseOverElement === RegionSelectorElement.DRAW_MARGIN_LEFT ||
+      this.mouseOverElement === RegionSelectorElement.DRAW_MARGIN_RIGHT ||
+      this.mouseOverElement === RegionSelectorElement.DRAW_MARGIN_BOTTOM ||
+      this.mouseOverElement === RegionSelectorElement.DRAW_MARGIN_TOP
+    );
+  }
+
+  private shouldEnterAdjustDrawBoundaryOperation(): boolean {
+    return this.mouseOverElement === RegionSelectorElement.DRAW_BOUNDARY;
+  }
+
+  private shouldEnterStateOperation(): boolean {
+    return this.editable;
   }
 
   @HostListener('window: touchmove', ['$event'])
@@ -176,38 +219,140 @@ export class RegionSelectorComponent implements OnInit {
       return;
     }
 
-    this.updateMouseOverRegionID(event);
-
-    const canvasElement = this.canvas.nativeElement;
-    if (this.lastTranslateMousePos && this.isMouseDown) {
-      const mousePos = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
-      const mouseImagePos = this.regionSelectorGeometryService.mouseToImagePosition(
-        canvasElement,
-        this.state.content,
-        mousePos
-      );
-      const lastTranslateImagePos = this.regionSelectorGeometryService.mouseToImagePosition(
-        canvasElement,
-        this.state.content,
-        this.lastTranslateMousePos
-      );
-      const newImageOrigin = {
-        x: this.state.content.imageOrigin.x - (mouseImagePos.x - lastTranslateImagePos.x),
-        y: this.state.content.imageOrigin.y - (mouseImagePos.y - lastTranslateImagePos.y),
-      };
-      this.state.content.imageOrigin = newImageOrigin;
-      this.lastTranslateMousePos = mousePos;
-      this.onDraw();
-      return;
+    if (!this.isMouseDown) {
+      this.updateMouseOverElementAndRegionID(event);
     }
 
-    if (this.editable) {
-      this.state = this.state.onMouseMove(canvasElement, event, this.isMouseDown);
-      this.onDraw();
-      return;
+    const canvasElement = this.canvas.nativeElement;
+    const mousePos = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+    const mouseImagePos = this.regionSelectorGeometryService.mouseToImagePosition(
+      canvasElement,
+      this.state.content,
+      mousePos
+    );
+
+    switch (this.mouseMoveOperation) {
+      case RegionSelectorMouseMoveOperation.TRANSLATE:
+        this.handleMouseMoveTranslateOperation(canvasElement, this.state.content, mousePos, mouseImagePos);
+        break;
+
+      case RegionSelectorMouseMoveOperation.ADJUST_DRAW_MARGIN:
+        this.handleMouseMoveAdjustDrawMarginOperation(this.state.content, mouseImagePos);
+        break;
+
+      case RegionSelectorMouseMoveOperation.ADJUST_DRAW_BOUNDARY:
+        this.handleMouseMoveAdjustDrawBoundaryOperation(canvasElement, this.state.content, mousePos);
+        break;
+
+      case RegionSelectorMouseMoveOperation.STATE_OPERATION:
+        this.handleMouseMoveStateOperation(canvasElement, event);
+        break;
     }
 
     this.onDraw();
+  }
+
+  private handleMouseMoveTranslateOperation(
+    canvas: HTMLCanvasElement,
+    content: RegionSelectorContent,
+    mousePos: Coordinate,
+    mouseImagePos: Coordinate
+  ): void {
+    if (this.lastTranslateMousePos === null || !this.isMouseDown) {
+      return;
+    }
+    const lastTranslateImagePos = this.regionSelectorGeometryService.mouseToImagePosition(
+      canvas,
+      content,
+      this.lastTranslateMousePos
+    );
+    const newImageOrigin = {
+      x: this.state.content.imageOrigin.x - (mouseImagePos.x - lastTranslateImagePos.x),
+      y: this.state.content.imageOrigin.y - (mouseImagePos.y - lastTranslateImagePos.y),
+    };
+    this.state.content.imageOrigin = newImageOrigin;
+    this.lastTranslateMousePos = mousePos;
+  }
+
+  private handleMouseMoveAdjustDrawMarginOperation(content: RegionSelectorContent, mouseImagePos: Coordinate): void {
+    if (!this.isMouseDown) {
+      return;
+    }
+    const { drawMargin } = content;
+    switch (this.mouseOverElement) {
+      case RegionSelectorElement.DRAW_MARGIN_LEFT:
+        const newLeft = Math.max(mouseImagePos.x, 0);
+        if (drawMargin.right - newLeft >= MIN_MARGIN_DISTANCE) {
+          content.drawMargin = new Rectangle(newLeft, drawMargin.right, drawMargin.bottom, drawMargin.top);
+        }
+        break;
+      case RegionSelectorElement.DRAW_MARGIN_RIGHT:
+        const newRight = Math.min(mouseImagePos.x, 1);
+        if (newRight - drawMargin.left >= MIN_MARGIN_DISTANCE) {
+          content.drawMargin = new Rectangle(drawMargin.left, newRight, drawMargin.bottom, drawMargin.top);
+        }
+        break;
+      case RegionSelectorElement.DRAW_MARGIN_BOTTOM:
+        const newBottom = Math.max(mouseImagePos.y, 0);
+        if (drawMargin.top - newBottom >= MIN_MARGIN_DISTANCE) {
+          content.drawMargin = new Rectangle(drawMargin.left, drawMargin.right, newBottom, drawMargin.top);
+        }
+        break;
+      case RegionSelectorElement.DRAW_MARGIN_TOP:
+        const newTop = Math.min(mouseImagePos.y, 1);
+        if (newTop - drawMargin.bottom >= MIN_MARGIN_DISTANCE) {
+          content.drawMargin = new Rectangle(drawMargin.left, drawMargin.right, drawMargin.bottom, newTop);
+        }
+        break;
+    }
+  }
+
+  private handleMouseMoveAdjustDrawBoundaryOperation(
+    canvas: HTMLCanvasElement,
+    content: RegionSelectorContent,
+    mousePos: Coordinate
+  ): void {
+    if (!this.isMouseDown) {
+      return;
+    }
+    const boundaryCenterMousePosition = this.regionSelectorGeometryService.imageToMousePosition(
+      canvas,
+      content,
+      content.drawBoundary.center
+    );
+    const boundaryMousePosition = this.regionSelectorGeometryService.imageToMousePosition(canvas, content, {
+      x: content.drawBoundary.center.x,
+      y: 1,
+    });
+    const newMouseRadius = Math.min(
+      this.geometryService.getDistance(boundaryCenterMousePosition, mousePos),
+      this.geometryService.getDistance(boundaryCenterMousePosition, boundaryMousePosition)
+    );
+    const newImageRadiusX = this.regionSelectorGeometryService.mouseToImageDistance(
+      canvas,
+      content,
+      boundaryCenterMousePosition,
+      {
+        x: boundaryCenterMousePosition.x + newMouseRadius,
+        y: boundaryCenterMousePosition.y,
+      }
+    );
+    const newImageRadiusY = this.regionSelectorGeometryService.mouseToImageDistance(
+      canvas,
+      content,
+      boundaryCenterMousePosition,
+      {
+        x: boundaryCenterMousePosition.x,
+        y: boundaryCenterMousePosition.y + newMouseRadius,
+      }
+    );
+    content.drawBoundary = new Eclipse(content.drawBoundary.center, newImageRadiusX, newImageRadiusY);
+  }
+
+  private handleMouseMoveStateOperation(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): void {
+    if (this.editable) {
+      this.state = this.state.onMouseMove(canvas, event, this.isMouseDown);
+    }
   }
 
   @HostListener('window: touchend', ['$event'])
@@ -224,16 +369,21 @@ export class RegionSelectorComponent implements OnInit {
     }
     this.isMouseDown = false;
 
-    if (this.lastTranslateMousePos) {
+    if (this.mouseMoveOperation === RegionSelectorMouseMoveOperation.TRANSLATE) {
+      this.mouseMoveOperation = RegionSelectorMouseMoveOperation.STATE_OPERATION;
       this.lastTranslateMousePos = null;
+      this.onDraw();
       return;
     }
+
+    this.mouseMoveOperation = RegionSelectorMouseMoveOperation.STATE_OPERATION;
 
     const canvasElement = this.canvas.nativeElement;
     if (this.editable) {
       this.state = this.state.onLeftMouseUp(canvasElement, event);
-      this.onDraw();
     }
+
+    this.onDraw();
   }
 
   public zoomIn(): void {
@@ -253,7 +403,7 @@ export class RegionSelectorComponent implements OnInit {
   }
 
   public resetZoom(): void {
-    this.setZoomLevel(1, { x: 0.5, y: 0.5 });
+    this.setZoomLevel(DEFAULT_ZOOM_LEVEL, { x: 0.5, y: 0.5 });
     this.centerImage();
   }
 
@@ -271,6 +421,11 @@ export class RegionSelectorComponent implements OnInit {
     return this.state.content.isRegionListVisible;
   }
 
+  public toggleRegionList(): void {
+    this.state.content.isRegionListVisible = !this.state.content.isRegionListVisible;
+    this.onDraw();
+  }
+
   public showRegionList(): void {
     this.state.content.isRegionListVisible = true;
     this.onDraw();
@@ -278,6 +433,44 @@ export class RegionSelectorComponent implements OnInit {
 
   public hideRegionList(): void {
     this.state.content.isRegionListVisible = false;
+    this.onDraw();
+  }
+
+  public isDrawMarginsEnabled(): boolean {
+    return this.state.content.drawMarginEnabled;
+  }
+
+  public toggleDrawMargins(): void {
+    this.state.content.drawMarginEnabled = !this.state.content.drawMarginEnabled;
+    this.onDraw();
+  }
+
+  public showDrawMargins(): void {
+    this.state.content.drawMarginEnabled = true;
+    this.onDraw();
+  }
+
+  public hideDrawMargins(): void {
+    this.state.content.drawMarginEnabled = false;
+    this.onDraw();
+  }
+
+  public isDrawBoundaryEnabled(): boolean {
+    return this.state.content.drawBoundaryEnabled;
+  }
+
+  public toggleDrawBoundary(): void {
+    this.state.content.drawBoundaryEnabled = !this.state.content.drawBoundaryEnabled;
+    this.onDraw();
+  }
+
+  public showDrawBoundary(): void {
+    this.state.content.drawBoundaryEnabled = true;
+    this.onDraw();
+  }
+
+  public hideDrawBoundary(): void {
+    this.state.content.drawBoundaryEnabled = false;
     this.onDraw();
   }
 
@@ -294,6 +487,40 @@ export class RegionSelectorComponent implements OnInit {
       x: this.state.content.imageOrigin.x + (0.5 - canvasCenterImagePos.x),
       y: this.state.content.imageOrigin.y + (0.5 - canvasCenterImagePos.y),
     };
+    this.onDraw();
+  }
+
+  private centerDrawBoundary(): void {
+    if (!this.canvas || !this.state.content.image) {
+      return;
+    }
+    const boundaryMouseRadius = Math.min(
+      this.regionSelectorGeometryService.imageToMouseDistance(
+        this.canvas.nativeElement,
+        this.state.content,
+        { x: 0.5, y: 0.5 },
+        { x: 0, y: 0.5 }
+      ),
+      this.regionSelectorGeometryService.imageToMouseDistance(
+        this.canvas.nativeElement,
+        this.state.content,
+        { x: 0.5, y: 0.5 },
+        { x: 0.5, y: 0 }
+      )
+    );
+    const boundaryImageRadiusX = this.regionSelectorGeometryService.mouseToImageDistance(
+      this.canvas.nativeElement,
+      this.state.content,
+      { x: 0, y: 0 },
+      { x: boundaryMouseRadius, y: 0 }
+    );
+    const boundaryImageRadiusY = this.regionSelectorGeometryService.mouseToImageDistance(
+      this.canvas.nativeElement,
+      this.state.content,
+      { x: 0, y: 0 },
+      { x: 0, y: boundaryMouseRadius }
+    );
+    this.state.content.drawBoundary = new Eclipse({ x: 0.5, y: 0.5 }, boundaryImageRadiusX, boundaryImageRadiusY);
     this.onDraw();
   }
 
@@ -548,14 +775,29 @@ export class RegionSelectorComponent implements OnInit {
       return;
     }
     event.preventDefault();
-    if (this.mouseOverRegionID !== null || this.isMouseOverDrawnShapeList) {
-      this.regionDbClicked.emit(new RegionClickedEvent(this.isMouseOverDrawnShapeList, this.mouseOverRegionID, event));
+    if (
+      this.mouseOverElement === RegionSelectorElement.DRAWN_SHAPE_LIST ||
+      this.mouseOverElement === RegionSelectorElement.REGION_LIST
+    ) {
+      this.regionDbClicked.emit(
+        new RegionClickedEvent(
+          this.mouseOverElement === RegionSelectorElement.DRAWN_SHAPE_LIST,
+          this.mouseOverRegionID,
+          event
+        )
+      );
     }
   }
 
   public handleContextMenu(event: MouseEvent): boolean {
     event.preventDefault();
-    this.contextMenu.emit(new RegionClickedEvent(this.isMouseOverDrawnShapeList, this.mouseOverRegionID, event));
+    this.contextMenu.emit(
+      new RegionClickedEvent(
+        this.mouseOverElement === RegionSelectorElement.DRAWN_SHAPE_LIST,
+        this.mouseOverRegionID,
+        event
+      )
+    );
     return false;
   }
 
@@ -585,7 +827,7 @@ export class RegionSelectorComponent implements OnInit {
     this.onDraw();
   }
 
-  private updateMouseOverRegionID(event: MouseEvent | TouchEvent): void {
+  private updateMouseOverElementAndRegionID(event: MouseEvent | TouchEvent): void {
     if (!this.canvas || !this.state.content.image) {
       return;
     }
@@ -597,19 +839,19 @@ export class RegionSelectorComponent implements OnInit {
       mousePos
     );
 
-    // Prioritize drawn polygon list first
+    // Check if mouse is over drawn polygon list
     const drawnShapeList = this.state.content.drawnShapeList;
     const isInsideDrawnPolygon =
       drawnShapeList.findIndex((polygon) => {
         return polygon.isPointInside(mouseImagePos);
       }) !== -1;
     if (isInsideDrawnPolygon) {
+      this.mouseOverElement = RegionSelectorElement.DRAWN_SHAPE_LIST;
       this.mouseOverRegionID = null;
-      this.isMouseOverDrawnShapeList = true;
       return;
     }
 
-    // Check region list, prioritize the smallest region first
+    // Check if mouse is over region list, prioritize the smallest region first
     const regionList = this.state.content.regionList;
     let insideRegionID = -1;
     let insideRegionArea = Infinity;
@@ -626,14 +868,109 @@ export class RegionSelectorComponent implements OnInit {
       }
     }
     if (insideRegionID >= 0) {
+      this.mouseOverElement = RegionSelectorElement.REGION_LIST;
       this.mouseOverRegionID = insideRegionID;
-      this.isMouseOverDrawnShapeList = false;
       return;
+    }
+
+    // Check if mouse is over draw margin
+    if (this.state.content.drawMarginEnabled) {
+      const mouseOverMargin = this.checkMouseOverDrawMargin(
+        this.canvas.nativeElement,
+        this.state.content,
+        mouseImagePos
+      );
+      if (mouseOverMargin != null) {
+        this.mouseOverElement = mouseOverMargin;
+        this.mouseOverRegionID = null;
+        return;
+      }
+    }
+
+    // Check if mouse is over draw boundary
+    if (this.state.content.drawBoundaryEnabled) {
+      if (this.isMouseOverDrawBoundary(this.canvas.nativeElement, this.state.content, mouseImagePos)) {
+        this.mouseOverElement = RegionSelectorElement.DRAW_BOUNDARY;
+        this.mouseOverRegionID = null;
+        return;
+      }
     }
 
     // Mouse is not inside anything
     this.mouseOverRegionID = null;
-    this.isMouseOverDrawnShapeList = false;
+    this.mouseOverElement = null;
+  }
+
+  private checkMouseOverDrawMargin(
+    canvas: HTMLCanvasElement,
+    content: RegionSelectorContent,
+    mouseImagePos: Coordinate
+  ): RegionSelectorElement | null {
+    const marginLeftCanvasDistance = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      content,
+      mouseImagePos,
+      { x: content.drawMargin.left, y: mouseImagePos.y }
+    );
+    if (marginLeftCanvasDistance <= MAX_OPERATION_MOUSE_DISTANCE) {
+      return RegionSelectorElement.DRAW_MARGIN_LEFT;
+    }
+
+    const marginRightCanvasDistance = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      content,
+      mouseImagePos,
+      { x: content.drawMargin.right, y: mouseImagePos.y }
+    );
+    if (marginRightCanvasDistance <= MAX_OPERATION_MOUSE_DISTANCE) {
+      return RegionSelectorElement.DRAW_MARGIN_RIGHT;
+    }
+
+    const marginBottomCanvasDistance = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      content,
+      mouseImagePos,
+      { x: mouseImagePos.x, y: content.drawMargin.bottom }
+    );
+    if (marginBottomCanvasDistance <= MAX_OPERATION_MOUSE_DISTANCE) {
+      return RegionSelectorElement.DRAW_MARGIN_BOTTOM;
+    }
+
+    const marginTopCanvasDistance = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      content,
+      mouseImagePos,
+      { x: mouseImagePos.x, y: content.drawMargin.top }
+    );
+    if (marginTopCanvasDistance <= MAX_OPERATION_MOUSE_DISTANCE) {
+      return RegionSelectorElement.DRAW_MARGIN_TOP;
+    }
+
+    return null;
+  }
+
+  private isMouseOverDrawBoundary(
+    canvas: HTMLCanvasElement,
+    content: RegionSelectorContent,
+    mouseImagePos: Coordinate
+  ): boolean {
+    const mouseBoundaryRadius = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      content,
+      content.drawBoundary.center,
+      {
+        x: content.drawBoundary.center.x + content.drawBoundary.radiusX,
+        y: content.drawBoundary.center.y,
+      }
+    );
+    const boundaryCenterCursorDistance = this.regionSelectorGeometryService.imageToMouseDistance(
+      canvas,
+      content,
+      mouseImagePos,
+      content.drawBoundary.center
+    );
+    const diameterCursorDistance = Math.abs(boundaryCenterCursorDistance - mouseBoundaryRadius);
+    return diameterCursorDistance <= MAX_OPERATION_MOUSE_DISTANCE;
   }
 
   private onDraw(): void {
@@ -648,6 +985,10 @@ export class RegionSelectorComponent implements OnInit {
       if (ctx === null) {
         return;
       }
+
+      this.regionSelectorGraphicService.drawMarginAndBoundaryMask(canvasElement, ctx, this.state.content);
+      this.regionSelectorGraphicService.drawDrawMargin(canvasElement, ctx, this.state.content, this.mouseOverElement);
+      this.regionSelectorGraphicService.drawDrawBoundary(canvasElement, ctx, this.state.content, this.mouseOverElement);
 
       if (this.mouseOverRegionID !== null && !this.isEditing() && this.isRegionListVisible()) {
         this.regionSelectorGraphicService.drawRegionLabel(

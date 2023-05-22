@@ -11,7 +11,7 @@ import {
   VERTICES_MAX_DISTANCE,
   VERTICES_MIN_DISTANCE,
   VERTICES_AUTO_CONNECT_DISTANCE,
-} from './constants';
+} from '../common/constants';
 import { EditState } from './region-selector-edit-state';
 import { RegionSelectorState } from './region-selector-state';
 
@@ -43,6 +43,22 @@ export class FreePolygonDrawState extends EditState {
       this.content,
       cursorMousePosition
     );
+
+    if (!this.isPointInsideMarginAndBoundary(cursorImagePosition)) {
+      const newContent = { ...this.content };
+      newContent.cursorImagePosition = cursorImagePosition;
+      return new FreePolygonDrawState(
+        newContent,
+        this.regionIDToEdit,
+        this.shapeIDToAddNewVertex,
+        this.snapshotService,
+        this.regionSelectorGeometryService,
+        this.geometryService,
+        this.regionSelectorGraphicService,
+        this.canvasGraphicService
+      );
+    }
+
     return this.shapeIDToAddNewVertex === null
       ? this.withFirstVertex(cursorImagePosition)
       : this.withNewVertex(cursorImagePosition);
@@ -79,7 +95,61 @@ export class FreePolygonDrawState extends EditState {
       return this;
     }
 
-    return this.withNewVertex(cursorImagePosition);
+    const newVertex = this.movePointInsideMarginAndBoundary(canvas, cursorMousePosition, cursorImagePosition);
+    return this.withNewVertex(newVertex);
+  }
+
+  private movePointInsideMarginAndBoundary(
+    canvas: HTMLCanvasElement,
+    cursorMousePosition: Coordinate,
+    cursorImagePosition: Coordinate
+  ): Coordinate {
+    if (this.content.drawBoundaryEnabled && !this.content.drawBoundary.isPointInside(cursorImagePosition)) {
+      const boundary = this.content.drawBoundary;
+      const boundaryCenterMousePosition = this.regionSelectorGeometryService.imageToMousePosition(
+        canvas,
+        this.content,
+        boundary.center
+      );
+      const cursorBoundaryCenterMouseDistance = this.geometryService.getDistance(
+        boundaryCenterMousePosition,
+        cursorMousePosition
+      );
+      const boundaryMouseRadius = this.regionSelectorGeometryService.imageToMouseDistance(
+        canvas,
+        this.content,
+        boundary.center,
+        { x: boundary.center.x + boundary.radiusX, y: boundary.center.y }
+      );
+      const newDeltaX =
+        ((cursorMousePosition.x - boundaryCenterMousePosition.x) / cursorBoundaryCenterMouseDistance) *
+        boundaryMouseRadius;
+      const newDeltaY =
+        ((cursorMousePosition.y - boundaryCenterMousePosition.y) / cursorBoundaryCenterMouseDistance) *
+        boundaryMouseRadius;
+      const newCursorMousePosition = {
+        x: boundaryCenterMousePosition.x + newDeltaX,
+        y: boundaryCenterMousePosition.y + newDeltaY,
+      };
+      cursorImagePosition = this.regionSelectorGeometryService.mouseToImagePosition(
+        canvas,
+        this.content,
+        newCursorMousePosition
+      );
+    }
+
+    if (this.content.drawMarginEnabled) {
+      cursorImagePosition.x = Math.min(
+        Math.max(cursorImagePosition.x, this.content.drawMargin.left),
+        this.content.drawMargin.right
+      );
+      cursorImagePosition.y = Math.min(
+        Math.max(cursorImagePosition.y, this.content.drawMargin.bottom),
+        this.content.drawMargin.top
+      );
+    }
+
+    return cursorImagePosition;
   }
 
   public onLeftMouseUp(): RegionSelectorState {
@@ -131,6 +201,18 @@ export class FreePolygonDrawState extends EditState {
       this.regionSelectorGraphicService,
       this.canvasGraphicService
     );
+  }
+
+  private isPointInsideMarginAndBoundary(position: Coordinate): boolean {
+    if (this.content.drawMarginEnabled && !this.content.drawMargin.isPointInside(position)) {
+      return false;
+    }
+
+    if (this.content.drawBoundaryEnabled && !this.content.drawBoundary.isPointInside(position)) {
+      return false;
+    }
+
+    return true;
   }
 
   private withFirstVertex(cursorImagePosition: Coordinate): RegionSelectorState {
@@ -287,8 +369,8 @@ export class FreePolygonDrawState extends EditState {
       canvasHeight,
       ctx,
       center: vertexCanvasPos,
-      lineColor: '#f5222d',
-      fillColor: '#a8071a',
+      strokeStyle: '#f5222d',
+      fillStyle: '#a8071a',
       radius: 5,
     });
   }
@@ -315,8 +397,8 @@ export class FreePolygonDrawState extends EditState {
       canvasHeight,
       ctx,
       center: lastAddedVertexCanvasPos,
-      lineColor: '#f5222d',
-      fillColor: '#a8071a',
+      strokeStyle: '#f5222d',
+      fillStyle: '#a8071a',
       radius: 5,
     });
   }

@@ -6,7 +6,7 @@ import { Coordinate, Eclipse, FreePolygon, Rectangle, Shape } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
-import { VERTICES_MAX_DISTANCE, DELETE_VERTICES_MOUSE_DISTANCE } from './constants';
+import { VERTICES_MAX_DISTANCE, MAX_OPERATION_MOUSE_DISTANCE } from '../common/constants';
 import { EditState } from './region-selector-edit-state';
 import { RegionSelectorState } from './region-selector-state';
 
@@ -125,7 +125,7 @@ export class DeleteState extends EditState {
     const polygonVertices = polygon.getVertices();
     const newPolygonVertices = polygonVertices.filter((vertex) => {
       const vertexMousePos = this.regionSelectorGeometryService.imageToMousePosition(canvas, this.content, vertex);
-      return this.geometryService.getDistance(vertexMousePos, cursorMousePosition) > DELETE_VERTICES_MOUSE_DISTANCE;
+      return this.geometryService.getDistance(vertexMousePos, cursorMousePosition) > MAX_OPERATION_MOUSE_DISTANCE;
     });
     if (newPolygonVertices.length < 3) {
       return null;
@@ -144,7 +144,7 @@ export class DeleteState extends EditState {
       eclipse.center,
       cursorImagePosition
     );
-    return Math.abs(centerCursorDistance - mouseRadius) <= DELETE_VERTICES_MOUSE_DISTANCE;
+    return Math.abs(centerCursorDistance - mouseRadius) <= MAX_OPERATION_MOUSE_DISTANCE;
   }
 
   private shouldDeleteRectangle(
@@ -159,7 +159,7 @@ export class DeleteState extends EditState {
       { x: rectangle.left, y: cursorImagePosition.y }
     );
     if (
-      distanceToLeft <= DELETE_VERTICES_MOUSE_DISTANCE &&
+      distanceToLeft <= MAX_OPERATION_MOUSE_DISTANCE &&
       rectangle.bottom <= cursorImagePosition.y &&
       cursorImagePosition.y <= rectangle.top
     ) {
@@ -172,7 +172,7 @@ export class DeleteState extends EditState {
       { x: rectangle.right, y: cursorImagePosition.y }
     );
     if (
-      distanceToRight <= DELETE_VERTICES_MOUSE_DISTANCE &&
+      distanceToRight <= MAX_OPERATION_MOUSE_DISTANCE &&
       rectangle.bottom <= cursorImagePosition.y &&
       cursorImagePosition.y <= rectangle.top
     ) {
@@ -185,7 +185,7 @@ export class DeleteState extends EditState {
       { x: cursorImagePosition.x, y: rectangle.bottom }
     );
     if (
-      distanceToBottom <= DELETE_VERTICES_MOUSE_DISTANCE &&
+      distanceToBottom <= MAX_OPERATION_MOUSE_DISTANCE &&
       rectangle.left <= cursorImagePosition.x &&
       cursorImagePosition.x <= rectangle.right
     ) {
@@ -198,7 +198,7 @@ export class DeleteState extends EditState {
       { x: cursorImagePosition.x, y: rectangle.top }
     );
     if (
-      distanceToTop <= DELETE_VERTICES_MOUSE_DISTANCE &&
+      distanceToTop <= MAX_OPERATION_MOUSE_DISTANCE &&
       rectangle.left <= cursorImagePosition.x &&
       cursorImagePosition.x <= rectangle.right
     ) {
@@ -282,8 +282,8 @@ export class DeleteState extends EditState {
       canvasHeight,
       ctx,
       center: cursorCanvasPos,
-      lineColor: '#ccc',
-      radius: DELETE_VERTICES_MOUSE_DISTANCE,
+      strokeStyle: '#ccc',
+      radius: MAX_OPERATION_MOUSE_DISTANCE,
     });
   }
 }

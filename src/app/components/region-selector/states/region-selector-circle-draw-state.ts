@@ -6,10 +6,9 @@ import { Coordinate, Eclipse, Shape } from '../models';
 import { RegionSelectorContent } from '../region-selector-content';
 import { RegionSelectorSnapshot } from '../snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from '../snapshot/region-selector-snapshot.service';
+import { MAX_OPERATION_MOUSE_DISTANCE } from '../common/constants';
 import { EditState } from './region-selector-edit-state';
 import { RegionSelectorState } from './region-selector-state';
-
-const MAX_OPERATION_MOUSE_DISTANCE = 10;
 
 export enum CircleDrawStateOperation {
   MOVE = 0,
@@ -46,6 +45,10 @@ export class CircleDrawState extends EditState {
       cursorMousePosition
     );
 
+    if (!this.isPointInsideMarginAndBoundary(cursorImagePosition)) {
+      return this;
+    }
+
     const operationAndShapeIDToOperate = this.getOperationAndShapeIDToOperate(canvas, cursorImagePosition);
     if (operationAndShapeIDToOperate === null) {
       const newContent = { ...this.content };
@@ -77,6 +80,18 @@ export class CircleDrawState extends EditState {
       this.regionSelectorGraphicService,
       this.canvasGraphicService
     );
+  }
+
+  private isPointInsideMarginAndBoundary(position: Coordinate): boolean {
+    if (this.content.drawMarginEnabled && !this.content.drawMargin.isPointInside(position)) {
+      return false;
+    }
+
+    if (this.content.drawBoundaryEnabled && !this.content.drawBoundary.isPointInside(position)) {
+      return false;
+    }
+
+    return true;
   }
 
   private getOperationAndShapeIDToOperate(
@@ -171,8 +186,10 @@ export class CircleDrawState extends EditState {
     const newShape = new Eclipse(cursorImagePosition, shapeToOperate.radiusX, shapeToOperate.radiusY);
 
     const newContent = { ...this.content };
-    newContent.drawnShapeList = [...newContent.drawnShapeList];
-    newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    if (this.isEclipseInsideMarginAndBoundary(newShape)) {
+      newContent.drawnShapeList = [...newContent.drawnShapeList];
+      newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    }
     newContent.cursorImagePosition = cursorImagePosition;
 
     return new CircleDrawState(
@@ -220,8 +237,10 @@ export class CircleDrawState extends EditState {
     const newShape = new Eclipse(shapeToOperate.center, newRadiusX, newRadiusY);
 
     const newContent = { ...this.content };
-    newContent.drawnShapeList = [...newContent.drawnShapeList];
-    newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    if (this.isEclipseInsideMarginAndBoundary(newShape)) {
+      newContent.drawnShapeList = [...newContent.drawnShapeList];
+      newContent.drawnShapeList[this.shapeIDToOperate || 0] = newShape;
+    }
     newContent.cursorImagePosition = cursorImagePosition;
 
     return new CircleDrawState(
@@ -235,6 +254,27 @@ export class CircleDrawState extends EditState {
       this.regionSelectorGraphicService,
       this.canvasGraphicService
     );
+  }
+
+  private isEclipseInsideMarginAndBoundary(eclipse: Eclipse): boolean {
+    const verticesToCheck = eclipse.getVertices();
+    if (this.content.drawMarginEnabled) {
+      for (const vertex of verticesToCheck) {
+        if (!this.content.drawMargin.isPointInside(vertex)) {
+          return false;
+        }
+      }
+    }
+
+    if (this.content.drawBoundaryEnabled) {
+      for (const vertex of verticesToCheck) {
+        if (!this.content.drawBoundary.isPointInside(vertex)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   public onLeftMouseUp(canvas: HTMLCanvasElement, event: MouseEvent | TouchEvent): RegionSelectorState {
@@ -301,8 +341,8 @@ export class CircleDrawState extends EditState {
       canvasHeight,
       ctx,
       center: canvasShapeCenter,
-      lineColor: '#f5222d',
-      fillColor: '#a8071a',
+      strokeStyle: '#f5222d',
+      fillStyle: '#a8071a',
       radius: 5,
     });
     canvas.style.cursor = 'move';

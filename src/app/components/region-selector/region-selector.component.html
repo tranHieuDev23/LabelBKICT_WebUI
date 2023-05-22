@@ -11,10 +11,10 @@
         <i nz-icon nzType="undo"></i>
       </button>
       <button
-        *ngIf="isRegionListVisible()"
+        [nzType]="isRegionListVisible() ? 'default' : 'primary'"
         nz-button
-        (click)="hideRegionList()"
-        title="Hide regions"
+        (click)="toggleRegionList()"
+        [title]="isRegionListVisible() ? 'Hide regions' : 'Show regions'"
       >
         <i nz-icon>
           <svg
@@ -35,40 +35,52 @@
           </svg>
         </i>
       </button>
-      <button
-        *ngIf="!isRegionListVisible()"
-        nz-button
-        (click)="showRegionList()"
-        title="Show regions"
-      >
-        <i nz-icon>
-          <svg
-            t="1630217350632"
-            class="icon"
-            viewBox="0 0 1024 1024"
-            version="1.1"
-            xmlns="http://www.w3.org/2000/svg"
-            p-id="1328"
-            width="16"
-            height="16"
-          >
-            <path
-              d="M512 384a128.853333 128.853333 0 0 0-128 128c0 70.058667 57.941333 128 128 128 70.016 0 128-57.941333 128-128 0-70.016-57.984-128-128-128z"
-              fill=""
-              p-id="1329"
-            ></path>
-            <path
-              d="M512 213.333333c-325.674667 0-423.552 282.325333-424.448 285.184a42.410667 42.410667 0 0 0 0 27.008C88.448 528.341333 186.325333 810.666667 512 810.666667s423.552-282.325333 424.448-285.184a42.410667 42.410667 0 0 0 0-27.008C935.552 495.658667 837.674667 213.333333 512 213.333333z m0 512c-228.309333 0-316.757333-164.096-338.176-213.333333C195.328 462.592 283.818667 298.666667 512 298.666667c228.309333 0 316.757333 164.096 338.176 213.333333-21.504 49.408-109.994667 213.333333-338.176 213.333333z"
-              fill=""
-              p-id="1330"
-            ></path>
-          </svg>
-        </i>
-      </button>
     </nz-button-group>
   </div>
   <div *ngIf="editable" class="draw-option">
     <nz-button-group *ngIf="isInDefaultState() || isEditing()">
+      <button
+        nz-button
+        [nzType]="isDrawMarginsEnabled() ? 'primary' : 'default'"
+        (click)="toggleDrawMargins()"
+        [title]="
+          isDrawMarginsEnabled() ? 'Hide draw margins' : 'Show draw margins'
+        "
+      >
+        <i nz-icon>
+          <svg version="1.1" viewBox="0 0 128 128" xml:space="preserve">
+            <g>
+              <path
+                d="M122.88,77.63v41.12c0,2.28-1.85,4.12-4.12,4.12H77.33v-9.62h35.95c0-12.34,0-23.27,0-35.62H122.88L122.88,77.63z M77.39,9.53V0h41.37c2.28,0,4.12,1.85,4.12,4.12v41.18h-9.63V9.53H77.39L77.39,9.53z M9.63,45.24H0V4.12C0,1.85,1.85,0,4.12,0h41 v9.64H9.63V45.24L9.63,45.24z M45.07,113.27v9.6H4.12c-2.28,0-4.12-1.85-4.12-4.13V77.57h9.63v35.71H45.07L45.07,113.27z"
+              />
+            </g>
+          </svg>
+        </i>
+      </button>
+      <button
+        nz-button
+        [nzType]="isDrawBoundaryEnabled() ? 'primary' : 'default'"
+        (click)="toggleDrawBoundary()"
+        [title]="
+          isDrawBoundaryEnabled() ? 'Hide draw boundary' : 'Show draw boundary'
+        "
+      >
+        <i nz-icon>
+          <svg version="1.1" viewBox="0 0 201.21 201.21" xml:space="preserve">
+            <path
+              d="M166.926,155.377c8.633-10.416,14.741-22.853,17.662-35.965l14.641,3.262c-3.435,15.42-10.612,30.039-20.754,42.275
+        	L166.926,155.377z M162.129,20.796c-12.603-9.675-27.482-16.296-43.03-19.146l-2.705,14.754c13.219,2.424,25.876,8.057,36.6,16.291
+        	L162.129,20.796z M4.476,71.48l14.351,4.365C22.735,62.992,29.764,51.047,39.153,41.3L28.35,30.894
+        	C17.326,42.338,9.07,56.373,4.476,71.48z M33.814,175.861c11.849,10.591,26.185,18.314,41.459,22.332l3.817-14.506
+        	c-12.992-3.419-25.192-9.992-35.281-19.01L33.814,175.861z M12.953,149.881l13.083-7.338c-6.587-11.744-10.334-25.08-10.835-38.564
+        	l-14.989,0.559C0.801,120.389,5.207,136.068,12.953,149.881z M61.936,24.369C74.073,18.152,87.179,15,100.888,15V0
+        	C85.005,0,69.171,3.811,55.097,11.019L61.936,24.369z M200.998,89.399c-1.771-15.729-7.349-31.032-16.13-44.254l-12.495,8.299
+        	c7.469,11.247,12.213,24.261,13.72,37.635L200.998,89.399z M108.462,201.21c15.8-1.181,31.303-6.177,44.832-14.448l-7.824-12.797
+        	c-11.506,7.033-24.689,11.282-38.125,12.286L108.462,201.21z"
+            />
+          </svg>
+        </i>
+      </button>
       <button
         nz-button
         [disabled]="isInFreePolygonDrawState()"

@@ -7,8 +7,8 @@ export interface DrawCircleArguments {
   ctx: CanvasRenderingContext2D;
   center: Coordinate;
   radius: number;
-  lineColor: string;
-  fillColor?: string;
+  strokeStyle: string;
+  fillStyle?: string;
 }
 
 export interface DrawLineArguments {
@@ -17,7 +17,18 @@ export interface DrawLineArguments {
   ctx: CanvasRenderingContext2D;
   lineStart: Coordinate;
   lineEnd: Coordinate;
-  lineColor: string;
+  strokeStyle: string;
+  dashSegments?: number[];
+}
+
+export interface DrawRectangleArguments {
+  canvasWidth: number;
+  canvasHeight: number;
+  ctx: CanvasRenderingContext2D;
+  bottomLeft: Coordinate;
+  topRight: Coordinate;
+  strokeStyle?: string;
+  fillStyle?: string;
 }
 
 export interface DrawCheckerboardArguments {
@@ -66,12 +77,12 @@ export class CanvasGraphicService {
       false
     );
     args.ctx.closePath();
-    if (args.fillColor) {
-      args.ctx.fillStyle = args.fillColor;
+    if (args.fillStyle) {
+      args.ctx.fillStyle = args.fillStyle;
       args.ctx.fill();
     }
     args.ctx.lineWidth = 1;
-    args.ctx.strokeStyle = args.lineColor;
+    args.ctx.strokeStyle = args.strokeStyle;
     args.ctx.stroke();
     this.clearContext(args.ctx);
   }
@@ -82,8 +93,31 @@ export class CanvasGraphicService {
     args.ctx.lineTo(args.lineEnd.x * args.canvasWidth, args.lineEnd.y * args.canvasHeight);
     args.ctx.closePath();
     args.ctx.lineWidth = 2;
-    args.ctx.strokeStyle = args.lineColor;
+    args.ctx.strokeStyle = args.strokeStyle;
+    if (args.dashSegments !== undefined) {
+      args.ctx.setLineDash(args.dashSegments);
+    }
     args.ctx.stroke();
+    this.clearContext(args.ctx);
+  }
+
+  public drawRectangle(args: DrawRectangleArguments): void {
+    args.ctx.beginPath();
+    args.ctx.moveTo(args.bottomLeft.x * args.canvasWidth, args.bottomLeft.y * args.canvasHeight);
+    args.ctx.lineTo(args.bottomLeft.x * args.canvasWidth, args.topRight.y * args.canvasHeight);
+    args.ctx.lineTo(args.topRight.x * args.canvasWidth, args.topRight.y * args.canvasHeight);
+    args.ctx.lineTo(args.topRight.x * args.canvasWidth, args.bottomLeft.y * args.canvasHeight);
+    args.ctx.lineTo(args.bottomLeft.x * args.canvasWidth, args.bottomLeft.y * args.canvasHeight);
+    args.ctx.closePath();
+    if (args.fillStyle) {
+      args.ctx.fillStyle = args.fillStyle;
+      args.ctx.fill();
+    }
+    if (args.strokeStyle) {
+      args.ctx.lineWidth = 1;
+      args.ctx.strokeStyle = args.strokeStyle;
+      args.ctx.stroke();
+    }
     this.clearContext(args.ctx);
   }
 

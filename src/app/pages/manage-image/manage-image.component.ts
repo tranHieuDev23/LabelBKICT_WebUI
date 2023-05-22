@@ -686,12 +686,12 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     this.contextMenuService.create(event.event, this.contextMenu);
   }
 
-  public isRegionListVisible(): boolean {
-    return this.regionSelector?.isRegionListVisible() || false;
-  }
-
   public onContextMenuResetZoomClicked(): void {
     this.regionSelector?.resetZoom();
+  }
+
+  public isRegionListVisible(): boolean {
+    return this.regionSelector?.isRegionListVisible() || false;
   }
 
   public onContextMenuHideRegionsClicked(): void {
@@ -700,6 +700,30 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
 
   public onContextMenuShowRegionsClicked(): void {
     this.regionSelector?.showRegionList();
+  }
+
+  public isDrawMarginsEnabled(): boolean {
+    return this.regionSelector?.isDrawMarginsEnabled() || false;
+  }
+
+  public onContextMenuHideDrawMarginsClicked(): void {
+    this.regionSelector?.hideDrawMargins();
+  }
+
+  public onContextMenuShowDrawMarginsClicked(): void {
+    this.regionSelector?.showDrawMargins();
+  }
+
+  public isDrawBoundaryEnabled(): boolean {
+    return this.regionSelector?.isDrawBoundaryEnabled() || false;
+  }
+
+  public onContextMenuHideDrawBoundaryClicked(): void {
+    this.regionSelector?.hideDrawBoundary();
+  }
+
+  public onContextMenuShowDrawBoundaryClicked(): void {
+    this.regionSelector?.showDrawBoundary();
   }
 
   public isRegionSelectorDrawingOrDeleting(): boolean {
