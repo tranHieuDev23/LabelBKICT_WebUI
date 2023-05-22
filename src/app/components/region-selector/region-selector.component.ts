@@ -179,13 +179,13 @@ export class RegionSelectorComponent implements OnInit {
     if (this.shouldEnterTranslateOperation()) {
       this.mouseMoveOperation = RegionSelectorMouseMoveOperation.TRANSLATE;
       this.lastTranslateMousePos = mousePos;
-    } else if (this.shouldEnterStateOperation()) {
-      this.mouseMoveOperation = RegionSelectorMouseMoveOperation.STATE_OPERATION;
-      this.state = this.state.onLeftMouseDown(canvasElement, event);
     } else if (this.shouldEnterAdjustDrawMarginOperation()) {
       this.mouseMoveOperation = RegionSelectorMouseMoveOperation.ADJUST_DRAW_MARGIN;
     } else if (this.shouldEnterAdjustDrawBoundaryOperation()) {
       this.mouseMoveOperation = RegionSelectorMouseMoveOperation.ADJUST_DRAW_BOUNDARY;
+    } else if (this.shouldEnterStateOperation()) {
+      this.mouseMoveOperation = RegionSelectorMouseMoveOperation.STATE_OPERATION;
+      this.state = this.state.onLeftMouseDown(canvasElement, event);
     }
 
     this.onDraw();
@@ -320,13 +320,30 @@ export class RegionSelectorComponent implements OnInit {
       content,
       content.drawBoundary.center
     );
-    const boundaryMousePosition = this.regionSelectorGeometryService.imageToMousePosition(canvas, content, {
+    const boundaryMouseLeftPosition = this.regionSelectorGeometryService.imageToMousePosition(canvas, content, {
+      x: 0,
+      y: content.drawBoundary.center.y,
+    });
+    const boundaryMouseRightPosition = this.regionSelectorGeometryService.imageToMousePosition(canvas, content, {
+      x: 1,
+      y: content.drawBoundary.center.y,
+    });
+    const boundaryMouseBottomPosition = this.regionSelectorGeometryService.imageToMousePosition(canvas, content, {
+      x: content.drawBoundary.center.x,
+      y: 0,
+    });
+    const boundaryMouseTopPosition = this.regionSelectorGeometryService.imageToMousePosition(canvas, content, {
       x: content.drawBoundary.center.x,
       y: 1,
     });
     const newMouseRadius = Math.min(
       this.geometryService.getDistance(boundaryCenterMousePosition, mousePos),
-      this.geometryService.getDistance(boundaryCenterMousePosition, boundaryMousePosition)
+      Math.max(
+        this.geometryService.getDistance(boundaryCenterMousePosition, boundaryMouseLeftPosition),
+        this.geometryService.getDistance(boundaryCenterMousePosition, boundaryMouseRightPosition),
+        this.geometryService.getDistance(boundaryCenterMousePosition, boundaryMouseBottomPosition),
+        this.geometryService.getDistance(boundaryCenterMousePosition, boundaryMouseTopPosition)
+      )
     );
     const newImageRadiusX = this.regionSelectorGeometryService.mouseToImageDistance(
       canvas,
