@@ -55,9 +55,11 @@ export class RegionSelectorComponent implements OnInit {
     image.onload = () => {
       this.state.content.image = image;
       this.centerImage();
+      this.centerDrawBoundaryInDrawMargins();
       // HACK: This allows the DOM to initialize the image properly and fixes incorrect centering.
       setTimeout(() => {
         this.centerImage();
+        this.centerDrawBoundaryInDrawMargins();
       }, 0);
     };
     image.src = v;
