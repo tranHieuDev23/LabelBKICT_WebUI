@@ -201,7 +201,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
     ]);
     this.loadImageMargins();
     this.loadImageBoundary();
-    this.regionSelector?.centerDrawBoundaryInDrawMargins();
+    this.onContextMenuCenterDrawBoundaryInDrawMarginsClicked();
   }
 
   private async loadImage(imageID: number): Promise<void> {
