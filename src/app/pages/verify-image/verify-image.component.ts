@@ -1,11 +1,12 @@
 import { Location } from '@angular/common';
-import { AfterContentInit, Component, HostListener, ViewChild } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { AfterContentInit, Component, HostListener, OnDestroy, ViewChild } from '@angular/core';
+import { ActivatedRoute, NavigationStart, Params, Router } from '@angular/router';
 import { NzContextMenuService, NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { Subscription } from 'rxjs';
 import { EditableTextComponent } from 'src/app/components/editable-text/editable-text.component';
-import { FreePolygon, Shape } from 'src/app/components/region-selector/models';
+import { Rectangle, Shape } from 'src/app/components/region-selector/models';
 import {
   RegionClickedEvent,
   RegionEditedEvent,
@@ -44,15 +45,22 @@ import { ImageTypeManagementService } from 'src/app/services/module/image-type-m
 import { RegionImageService } from 'src/app/services/module/region-management/region-image.service';
 import { RegionManagementService } from 'src/app/services/module/region-management/region-management.service';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
+import store from 'store2';
 
 const DEFAULT_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
+const VERIFY_IMAGE_DRAW_MARGINS_ENABLED_KEY = 'VERIFY_IMAGE_DRAW_MARGINS_ENABLED_KEY';
+const VERIFY_IMAGE_DRAW_MARGINS_LEFT_KEY = 'VERIFY_IMAGE_DRAW_MARGINS_LEFT_KEY';
+const VERIFY_IMAGE_DRAW_MARGINS_RIGHT_KEY = 'VERIFY_IMAGE_DRAW_MARGINS_RIGHT_KEY';
+const VERIFY_IMAGE_DRAW_MARGINS_BOTTOM_KEY = 'VERIFY_IMAGE_DRAW_MARGINS_BOTTOM_KEY';
+const VERIFY_IMAGE_DRAW_MARGINS_TOP_KEY = 'VERIFY_IMAGE_DRAW_MARGINS_TOP_KEY';
+const VERIFY_IMAGE_DRAW_BOUNDARY_ENABLED_KEY = 'VERIFY_IMAGE_DRAW_BOUNDARY_ENABLED_KEY';
 
 @Component({
   selector: 'app-verify-image',
   templateUrl: './verify-image.component.html',
   styleUrls: ['./verify-image.component.scss'],
 })
-export class VerifyImageComponent implements AfterContentInit {
+export class VerifyImageComponent implements AfterContentInit, OnDestroy {
   @ViewChild('regionSelector', { static: false })
   public regionSelector: RegionSelectorComponent | undefined;
   @ViewChild('descriptionEditableText', { static: false })
@@ -98,6 +106,7 @@ export class VerifyImageComponent implements AfterContentInit {
   public allowedImageTagGroupListForImageType: ImageTagGroup[] = [];
   public allowedImageTagListForImageType: ImageTag[][] = [];
 
+  private routerSubscription: Subscription;
   private isKeyPressed = false;
 
   constructor(
@@ -114,7 +123,11 @@ export class VerifyImageComponent implements AfterContentInit {
     private readonly modalService: NzModalService,
     private readonly contextMenuService: NzContextMenuService,
     private readonly jsonCompressService: JSONCompressService
-  ) {}
+  ) {
+    this.routerSubscription = router.events.subscribe((event) => {
+      this.onRouterEvent(event);
+    });
+  }
 
   ngAfterContentInit(): void {
     this.route.params.subscribe(async (params) => {
@@ -123,6 +136,10 @@ export class VerifyImageComponent implements AfterContentInit {
     this.route.queryParams.subscribe(async (params) => {
       this.onQueryParamsChanged(params);
     });
+  }
+
+  ngOnDestroy(): void {
+    this.routerSubscription.unsubscribe();
   }
 
   private async onParamsChanged(params: Params): Promise<void> {
@@ -156,6 +173,9 @@ export class VerifyImageComponent implements AfterContentInit {
       this.loadImagePositionInList(this.imageID, this.imageListSortOption, this.filterOptions),
       this.loadImageBookmark(this.imageID),
     ]);
+    this.loadImageMargins();
+    this.loadImageBoundary();
+    this.regionSelector?.centerDrawBoundaryInDrawMargins();
   }
 
   private async loadImage(imageID: number): Promise<void> {
@@ -228,6 +248,30 @@ export class VerifyImageComponent implements AfterContentInit {
       } else {
         throw e;
       }
+    }
+  }
+
+  private loadImageMargins(): void {
+    const enabled = store.get(VERIFY_IMAGE_DRAW_MARGINS_ENABLED_KEY) || true;
+    const left = +(store.get(VERIFY_IMAGE_DRAW_MARGINS_LEFT_KEY) || 0);
+    const right = +(store.get(VERIFY_IMAGE_DRAW_MARGINS_RIGHT_KEY) || 1);
+    const bottom = +(store.get(VERIFY_IMAGE_DRAW_MARGINS_BOTTOM_KEY) || 0);
+    const top = +(store.get(VERIFY_IMAGE_DRAW_MARGINS_TOP_KEY) || 1);
+
+    if (enabled) {
+      this.regionSelector?.showDrawMargins();
+    } else {
+      this.regionSelector?.hideDrawMargins();
+    }
+    this.regionSelector?.setDrawMargins(new Rectangle(left, right, bottom, top));
+  }
+
+  private loadImageBoundary(): void {
+    const enabled = store.get(VERIFY_IMAGE_DRAW_BOUNDARY_ENABLED_KEY) || false;
+    if (enabled) {
+      this.regionSelector?.showDrawBoundary();
+    } else {
+      this.regionSelector?.hideDrawBoundary();
     }
   }
 
@@ -742,6 +786,30 @@ export class VerifyImageComponent implements AfterContentInit {
         filter: this.jsonCompressService.compress(this.filterOptions),
       },
     });
+  }
+
+  private onRouterEvent(event: any): void {
+    if (event instanceof NavigationStart) {
+      this.saveImageMargins();
+      this.saveImageBoundary();
+    }
+  }
+
+  private saveImageMargins(): void {
+    if (this.regionSelector === undefined) {
+      return;
+    }
+
+    const drawMargins = this.regionSelector.getDrawMargins();
+    store.set(VERIFY_IMAGE_DRAW_MARGINS_ENABLED_KEY, this.isDrawMarginsEnabled());
+    store.set(VERIFY_IMAGE_DRAW_MARGINS_LEFT_KEY, drawMargins.left);
+    store.set(VERIFY_IMAGE_DRAW_MARGINS_RIGHT_KEY, drawMargins.right);
+    store.set(VERIFY_IMAGE_DRAW_MARGINS_BOTTOM_KEY, drawMargins.bottom);
+    store.set(VERIFY_IMAGE_DRAW_MARGINS_TOP_KEY, drawMargins.top);
+  }
+
+  private saveImageBoundary(): void {
+    store.set(VERIFY_IMAGE_DRAW_BOUNDARY_ENABLED_KEY, this.isDrawBoundaryEnabled());
   }
 
   private handleError(notificationTitle: string, e: any): void {
