@@ -599,6 +599,14 @@ export class VerifyImageComponent implements AfterContentInit {
     this.regionSelector?.showDrawBoundary();
   }
 
+  public onContextMenuCenterDrawBoundaryInImageClicked(): void {
+    this.regionSelector?.centerDrawBoundaryInImage();
+  }
+
+  public onContextMenuCenterDrawBoundaryInDrawMarginsClicked(): void {
+    this.regionSelector?.centerDrawBoundaryInDrawMargins();
+  }
+
   public isRegionSelectorDrawingOrDeleting(): boolean {
     return this.regionSelector?.isEditing() || false;
   }

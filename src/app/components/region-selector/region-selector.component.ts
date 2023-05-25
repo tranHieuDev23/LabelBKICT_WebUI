@@ -55,11 +55,11 @@ export class RegionSelectorComponent implements OnInit {
     image.onload = () => {
       this.state.content.image = image;
       this.centerImage();
-      this.centerDrawBoundary();
+      this.centerDrawBoundaryInImage();
       // HACK: This allows the DOM to initialize the image properly and fixes incorrect centering.
       setTimeout(() => {
         this.centerImage();
-        this.centerDrawBoundary();
+        this.centerDrawBoundaryInImage();
       }, 0);
     };
     image.src = v;
@@ -472,6 +472,11 @@ export class RegionSelectorComponent implements OnInit {
     this.onDraw();
   }
 
+  public setDrawMargins(drawMargin: Rectangle): void {
+    this.state.content.drawMargin = drawMargin;
+    this.onDraw();
+  }
+
   public isDrawBoundaryEnabled(): boolean {
     return this.state.content.drawBoundaryEnabled;
   }
@@ -507,37 +512,51 @@ export class RegionSelectorComponent implements OnInit {
     this.onDraw();
   }
 
-  private centerDrawBoundary(): void {
+  public centerDrawBoundaryInImage(): void {
+    this.centerDrawBoundaryInImageMargin(new Rectangle(0, 1, 0, 1));
+  }
+
+  public centerDrawBoundaryInDrawMargins(): void {
+    this.centerDrawBoundaryInImageMargin(this.state.content.drawMargin);
+  }
+
+  private centerDrawBoundaryInImageMargin(imageMargin: Rectangle): void {
     if (!this.canvas || !this.state.content.image) {
       return;
     }
-    const boundaryMouseRadius = Math.min(
+    const marginImageCenter = imageMargin.getCenter();
+    const marginMouseCenter = this.regionSelectorGeometryService.imageToMousePosition(
+      this.canvas.nativeElement,
+      this.state.content,
+      marginImageCenter
+    );
+    const boundaryMouseRadius = Math.max(
       this.regionSelectorGeometryService.imageToMouseDistance(
         this.canvas.nativeElement,
         this.state.content,
-        { x: 0.5, y: 0.5 },
-        { x: 0, y: 0.5 }
+        marginImageCenter,
+        { x: imageMargin.left, y: marginImageCenter.y }
       ),
       this.regionSelectorGeometryService.imageToMouseDistance(
         this.canvas.nativeElement,
         this.state.content,
-        { x: 0.5, y: 0.5 },
-        { x: 0.5, y: 0 }
+        marginImageCenter,
+        { x: marginImageCenter.x, y: imageMargin.bottom }
       )
     );
     const boundaryImageRadiusX = this.regionSelectorGeometryService.mouseToImageDistance(
       this.canvas.nativeElement,
       this.state.content,
-      { x: 0, y: 0 },
-      { x: boundaryMouseRadius, y: 0 }
+      marginMouseCenter,
+      { x: marginMouseCenter.x - boundaryMouseRadius, y: marginMouseCenter.y }
     );
     const boundaryImageRadiusY = this.regionSelectorGeometryService.mouseToImageDistance(
       this.canvas.nativeElement,
       this.state.content,
-      { x: 0, y: 0 },
-      { x: 0, y: boundaryMouseRadius }
+      marginMouseCenter,
+      { x: marginMouseCenter.x, y: marginMouseCenter.y - boundaryMouseRadius }
     );
-    this.state.content.drawBoundary = new Eclipse({ x: 0.5, y: 0.5 }, boundaryImageRadiusX, boundaryImageRadiusY);
+    this.state.content.drawBoundary = new Eclipse(marginImageCenter, boundaryImageRadiusX, boundaryImageRadiusY);
     this.onDraw();
   }
 
@@ -720,11 +739,7 @@ export class RegionSelectorComponent implements OnInit {
       return;
     }
 
-    const sortedDrawnShapeList = [...drawnShapeList].sort((a, b) => {
-      console.log(a, b, a.getArea(), b.getArea());
-      return b.getArea() - a.getArea();
-    });
-    console.log(sortedDrawnShapeList);
+    const sortedDrawnShapeList = [...drawnShapeList].sort((a, b) => b.getArea() - a.getArea());
     const border = sortedDrawnShapeList[0];
     const holes = sortedDrawnShapeList.slice(1);
 

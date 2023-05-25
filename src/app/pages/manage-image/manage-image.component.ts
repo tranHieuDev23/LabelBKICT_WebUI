@@ -5,7 +5,7 @@ import { NzContextMenuService, NzDropdownMenuComponent } from 'ng-zorro-antd/dro
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { EditableTextComponent } from 'src/app/components/editable-text/editable-text.component';
-import { FreePolygon, Shape } from 'src/app/components/region-selector/models';
+import { Shape } from 'src/app/components/region-selector/models';
 import {
   RegionClickedEvent,
   RegionEditedEvent,
@@ -724,6 +724,14 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
 
   public onContextMenuShowDrawBoundaryClicked(): void {
     this.regionSelector?.showDrawBoundary();
+  }
+
+  public onContextMenuCenterDrawBoundaryInImageClicked(): void {
+    this.regionSelector?.centerDrawBoundaryInImage();
+  }
+
+  public onContextMenuCenterDrawBoundaryInDrawMarginsClicked(): void {
+    this.regionSelector?.centerDrawBoundaryInDrawMargins();
   }
 
   public isRegionSelectorDrawingOrDeleting(): boolean {

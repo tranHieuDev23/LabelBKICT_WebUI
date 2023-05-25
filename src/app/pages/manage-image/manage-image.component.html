@@ -414,6 +414,20 @@
       Show draw boundary
     </li>
     <li
+      *ngIf="isDrawBoundaryEnabled()"
+      nz-menu-item
+      (click)="onContextMenuCenterDrawBoundaryInImageClicked()"
+    >
+      Center draw boundary in the image
+    </li>
+    <li
+      *ngIf="isDrawBoundaryEnabled()"
+      nz-menu-item
+      (click)="onContextMenuCenterDrawBoundaryInDrawMarginsClicked()"
+    >
+      Center draw boundary in draw margins
+    </li>
+    <li
       *ngIf="isRegionSelectorDrawingOrDeleting()"
       nz-menu-item
       (click)="regionSelector?.finishDrawing()"
