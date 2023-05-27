@@ -24,6 +24,10 @@ export class RegionManagementService {
     return await this.regionsService.deleteRegion(imageID, regionID);
   }
 
+  public async deleteRegionList(imageID: number, regionIDList: number[]): Promise<void> {
+    Promise.all(regionIDList.map((regionID) => this.deleteRegion(imageID, regionID)));
+  }
+
   public async updateRegionBoundary(
     imageID: number,
     regionID: number,

@@ -159,6 +159,17 @@
           </nz-button-group>
         </nz-collapse-panel>
 
+        <nz-collapse-panel *ngIf="isImageEditable" nzHeader="Mass edit regions">
+          <nz-button-group>
+            <button nz-button (click)="onMassDeleteRegionsClicked()">
+              Mass delete regions
+            </button>
+            <button nz-button (click)="onDeleteAllRegionsClicked()" nzDanger>
+              Delete all regions
+            </button>
+          </nz-button-group>
+        </nz-collapse-panel>
+
         <nz-collapse-panel nzHeader="Shortcuts">
           <ul>
             <li *ngIf="isImageEditable">
@@ -309,7 +320,7 @@
 
 <nz-modal
   *ngIf="isImageSettingsModalVisible"
-  nzTitle="Image Settings"
+  nzTitle="Image settings"
   [nzVisible]="isImageSettingsModalVisible"
   [nzClosable]="false"
   nzCancelText="Close"
@@ -365,6 +376,30 @@
     >
       <i nz-icon nzType="delete"></i> Delete
     </button>
+  </div>
+</nz-modal>
+
+<nz-modal
+  *ngIf="image && isMassDeleteImageModalVisible"
+  nzTitle="Mass delete image regions"
+  [nzVisible]="isMassDeleteImageModalVisible"
+  [nzClosable]="false"
+  nzCancelText="Close"
+  (nzOnCancel)="onMassDeleteRegionModalClose()"
+  [nzOkDisabled]="massDeleteImageModalCheckedRegionList.length === 0"
+  nzOkText="Delete"
+  nzOkDanger="true"
+  (nzOnOk)="onMassDeleteRegionModalDeleteClicked()"
+>
+  <div *nzModalContent>
+    <app-region-list
+      [imageSrc]="image.originalImageURL"
+      [regionList]="regionList"
+      (regionListCheckedChange)="
+        onMassDeleteRegionModalRegionListCheckedChange($event)
+      "
+    >
+    </app-region-list>
   </div>
 </nz-modal>
 
@@ -505,7 +540,15 @@
       *ngIf="isImageEditable"
       nz-menu-item
       nzDanger
-      (click)="onContextMenuDeleteAllRegionClicked()"
+      (click)="onMassDeleteRegionsClicked()"
+    >
+      Mass delete regions
+    </li>
+    <li
+      *ngIf="isImageEditable"
+      nz-menu-item
+      nzDanger
+      (click)="onDeleteAllRegionsClicked()"
     >
       Delete all regions
     </li>

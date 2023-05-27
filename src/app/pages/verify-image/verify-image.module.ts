@@ -20,6 +20,7 @@ import { NzTypographyModule } from 'ng-zorro-antd/typography';
 import { EditableTagListModule } from 'src/app/components/editable-tag-list/editable-tag-list.module';
 import { EditableTextModule } from 'src/app/components/editable-text/editable-text.module';
 import { RegionOperationLogListModule } from 'src/app/components/region-operation-log-list/region-operation-log-list.module';
+import { RegionListModule } from 'src/app/components/region-list/region-list.module';
 
 @NgModule({
   declarations: [VerifyImageComponent],
@@ -44,6 +45,7 @@ import { RegionOperationLogListModule } from 'src/app/components/region-operatio
     NzCollapseModule,
     NzListModule,
     RegionOperationLogListModule,
+    RegionListModule,
   ],
   exports: [VerifyImageComponent],
 })

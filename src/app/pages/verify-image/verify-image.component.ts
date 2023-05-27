@@ -6,6 +6,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { Subscription } from 'rxjs';
 import { EditableTextComponent } from 'src/app/components/editable-text/editable-text.component';
+import { RegionListCheckedChangeEvent } from 'src/app/components/region-list/region-list.component';
 import { Rectangle, Shape } from 'src/app/components/region-selector/models';
 import {
   RegionClickedEvent,
@@ -99,6 +100,9 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
   public regionInformationModalRegion: Region | undefined;
   public regionInformationModalImage: string = '';
   public regionInformationModalOperationLogList: RegionOperationLog[] = [];
+
+  public isMassDeleteImageModalVisible = false;
+  public massDeleteImageModalCheckedRegionList: Region[] = [];
 
   public contextMenuRegion: Region | undefined;
   public contextMenuRegionID: number | undefined;
@@ -283,7 +287,7 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
 
   @HostListener('document: keydown', ['$event'])
   public onKeyDown(event: KeyboardEvent): void {
-    if (this.isRegionInformationModalVisible || this.isLabelRegionModalVisible) {
+    if (this.isRegionInformationModalVisible || this.isLabelRegionModalVisible || this.isMassDeleteImageModalVisible) {
       return;
     }
     if (this.descriptionEditableText?.isEditing) {
@@ -465,6 +469,34 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
     this.isShowingRegionSnapshot = false;
   }
 
+  public onMassDeleteRegionsClicked(): void {
+    if (!this.image) {
+      return;
+    }
+    this.openMassDeleteRegionModal();
+  }
+
+  public onDeleteAllRegionsClicked(): void {
+    this.modalService.create({
+      nzTitle: 'Delete all regions of image',
+      nzContent: '<p>Are you sure? This action is <b>IRREVERSIBLE</b>.</p>',
+      nzOkDanger: true,
+      nzOnOk: async () => {
+        if (!this.image) {
+          return;
+        }
+        try {
+          await this.regionManagementService.deleteRegionOfImage(this.image.id);
+        } catch (e) {
+          this.handleError('Failed to delete all regions of image', e);
+          return;
+        }
+        this.notificationService.success('Deleted all regions of image successfully', '');
+        this.regionList = [];
+      },
+    });
+  }
+
   public onExcludeImageClicked(): void {
     this.modalService.create({
       nzTitle: 'Exclude this image from labeling',
@@ -505,6 +537,43 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
         this.notificationService.success('Verified image successfully', '');
       },
     });
+  }
+
+  public onMassDeleteRegionModalRegionListCheckedChange(event: RegionListCheckedChangeEvent): void {
+    this.massDeleteImageModalCheckedRegionList = event.checkedRegionList;
+  }
+
+  public onMassDeleteRegionModalDeleteClicked(): void {
+    this.modalService.create({
+      nzTitle: 'Delete selected regions of image',
+      nzContent: '<p>Are you sure? This action is <b>IRREVERSIBLE</b>.</p>',
+      nzOkDanger: true,
+      nzOnOk: async () => {
+        if (!this.image) {
+          return;
+        }
+        const deletedRegionIDList = this.massDeleteImageModalCheckedRegionList.map((region) => region.id);
+        try {
+          await this.regionManagementService.deleteRegionList(this.image.id, deletedRegionIDList);
+        } catch (e) {
+          this.handleError('Failed to delete selected regions of image', e);
+          return;
+        }
+        this.notificationService.success('Deleted selected regions of image successfully', '');
+        const deletedRegionIDSet = new Set(deletedRegionIDList);
+        this.regionList = this.regionList.filter((region) => !deletedRegionIDSet.has(region.id));
+        this.onMassDeleteRegionModalClose();
+      },
+    });
+  }
+
+  private openMassDeleteRegionModal(): void {
+    this.massDeleteImageModalCheckedRegionList = [];
+    this.isMassDeleteImageModalVisible = true;
+  }
+
+  public onMassDeleteRegionModalClose(): void {
+    this.isMassDeleteImageModalVisible = false;
   }
 
   public onRegionSelected(event: RegionSelectedEvent): void {
@@ -704,27 +773,6 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
       return;
     }
     await this.handleDeleteRegion(this.contextMenuRegion);
-  }
-
-  public onContextMenuDeleteAllRegionClicked(): void {
-    this.modalService.create({
-      nzTitle: 'Delete all regions of image',
-      nzContent: '<p>Are you sure? This action is <b>IRREVERSIBLE</b>.</p>',
-      nzOkDanger: true,
-      nzOnOk: async () => {
-        if (!this.image) {
-          return;
-        }
-        try {
-          await this.regionManagementService.deleteRegionOfImage(this.image.id);
-        } catch (e) {
-          this.handleError('Failed to delete all regions of image', e);
-          return;
-        }
-        this.notificationService.success('Deleted all regions of image successfully', '');
-        this.regionList = [];
-      },
-    });
   }
 
   private async openRegionInfoModal(region: Region): Promise<void> {
