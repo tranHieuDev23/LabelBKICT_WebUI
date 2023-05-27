@@ -1,12 +1,19 @@
-<nz-table #regionListTable [nzData]="regionListDataList" nzTableLayout="fixed">
+<nz-table
+  #regionListTable
+  [nzData]="regionListDataList"
+  nzTableLayout="auto"
+  [nzPageSize]="5"
+>
   <thead>
     <tr>
       <th
         [(nzChecked)]="allRowsChecked"
         (nzCheckedChange)="onAllRowsCheckedChange()"
+        nzAlign="center"
       ></th>
       <th
         *ngFor="let column of columnList"
+        nzAlign="center"
         [nzSortOrder]="column.sortDirection"
         [nzSortFn]="column.sortFunc"
       >
@@ -15,7 +22,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let data of regionListTable.data">
+    <tr *ngFor="let data of regionListTable.data" nzAlign="center">
       <td
         [(nzChecked)]="data.checked"
         (nzCheckedChange)="onRowCheckedChange()"
