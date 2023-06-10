@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, UrlTree } from '@angular/router';
-import { UserPermission } from '../../dataaccess/api';
-import { SessionManagementService, SessionUserInfo } from '../../module/session-management';
+import { ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
+import { SessionManagementService } from '../../module/session-management';
 
 @Injectable()
-class UserLoggedInGuard implements CanActivate {
+class UserLoggedInGuard {
   constructor(private sessionManagementService: SessionManagementService, private router: Router) {}
 
   public async canActivate(route: ActivatedRouteSnapshot): Promise<boolean | UrlTree> {
