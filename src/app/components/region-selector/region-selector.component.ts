@@ -84,6 +84,58 @@ export class RegionSelectorComponent implements OnInit {
     return this._editable;
   }
 
+  private _symmetricalVerticalDrawMargins = false;
+
+  @Input() public set symmetricalVerticalDrawMargins(v: boolean) {
+    this._symmetricalVerticalDrawMargins = v;
+    if (v) {
+      const drawMargin = this.state.content.drawMargin;
+      const leftMargin = drawMargin.left;
+      const rightMargin = 1 - drawMargin.right;
+      if (leftMargin > rightMargin) {
+        this.state.content.drawMargin = new Rectangle(rightMargin, drawMargin.right, drawMargin.bottom, drawMargin.top);
+      } else {
+        this.state.content.drawMargin = new Rectangle(
+          drawMargin.left,
+          1 - leftMargin,
+          drawMargin.bottom,
+          drawMargin.top
+        );
+      }
+      this.onDraw();
+    }
+  }
+
+  public get symmetricalVerticalDrawMargins(): boolean {
+    return this._symmetricalVerticalDrawMargins;
+  }
+
+  private _symmetricalHorizontalDrawMargins = false;
+
+  @Input() public set symmetricalHorizontalDrawMargins(v: boolean) {
+    this._symmetricalHorizontalDrawMargins = v;
+    if (v) {
+      const drawMargin = this.state.content.drawMargin;
+      const bottomMargin = drawMargin.bottom;
+      const topMargin = 1 - drawMargin.top;
+      if (bottomMargin > topMargin) {
+        this.state.content.drawMargin = new Rectangle(drawMargin.left, drawMargin.right, topMargin, drawMargin.top);
+      } else {
+        this.state.content.drawMargin = new Rectangle(
+          drawMargin.left,
+          drawMargin.right,
+          drawMargin.bottom,
+          1 - bottomMargin
+        );
+      }
+      this.onDraw();
+    }
+  }
+
+  public get symmetricalHorizontalDrawMargins(): boolean {
+    return this._symmetricalHorizontalDrawMargins;
+  }
+
   @Output() public regionSelected = new EventEmitter<RegionSelectedEvent>();
   @Output() public regionEdited = new EventEmitter<RegionEditedEvent>();
   @Output() public regionDbClicked = new EventEmitter<RegionClickedEvent>();
@@ -283,25 +335,29 @@ export class RegionSelectorComponent implements OnInit {
       case RegionSelectorElement.DRAW_MARGIN_LEFT:
         const newLeft = Math.max(mouseImagePos.x, 0);
         if (drawMargin.right - newLeft >= MIN_MARGIN_DISTANCE) {
-          content.drawMargin = new Rectangle(newLeft, drawMargin.right, drawMargin.bottom, drawMargin.top);
+          const newRight = this._symmetricalVerticalDrawMargins ? 1 - newLeft : drawMargin.right;
+          content.drawMargin = new Rectangle(newLeft, newRight, drawMargin.bottom, drawMargin.top);
         }
         break;
       case RegionSelectorElement.DRAW_MARGIN_RIGHT:
         const newRight = Math.min(mouseImagePos.x, 1);
         if (newRight - drawMargin.left >= MIN_MARGIN_DISTANCE) {
-          content.drawMargin = new Rectangle(drawMargin.left, newRight, drawMargin.bottom, drawMargin.top);
+          const newLeft = this._symmetricalVerticalDrawMargins ? 1 - newRight : drawMargin.left;
+          content.drawMargin = new Rectangle(newLeft, newRight, drawMargin.bottom, drawMargin.top);
         }
         break;
       case RegionSelectorElement.DRAW_MARGIN_BOTTOM:
         const newBottom = Math.max(mouseImagePos.y, 0);
         if (drawMargin.top - newBottom >= MIN_MARGIN_DISTANCE) {
-          content.drawMargin = new Rectangle(drawMargin.left, drawMargin.right, newBottom, drawMargin.top);
+          const newTop = this._symmetricalHorizontalDrawMargins ? 1 - newBottom : drawMargin.top;
+          content.drawMargin = new Rectangle(drawMargin.left, drawMargin.right, newBottom, newTop);
         }
         break;
       case RegionSelectorElement.DRAW_MARGIN_TOP:
         const newTop = Math.min(mouseImagePos.y, 1);
         if (newTop - drawMargin.bottom >= MIN_MARGIN_DISTANCE) {
-          content.drawMargin = new Rectangle(drawMargin.left, drawMargin.right, drawMargin.bottom, newTop);
+          const newBottom = this._symmetricalHorizontalDrawMargins ? 1 - newTop : drawMargin.bottom;
+          content.drawMargin = new Rectangle(drawMargin.left, drawMargin.right, newBottom, newTop);
         }
         break;
     }

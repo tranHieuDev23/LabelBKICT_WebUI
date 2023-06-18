@@ -323,47 +323,79 @@
     >
       Show regions
     </li>
-    <li
-      *ngIf="isDrawMarginsEnabled()"
-      nz-menu-item
-      (click)="onContextMenuHideDrawMarginsClicked()"
-    >
-      Hide draw margins
+    <li nz-submenu nzTitle="Draw margins settings">
+      <ul>
+        <ng-container *ngIf="isDrawMarginsEnabled()">
+          <li
+            nz-menu-item
+            *ngIf="!isVerticalDrawMarginsSymmetrical()"
+            (click)="onVerticalDrawMarginsSymmetricalUpdate(true)"
+          >
+            Enable symmetrical vertical margins
+          </li>
+          <li
+            nz-menu-item
+            *ngIf="isVerticalDrawMarginsSymmetrical()"
+            (click)="onVerticalDrawMarginsSymmetricalUpdate(false)"
+          >
+            Disable symmetrical vertical margins
+          </li>
+          <li
+            nz-menu-item
+            *ngIf="!isHorizontalDrawMarginsSymmetrical()"
+            (click)="onHorizontalDrawMarginsSymmetricalUpdate(true)"
+          >
+            Enable symmetrical horizontal margins
+          </li>
+          <li
+            nz-menu-item
+            *ngIf="isHorizontalDrawMarginsSymmetrical()"
+            (click)="onHorizontalDrawMarginsSymmetricalUpdate(false)"
+          >
+            Disable symmetrical horizontal margins
+          </li>
+          <li nz-menu-divider></li>
+          <li nz-menu-item (click)="onContextMenuHideDrawMarginsClicked()">
+            Hide draw margins
+          </li>
+        </ng-container>
+        <li
+          *ngIf="!isDrawMarginsEnabled()"
+          nz-menu-item
+          (click)="onContextMenuShowDrawMarginsClicked()"
+        >
+          Show draw margins
+        </li>
+      </ul>
     </li>
-    <li
-      *ngIf="!isDrawMarginsEnabled()"
-      nz-menu-item
-      (click)="onContextMenuShowDrawMarginsClicked()"
-    >
-      Show draw margins
-    </li>
-    <li
-      *ngIf="isDrawBoundaryEnabled()"
-      nz-menu-item
-      (click)="onContextMenuHideDrawBoundaryClicked()"
-    >
-      Hide draw boundary
-    </li>
-    <li
-      *ngIf="!isDrawBoundaryEnabled()"
-      nz-menu-item
-      (click)="onContextMenuShowDrawBoundaryClicked()"
-    >
-      Show draw boundary
-    </li>
-    <li
-      *ngIf="isDrawBoundaryEnabled()"
-      nz-menu-item
-      (click)="onContextMenuCenterDrawBoundaryInImageClicked()"
-    >
-      Center draw boundary in the image
-    </li>
-    <li
-      *ngIf="isDrawBoundaryEnabled()"
-      nz-menu-item
-      (click)="onContextMenuCenterDrawBoundaryInDrawMarginsClicked()"
-    >
-      Center draw boundary in draw margins
+    <li nz-submenu nzTitle="Draw boundary settings">
+      <ul>
+        <ng-container *ngIf="isDrawBoundaryEnabled()">
+          <li
+            nz-menu-item
+            (click)="onContextMenuCenterDrawBoundaryInImageClicked()"
+          >
+            Center draw boundary in the image
+          </li>
+          <li
+            nz-menu-item
+            (click)="onContextMenuCenterDrawBoundaryInDrawMarginsClicked()"
+          >
+            Center draw boundary in draw margins
+          </li>
+          <li nz-menu-divider></li>
+          <li nz-menu-item (click)="onContextMenuHideDrawBoundaryClicked()">
+            Hide draw boundary
+          </li>
+        </ng-container>
+        <li
+          *ngIf="!isDrawBoundaryEnabled()"
+          nz-menu-item
+          (click)="onContextMenuShowDrawBoundaryClicked()"
+        >
+          Show draw boundary
+        </li>
+      </ul>
     </li>
     <li
       *ngIf="isRegionSelectorDrawingOrDeleting()"

@@ -50,6 +50,10 @@ import store from 'store2';
 
 const DEFAULT_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
 const VERIFY_IMAGE_DRAW_MARGINS_ENABLED_KEY = 'VERIFY_IMAGE_DRAW_MARGINS_ENABLED_KEY';
+const VERIFY_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY =
+  'VERIFY_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY';
+const VERIFY_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY =
+  'VERIFY_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY';
 const VERIFY_IMAGE_DRAW_MARGINS_LEFT_KEY = 'VERIFY_IMAGE_DRAW_MARGINS_LEFT_KEY';
 const VERIFY_IMAGE_DRAW_MARGINS_RIGHT_KEY = 'VERIFY_IMAGE_DRAW_MARGINS_RIGHT_KEY';
 const VERIFY_IMAGE_DRAW_MARGINS_BOTTOM_KEY = 'VERIFY_IMAGE_DRAW_MARGINS_BOTTOM_KEY';
@@ -257,6 +261,8 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
 
   private loadImageMargins(): void {
     const enabled = store.get(VERIFY_IMAGE_DRAW_MARGINS_ENABLED_KEY) || true;
+    const symmetricalVertical = store.get(VERIFY_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY) || false;
+    const symmetricalHorizontal = store.get(VERIFY_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY) || false;
     const left = +(store.get(VERIFY_IMAGE_DRAW_MARGINS_LEFT_KEY) || 0);
     const right = +(store.get(VERIFY_IMAGE_DRAW_MARGINS_RIGHT_KEY) || 1);
     const bottom = +(store.get(VERIFY_IMAGE_DRAW_MARGINS_BOTTOM_KEY) || 0);
@@ -268,6 +274,8 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
       this.regionSelector?.hideDrawMargins();
     }
     this.regionSelector?.setDrawMargins(new Rectangle(left, right, bottom, top));
+    this.onVerticalDrawMarginsSymmetricalUpdate(symmetricalVertical);
+    this.onHorizontalDrawMarginsSymmetricalUpdate(symmetricalHorizontal);
   }
 
   private loadImageBoundary(): void {
@@ -692,6 +700,26 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
     return this.regionSelector?.isDrawMarginsEnabled() || false;
   }
 
+  public isVerticalDrawMarginsSymmetrical(): boolean {
+    return this.regionSelector?.symmetricalVerticalDrawMargins || false;
+  }
+
+  public onVerticalDrawMarginsSymmetricalUpdate(v: boolean): void {
+    if (this.regionSelector) {
+      this.regionSelector.symmetricalVerticalDrawMargins = v;
+    }
+  }
+
+  public isHorizontalDrawMarginsSymmetrical(): boolean {
+    return this.regionSelector?.symmetricalHorizontalDrawMargins || false;
+  }
+
+  public onHorizontalDrawMarginsSymmetricalUpdate(v: boolean): void {
+    if (this.regionSelector) {
+      this.regionSelector.symmetricalHorizontalDrawMargins = v;
+    }
+  }
+
   public onContextMenuHideDrawMarginsClicked(): void {
     this.regionSelector?.hideDrawMargins();
   }
@@ -850,6 +878,8 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
 
     const drawMargins = this.regionSelector.getDrawMargins();
     store.set(VERIFY_IMAGE_DRAW_MARGINS_ENABLED_KEY, this.isDrawMarginsEnabled());
+    store.set(VERIFY_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY, this.isVerticalDrawMarginsSymmetrical());
+    store.set(VERIFY_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY, this.isHorizontalDrawMarginsSymmetrical());
     store.set(VERIFY_IMAGE_DRAW_MARGINS_LEFT_KEY, drawMargins.left);
     store.set(VERIFY_IMAGE_DRAW_MARGINS_RIGHT_KEY, drawMargins.right);
     store.set(VERIFY_IMAGE_DRAW_MARGINS_BOTTOM_KEY, drawMargins.bottom);

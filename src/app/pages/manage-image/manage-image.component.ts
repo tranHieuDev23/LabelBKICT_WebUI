@@ -54,6 +54,10 @@ import store from 'store2';
 
 const DEFAULT_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
 const MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY = 'MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY';
+const MANAGE_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY =
+  'MANAGE_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY';
+const MANAGE_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY =
+  'MANAGE_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY';
 const MANAGE_IMAGE_DRAW_MARGINS_LEFT_KEY = 'MANAGE_IMAGE_DRAW_MARGINS_LEFT_KEY';
 const MANAGE_IMAGE_DRAW_MARGINS_RIGHT_KEY = 'MANAGE_IMAGE_DRAW_MARGINS_RIGHT_KEY';
 const MANAGE_IMAGE_DRAW_MARGINS_BOTTOM_KEY = 'MANAGE_IMAGE_DRAW_MARGINS_BOTTOM_KEY';
@@ -282,6 +286,8 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
 
   private loadImageMargins(): void {
     const enabled = store.get(MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY) || true;
+    const symmetricalVertical = store.get(MANAGE_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY) || false;
+    const symmetricalHorizontal = store.get(MANAGE_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY) || false;
     const left = +(store.get(MANAGE_IMAGE_DRAW_MARGINS_LEFT_KEY) || 0);
     const right = +(store.get(MANAGE_IMAGE_DRAW_MARGINS_RIGHT_KEY) || 1);
     const bottom = +(store.get(MANAGE_IMAGE_DRAW_MARGINS_BOTTOM_KEY) || 0);
@@ -293,6 +299,8 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
       this.regionSelector?.hideDrawMargins();
     }
     this.regionSelector?.setDrawMargins(new Rectangle(left, right, bottom, top));
+    this.onVerticalDrawMarginsSymmetricalUpdate(symmetricalVertical);
+    this.onHorizontalDrawMarginsSymmetricalUpdate(symmetricalHorizontal);
   }
 
   private loadImageBoundary(): void {
@@ -824,6 +832,26 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
     return this.regionSelector?.isDrawMarginsEnabled() || false;
   }
 
+  public isVerticalDrawMarginsSymmetrical(): boolean {
+    return this.regionSelector?.symmetricalVerticalDrawMargins || false;
+  }
+
+  public onVerticalDrawMarginsSymmetricalUpdate(v: boolean): void {
+    if (this.regionSelector) {
+      this.regionSelector.symmetricalVerticalDrawMargins = v;
+    }
+  }
+
+  public isHorizontalDrawMarginsSymmetrical(): boolean {
+    return this.regionSelector?.symmetricalHorizontalDrawMargins || false;
+  }
+
+  public onHorizontalDrawMarginsSymmetricalUpdate(v: boolean): void {
+    if (this.regionSelector) {
+      this.regionSelector.symmetricalHorizontalDrawMargins = v;
+    }
+  }
+
   public onContextMenuHideDrawMarginsClicked(): void {
     this.regionSelector?.hideDrawMargins();
   }
@@ -1030,6 +1058,8 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
 
     const drawMargins = this.regionSelector.getDrawMargins();
     store.set(MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY, this.isDrawMarginsEnabled());
+    store.set(MANAGE_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY, this.isVerticalDrawMarginsSymmetrical());
+    store.set(MANAGE_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY, this.isHorizontalDrawMarginsSymmetrical());
     store.set(MANAGE_IMAGE_DRAW_MARGINS_LEFT_KEY, drawMargins.left);
     store.set(MANAGE_IMAGE_DRAW_MARGINS_RIGHT_KEY, drawMargins.right);
     store.set(MANAGE_IMAGE_DRAW_MARGINS_BOTTOM_KEY, drawMargins.bottom);

@@ -18,10 +18,8 @@ import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTypographyModule } from 'ng-zorro-antd/typography';
 import { EditableTagListModule } from 'src/app/components/editable-tag-list/editable-tag-list.module';
-import { EditableTextModule } from 'src/app/components/editable-text/editable-text.module';
 import { RegionOperationLogListModule } from 'src/app/components/region-operation-log-list/region-operation-log-list.module';
 import { RegionListModule } from 'src/app/components/region-list/region-list.module';
-import { QuillModule } from 'ngx-quill';
 import { EditableRichTextModule } from 'src/app/components/editable-rich-text/editable-rich-text.module';
 
 @NgModule({

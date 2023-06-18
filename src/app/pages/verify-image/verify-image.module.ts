@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { VerifyImageRoutingModule } from './verify-image-routing.module';
 import { VerifyImageComponent } from './verify-image.component';
 import { RegionSelectorModule } from 'src/app/components/region-selector/region-selector.module';
@@ -18,7 +17,6 @@ import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTypographyModule } from 'ng-zorro-antd/typography';
 import { EditableTagListModule } from 'src/app/components/editable-tag-list/editable-tag-list.module';
-import { EditableTextModule } from 'src/app/components/editable-text/editable-text.module';
 import { RegionOperationLogListModule } from 'src/app/components/region-operation-log-list/region-operation-log-list.module';
 import { RegionListModule } from 'src/app/components/region-list/region-list.module';
 import { EditableRichTextModule } from 'src/app/components/editable-rich-text/editable-rich-text.module';
