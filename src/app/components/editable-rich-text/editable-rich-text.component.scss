@@ -1,0 +1,19 @@
+.form {
+  display: inline-block;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.text-display {
+  cursor: pointer;
+}
+
+.text-input {
+  width: 100%;
+}
+
+@media (max-width: 575px) {
+  .text-display {
+    width: 160px;
+  }
+}

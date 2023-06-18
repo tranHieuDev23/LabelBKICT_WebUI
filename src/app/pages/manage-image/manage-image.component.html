@@ -57,17 +57,16 @@
 
       <nz-collapse nzAccordion>
         <nz-collapse-panel nzHeader="Description" nzActive="true">
-          <app-editable-text
+          <app-editable-rich-text
             #descriptionEditableText
             [text]="image.description"
             [editable]="isImageEditable"
             [placeholder]="
               isImageEditable ? 'Add image description...' : 'No description'
             "
-            [multiline]="true"
             (textEdited)="onImageDescriptionUpdated($event)"
           >
-          </app-editable-text>
+          </app-editable-rich-text>
         </nz-collapse-panel>
 
         <nz-collapse-panel nzHeader="Bookmark">
@@ -102,14 +101,13 @@
           </div>
 
           <div *ngIf="imageBookmark">
-            <app-editable-text
+            <app-editable-rich-text
               #imageBookmarkEditableText
               [text]="imageBookmark.description"
               placeholder="No description"
-              [multiline]="true"
               (textEdited)="onImageBookmarkDescriptionEdited($event)"
             >
-            </app-editable-text>
+            </app-editable-rich-text>
             <div style="margin-top: 8px">
               <button
                 nz-button

@@ -2,15 +2,7 @@ import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzNotificationData, NzNotificationService } from 'ng-zorro-antd/notification';
 import { NzUploadFile } from 'ng-zorro-antd/upload';
-import {
-  ImageTag,
-  ImageTagGroup,
-  ImageTagsService,
-  ImageType,
-  ImageTypesService,
-  UnauthenticatedError,
-  UnauthorizedError,
-} from 'src/app/services/dataaccess/api';
+import { ImageType, ImageTypesService, UnauthenticatedError, UnauthorizedError } from 'src/app/services/dataaccess/api';
 
 const NOTIFICATION_DURATION = 6000;
 const NOTIFICATION_SHOW_LIMIT = 8;

@@ -21,6 +21,7 @@ import { EditableTagListModule } from 'src/app/components/editable-tag-list/edit
 import { EditableTextModule } from 'src/app/components/editable-text/editable-text.module';
 import { RegionOperationLogListModule } from 'src/app/components/region-operation-log-list/region-operation-log-list.module';
 import { RegionListModule } from 'src/app/components/region-list/region-list.module';
+import { EditableRichTextModule } from 'src/app/components/editable-rich-text/editable-rich-text.module';
 
 @NgModule({
   declarations: [VerifyImageComponent],
@@ -41,7 +42,7 @@ import { RegionListModule } from 'src/app/components/region-list/region-list.mod
     NzSelectModule,
     FormsModule,
     EditableTagListModule,
-    EditableTextModule,
+    EditableRichTextModule,
     NzCollapseModule,
     NzListModule,
     RegionOperationLogListModule,
