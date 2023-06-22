@@ -12,6 +12,7 @@ export * from './image-list.service';
 export * from './regions.service';
 export * from './exports.service';
 export * from './pinned-pages.service';
+export * from './classification-types.service';
 export {
   UploadImageInput,
   UploadImageBatchMessage,

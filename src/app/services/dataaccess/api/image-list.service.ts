@@ -9,7 +9,6 @@ import {
   UnknownAPIError,
 } from './errors';
 import {
-  ClassificationType,
   Image,
   ImageListFilterOptions,
   ImageListSortOption,
@@ -135,12 +134,12 @@ export class ImageListService {
 
   public async createImageClassificationTaskList(
     imageIdList: number[],
-    classificationType: ClassificationType
+    classificationTypeId: number
   ): Promise<void> {
     try {
       await this.axios.post(`/api/images/classification-task`, {
         image_id_list: imageIdList,
-        classification_type: classificationType,
+        classification_type_id: classificationTypeId,
       });
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -350,8 +349,8 @@ export class ImageListService {
 
       const totalImageCount = +response.data.total_image_count;
       const imageList = response.data.image_list.map(Image.fromJSON);
-      const imageTagList = (response.data.image_tag_list || []).map(
-        (imageTagSublist: any[]) => imageTagSublist.map(ImageTag.fromJSON)
+      const imageTagList = (response.data.image_tag_list || []).map((imageTagSublist: any[]) =>
+        imageTagSublist.map(ImageTag.fromJSON)
       );
 
       return { totalImageCount, imageList, imageTagList };
@@ -453,7 +452,7 @@ export class ImageListService {
     }
   }
 
-  public async getImagePositionInList(
+  public async getImagePositionInUserManageableImageList(
     imageID: number,
     sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
@@ -498,9 +497,51 @@ export class ImageListService {
     }
   }
 
-  private getQueryParamsFromFilterOptions(
+  public async getImagePositionInUserVerifiableImageList(
+    imageID: number,
+    sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
-  ): any {
+  ): Promise<{
+    position: number;
+    totalImageCount: number;
+    prevImageID: number | undefined;
+    nextImageID: number | undefined;
+  }> {
+    try {
+      const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
+      const response = await this.axios.get(`/api/images/${imageID}/verifiable-images-position`, {
+        params: {
+          sort_order: sortOption,
+          ...filterOptionsQueryParams,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
+        },
+      });
+
+      const position = +response.data.position;
+      const totalImageCount = +response.data.total_image_count;
+      const prevImageID = response.data.prev_image_id;
+      const nextImageID = response.data.next_image_id;
+      return { position, totalImageCount, prevImageID, nextImageID };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidImageListFilterOptionsError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  private getQueryParamsFromFilterOptions(filterOptions: ImageListFilterOptions): any {
     return {
       filter_image_ids: filterOptions.imageIDList ? filterOptions.imageIDList : [],
       filter_image_types: filterOptions.imageTypeIDList,
@@ -518,9 +559,7 @@ export class ImageListService {
       original_filename_query: filterOptions.originalFilenameQuery,
       filter_image_statuses: filterOptions.imageStatusList,
       must_match_all_image_tags: filterOptions.mustMatchAllImageTags ? 1 : 0,
-      must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels
-        ? 1
-        : 0,
+      must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels ? 1 : 0,
       must_be_bookmarked: filterOptions.mustBeBookmarked ? 1 : 0,
       must_have_description: filterOptions.mustHaveDescription ? 1 : 0,
     };

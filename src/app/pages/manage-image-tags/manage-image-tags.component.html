@@ -37,6 +37,49 @@
                     <i nz-icon nzType="plus" nzTheme="outline"></i> Add image type
                 </button>
 
+                <!--START: allowed classification type-->
+                <h3 nz-typography>Allowed classification type</h3>
+                <p nz-typography>
+                    Editing this option will not affect images that are already assigned
+                    with this tag group's tags by AI-based classification.
+                </p>
+
+                <nz-list nzItemLayout="horizontal" nzBordered="true">
+                <nz-list-empty
+                    *ngIf="classificationTypeList[i].length === 0"
+                    nzNoResult="No classification type allowed"
+                >
+                </nz-list-empty>
+
+                <nz-list-item *ngFor="let classificationType of classificationTypeList[i]; index as j">
+                    <span nz-typography>{{ classificationType.displayName }}</span>
+                    <ul
+                        nz-list-item-actions
+                        class="item-type-item-image-tag-item-actions"
+                    >
+                        <nz-list-item-action>
+                            <button
+                                nz-button
+                                nzDanger
+                                (click)="onImageTagGroupClassificationTypeDeleteClicked(i, j)"
+                            >
+                                <i nz-icon nzType="delete" nzTheme="outline"></i>
+                            </button>
+                        </nz-list-item-action>
+                    </ul>
+                </nz-list-item>
+                </nz-list>
+
+                <button
+                    nz-button
+                    class="add-image-type-to-image-tag-group-button"
+                    [disabled]="classificationTypeList[i].length !== 0"
+                    (click)="onImageTagGroupAddClassificationTypeClicked(i)"
+                >
+                    <i nz-icon nzType="plus" nzTheme="outline"></i> Add classification type
+                </button>
+                <!--END: allowed classification type-->
+
                 <h3 nz-typography>Valid image tags of this group</h3>
 
                 <nz-list nzItemLayout="horizontal" nzBordered="true">
@@ -110,5 +153,24 @@
                 {{ imageType.displayName }}
             </nz-list-item>
         </nz-list>
+    </ng-container>
+</nz-modal>
+
+<nz-modal
+    [(nzVisible)]="isAddClassificationTypeModalVisible"
+    nzTitle="Add classification type"
+    [nzFooter]="null"
+    (nzOnCancel)="onAddClassificationTypeModalCancel()"
+>
+    <ng-container *nzModalContent>
+            <nz-list nzBordered="true" [nzDataSource]="addClassificationTypeModalClassificationTypeList">
+                <nz-list-item
+                    *ngFor="let classificationType of addClassificationTypeModalClassificationTypeList"
+                    class="add-image-type-modal-list-item"
+                    (click)="onAddClassificationTypeModalClassificationTypeClicked(classificationType)"
+                >
+                    {{ classificationType.displayName }}
+                </nz-list-item>
+            </nz-list>
     </ng-container>
 </nz-modal>

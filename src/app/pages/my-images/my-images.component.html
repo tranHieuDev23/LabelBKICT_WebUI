@@ -46,7 +46,7 @@
             <ul>
                 <li *ngFor="let classificationType of classificationTypeList; index as i" nz-menu-item
                     (click)="onRequestClassificationForSelectedImagesClicked(i)">
-                    {{ classificationType }}
+                    {{ classificationType.displayName }}
                 </li>
             </ul>
         </li>

@@ -5,18 +5,23 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
   ImageTag,
   ImageTagGroup,
+  ImageTagGroupAlreadyHasClassificationTypeError,
   ImageTagGroupAlreadyHasImageTypeError,
+  ImageTagGroupDoesNotHaveClassificationTypeError,
   ImageTagGroupDoesNotHaveImageTypeError,
   ImageTagGroupNotFoundError,
+  ImageTagGroupOrClassificationTypeNotFoundError,
   ImageTagGroupOrImageTypeNotFoundError,
   ImageTagNotFoundError,
   ImageType,
   ImageTypesService,
+  ClassificationType,
   InvalidImageTagGroupInformationError,
   InvalidImageTagInformationError,
   UnauthenticatedError,
   UnauthorizedError,
 } from 'src/app/services/dataaccess/api';
+import { ClassificationTypeManagementService } from 'src/app/services/module/classification-type-management';
 import { ImageTagManagementService } from 'src/app/services/module/image-tag-management';
 
 @Component({
@@ -41,9 +46,29 @@ export class ManageImageTagsComponent implements OnInit {
   public addImageTypeModalAllImageTypeList: ImageType[] = [];
   public addImageTypeModalImageTypeList: ImageType[] = [];
 
+  public classificationTypeList: ClassificationType[][] = [];
+  public addClassificationTypeModalAllClassificationTypeList: ClassificationType[] = [];
+  public addClassificationTypeModalClassificationTypeList: ClassificationType[] = [
+    {
+      id: 1,
+      displayName: "Anatomical Site"
+    },
+    {
+      id: 2,
+      displayName: "Lesion"
+    },
+    {
+      id: 3,
+      displayName: "HP"
+    }
+  ];
+  public isAddClassificationTypeModalVisible: boolean = false;
+  public addClassificationTypeModalImageTagGroupIndex: number = 0;
+
   constructor(
     private readonly imageTagManagementService: ImageTagManagementService,
     private readonly imageTypesService: ImageTypesService,
+    private readonly classificationTypeManagementService: ClassificationTypeManagementService,
     private readonly notificationService: NzNotificationService,
     private readonly modalService: NzModalService,
     private readonly router: Router
@@ -52,11 +77,13 @@ export class ManageImageTagsComponent implements OnInit {
   ngOnInit(): void {
     (async () => {
       try {
-        const { imageTagGroupList, imageTagList, imageTypeList } =
+        const { imageTagGroupList, imageTagList, imageTypeList, classificationTypeList } =
           await this.imageTagManagementService.getImageTagGroupList();
         this.imageTagGroupList = imageTagGroupList;
         this.imageTagList = imageTagList;
         this.imageTypeList = imageTypeList;
+        this.classificationTypeList = classificationTypeList;
+
         this.isImageTagGroupCollapsePanelOpen = new Array<boolean>(
           imageTagGroupList.length
         ).fill(false);
@@ -65,9 +92,16 @@ export class ManageImageTagsComponent implements OnInit {
         this.imageTagGroupCollapsePanelAddingImageTagDisplayName =
           new Array<string>(imageTagGroupList.length).fill('');
 
-        const { imageTypeList: addImageTypeModalImageTypeList } =
-          await this.imageTypesService.getImageTypeList(false);
+        this.isImageTagGroupCollapsePanelOpen = new Array<boolean>(imageTagGroupList.length).fill(false);
+        this.isImageTagGroupCollapsePanelAddingImageTagVisible = new Array<boolean>(imageTagGroupList.length).fill(
+          false
+        );
+        this.imageTagGroupCollapsePanelAddingImageTagDisplayName = new Array<string>(imageTagGroupList.length).fill('');
+
+        const { imageTypeList: addImageTypeModalImageTypeList } = await this.imageTypesService.getImageTypeList(false);
         this.addImageTypeModalAllImageTypeList = addImageTypeModalImageTypeList;
+
+        this.addClassificationTypeModalAllClassificationTypeList = await this.classificationTypeManagementService.getClassificationTypeList();
       } catch (e) {
         if (e instanceof UnauthenticatedError) {
           this.notificationService.error(
@@ -270,6 +304,112 @@ export class ManageImageTagsComponent implements OnInit {
     this.isAddImageTypeModalVisible = false;
   }
 
+  // ADD CLASSIFICATION TYPE BLOCK
+  public onImageTagGroupAddClassificationTypeClicked(index: number): void {
+    const addedClassificationTypeIDSet = new Set<number>();
+    for (const idx in this.classificationTypeList) {
+      if (+idx !== index && this.classificationTypeList[idx].length !== 0) {
+        addedClassificationTypeIDSet.add(this.classificationTypeList[idx][0].id);
+      }
+    }
+    
+    this.addClassificationTypeModalImageTagGroupIndex = index;
+    this.addClassificationTypeModalClassificationTypeList = this.addClassificationTypeModalAllClassificationTypeList.filter((classificationType) => {
+      return !addedClassificationTypeIDSet.has(classificationType.id);
+    });
+    this.isAddClassificationTypeModalVisible = true;
+  }
+
+  public async onAddClassificationTypeModalClassificationTypeClicked(classificationType: ClassificationType): Promise<void> {
+    try {
+      await this.imageTagManagementService.addClassificationTypeToImageTagGroup(
+        this.imageTagGroupList[this.addClassificationTypeModalImageTagGroupIndex].id,
+        classificationType.id
+      );
+    } catch (e) {
+      if (e instanceof InvalidImageTagInformationError) {
+        this.notificationService.error('Failed to add classification type to image tag group', 'Invalid image tag information');
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error('Failed to add classification type to image tag group', 'User is not logged in');
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to add classification type to image tag group',
+          "User doesn't have the required permission"
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof ImageTagGroupOrClassificationTypeNotFoundError) {
+        this.notificationService.error(
+          'Failed to add classification type to image tag group',
+          'Cannot find image tag group or classification type'
+        );
+      } else if (e instanceof ImageTagGroupAlreadyHasClassificationTypeError) {
+        this.notificationService.error(
+          'Failed to add classification type to image tag group',
+          'Image tag group already has classification type'
+        );
+      } else {
+        this.notificationService.error('Failed to add classification type to image tag group', 'Unknown error');
+      }
+      return;
+    }
+
+    this.notificationService.success('Added classification type to image tag group successfully', '');
+    this.classificationTypeList[this.addClassificationTypeModalImageTagGroupIndex].push(classificationType);
+    this.isAddClassificationTypeModalVisible = false;
+    this.refreshAllArray();
+  }
+
+  public onAddClassificationTypeModalCancel(): void {
+    this.isAddClassificationTypeModalVisible = false;
+  }
+
+  public async onImageTagGroupClassificationTypeDeleteClicked(
+    imageTagGroupIndex: number,
+    classificationTypeIndex: number
+  ): Promise<void> {
+    try {
+      await this.imageTagManagementService.removeClassificationTypeFromImageTagGroup(
+        this.imageTagGroupList[imageTagGroupIndex].id,
+        this.classificationTypeList[imageTagGroupIndex][classificationTypeIndex].id
+      );
+    } catch (e) {
+      if (e instanceof InvalidImageTagInformationError) {
+        this.notificationService.error(
+          'Failed to remove classification type from image tag group',
+          'Invalid image tag information'
+        );
+      } else if (e instanceof UnauthenticatedError) {
+        this.notificationService.error('Failed to remove classification type from image tag group', 'User is not logged in');
+        this.router.navigateByUrl('/login');
+      } else if (e instanceof UnauthorizedError) {
+        this.notificationService.error(
+          'Failed to remove classification type from image tag group',
+          "User doesn't have the required permission"
+        );
+        this.router.navigateByUrl('/welcome');
+      } else if (e instanceof ImageTagGroupOrClassificationTypeNotFoundError) {
+        this.notificationService.error(
+          'Failed to remove classification type from image tag group',
+          'Cannot find image tag group or classification type'
+        );
+      } else if (e instanceof ImageTagGroupDoesNotHaveClassificationTypeError) {
+        this.notificationService.error(
+          'Failed to remove classification type from image tag group',
+          'Image tag group does not have classification type'
+        );
+      } else {
+        this.notificationService.error('Failed to remove classification type from image tag group', 'Unknown error');
+      }
+      return;
+    }
+    
+    this.notificationService.success('Removed classification type from image tag group successfully', '');
+    this.classificationTypeList[imageTagGroupIndex].splice(classificationTypeIndex, 1);
+    this.refreshAllArray();
+  }
+  // ADD CLASSIFICATION TYPE BLOCK
+
   public async onImageTagGroupImageTagDisplayNameEdited(
     imageTagGroupIndex: number,
     imageTagIndex: number,
@@ -277,12 +417,11 @@ export class ManageImageTagsComponent implements OnInit {
   ): Promise<void> {
     let imageTag: ImageTag;
     try {
-      imageTag =
-        await this.imageTagManagementService.updateImageTagOfImageTagGroup(
-          this.imageTagGroupList[imageTagGroupIndex].id,
-          this.imageTagList[imageTagGroupIndex][imageTagIndex].id,
-          newDisplayName
-        );
+      imageTag = await this.imageTagManagementService.updateImageTagOfImageTagGroup(
+        this.imageTagGroupList[imageTagGroupIndex].id,
+        this.imageTagList[imageTagGroupIndex][imageTagIndex].id,
+        newDisplayName
+      );
     } catch (e) {
       if (e instanceof InvalidImageTagInformationError) {
         this.notificationService.error(
@@ -584,6 +723,7 @@ export class ManageImageTagsComponent implements OnInit {
     this.imageTagGroupList.push(imageTagGroup);
     this.imageTagList.push([]);
     this.imageTypeList.push([]);
+    this.classificationTypeList.push([]);
     this.isImageTagGroupCollapsePanelOpen.push(false);
     this.isImageTagGroupCollapsePanelAddingImageTagVisible.push(false);
     this.imageTagGroupCollapsePanelAddingImageTagDisplayName.push('');
@@ -599,6 +739,7 @@ export class ManageImageTagsComponent implements OnInit {
     this.imageTagGroupList = [...this.imageTagGroupList];
     this.imageTagList = [...this.imageTagList];
     this.imageTypeList = [...this.imageTypeList];
+    this.classificationTypeList = [...this.classificationTypeList];
     this.isImageTagGroupCollapsePanelOpen = [
       ...this.isImageTagGroupCollapsePanelOpen,
     ];

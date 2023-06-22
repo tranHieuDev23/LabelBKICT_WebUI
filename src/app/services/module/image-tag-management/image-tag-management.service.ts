@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
+  ClassificationType,
   ImageTag,
   ImageTagGroup,
   ImageTagGroupAndTagList,
@@ -27,19 +28,27 @@ export class ImageTagManagementService {
     imageTagGroupList: ImageTagGroup[];
     imageTagList: ImageTag[][];
     imageTypeList: ImageType[][];
+    classificationTypeList: ClassificationType[][];
   }> {
-    const { imageTagGroupList, imageTagList, imageTypeList } =
-      await this.imageTagGroupsService.getImageTagGroupList(true, true);
+    const { imageTagGroupList, imageTagList, imageTypeList, classificationTypeList } = await this.imageTagGroupsService.getImageTagGroupList(
+      true,
+      true,
+      true
+    );
     if (imageTagList === undefined) {
       throw new Error('Invalid image tag list response from API');
     }
     if (imageTypeList === undefined) {
       throw new Error('Invalid image type list response from API');
     }
+    if (classificationTypeList === undefined) {
+      throw new Error('Invalid classification type list response from API');
+    }
     return {
       imageTagGroupList,
       imageTagList,
       imageTypeList,
+      classificationTypeList
     };
   }
 
@@ -109,6 +118,14 @@ export class ImageTagManagementService {
       imageTagGroupID,
       imageTypeID
     );
+  }
+
+  public async addClassificationTypeToImageTagGroup(imageTagGroupID: number, classificationTypeID: number): Promise<void> {
+    await this.imageTagGroupsService.addClassificationTypeToImageTagGroup(imageTagGroupID, classificationTypeID);
+  }
+
+  public async removeClassificationTypeFromImageTagGroup(imageTagGroupID: number, classificationTypeID: number): Promise<void> {
+    await this.imageTagGroupsService.removeClassificationTypeFromImageTagGroup(imageTagGroupID, classificationTypeID);
   }
 
   public getIntersectionImageTagGroupAndTagList(

@@ -162,7 +162,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
         const { imageTypeList, regionLabelList } =
           await this.imageTypesService.getImageTypeList(true);
         const { imageTagGroupList, imageTagList } =
-          await this.imageTagsService.getImageTagGroupList(true, false);
+          await this.imageTagsService.getImageTagGroupList(true, false, false);
         this.imageTypeList = imageTypeList;
         this.regionLabelList = regionLabelList || [];
         this.imageTagGroupList = imageTagGroupList;

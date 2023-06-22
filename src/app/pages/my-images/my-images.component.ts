@@ -26,6 +26,7 @@ import {
   User,
   ClassificationType,
 } from 'src/app/services/dataaccess/api';
+import { ClassificationTypeManagementService } from 'src/app/services/module/classification-type-management';
 import {
   FilterOptionsService,
   ImageListManagementService,
@@ -79,7 +80,7 @@ export class MyImagesComponent implements OnInit {
 
   public imageTypeList: ImageType[] = [];
 
-  public classificationTypeList: String[] = ["Anatomical site", "Lesion", "HP"];
+  public classificationTypeList: ClassificationType[] = [];
 
   private selectedIndexList: number[] = [];
 
@@ -98,6 +99,7 @@ export class MyImagesComponent implements OnInit {
     private readonly sessionManagementService: SessionManagementService,
     private readonly imageTypeManagementService: ImageTypeManagementService,
     private readonly imageTagManagementService: ImageTagManagementService,
+    private readonly classificationTypeManagementService: ClassificationTypeManagementService,
     private readonly paginationService: PaginationService,
     private readonly jsonCompressService: JSONCompressService,
     private readonly activatedRoute: ActivatedRoute,
@@ -276,6 +278,17 @@ export class MyImagesComponent implements OnInit {
           this.imageTypeList = imageTypeList;
         } catch (e) {
           this.handleError('Failed to get image type list', e);
+          return;
+        }
+      }
+
+      if (this.classificationTypeList.length === 0) {
+        try {
+          const classificationTypeList = 
+            await this.classificationTypeManagementService.getClassificationTypeList();
+          this.classificationTypeList = classificationTypeList;
+        } catch (e) {
+          this.handleError('Failed to get classification type list', e);
           return;
         }
       }
@@ -472,27 +485,23 @@ export class MyImagesComponent implements OnInit {
       (index) => this.imageList[index].id
     );
     this.modalService.create({
-      nzTitle: `Request for ${this.classificationTypeList[classificationTypeInx]} classification for selected image(s)`,
+      nzTitle: `Request for ${this.classificationTypeList[classificationTypeInx].displayName} classification for selected image(s)`,
       nzContent: 'Are you sure?',
       nzOnOk:async () => {
         try {
-          let classificationType: ClassificationType;
-          if (classificationTypeInx == 0) classificationType = ClassificationType.ANATOMICAL_SITE;
-          else if (classificationTypeInx == 1) classificationType = ClassificationType.LESION_TYPE;
-          else classificationType = ClassificationType.HP;
-
+          const selectedClassificationTypeId = this.classificationTypeList[classificationTypeInx].id;
           await this.imageListManagementService.createImageClassificationTaskList(
             selectedImageIDList,
-            classificationType,
+            selectedClassificationTypeId,
           );
           await this.getImageListFromPaginationInfo();
           this.notificationService.success(
-            `Request for ${this.classificationTypeList[classificationTypeInx]} classification for selected image(s) successfully`,
+            `Request for ${this.classificationTypeList[classificationTypeInx].displayName} classification for selected image(s) successfully`,
             ''
           );
         } catch (e) {
           this.handleError(
-            `Failed to request for ${this.classificationTypeList[classificationTypeInx]} classification for selected image(s)`,
+            `Failed to request for ${this.classificationTypeList[classificationTypeInx].displayName} classification for selected image(s)`,
             e
           )
         }

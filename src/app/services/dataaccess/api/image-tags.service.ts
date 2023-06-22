@@ -6,7 +6,7 @@ import {
   UnauthorizedError,
   UnknownAPIError,
 } from './errors';
-import { ImageTagGroup, ImageTag, ImageType } from './schemas';
+import { ImageTagGroup, ImageTag, ImageType, ClassificationType } from './schemas';
 
 export class InvalidImageTagGroupInformationError extends Error {
   constructor() {
@@ -50,6 +50,24 @@ export class ImageTagGroupDoesNotHaveImageTypeError extends Error {
   }
 }
 
+export class ImageTagGroupOrClassificationTypeNotFoundError extends Error {
+  constructor() {
+    super('Cannot find image tag group or classification type');
+  }
+}
+
+export class ImageTagGroupAlreadyHasClassificationTypeError extends Error {
+  constructor() {
+    super('Image tag group already has classification type');
+  }
+}
+
+export class ImageTagGroupDoesNotHaveClassificationTypeError extends Error {
+  constructor() {
+    super('Image tag group does not have classification type');
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -85,17 +103,20 @@ export class ImageTagsService {
 
   public async getImageTagGroupList(
     withImageTag: boolean,
-    withImageType: boolean
+    withImageType: boolean,
+    withClassificationType: boolean
   ): Promise<{
     imageTagGroupList: ImageTagGroup[];
     imageTagList: ImageTag[][] | undefined;
     imageTypeList: ImageType[][] | undefined;
+    classificationTypeList: ClassificationType[][] | undefined;
   }> {
     try {
       const response = await this.axios.get('/api/image-tag-groups', {
         params: {
           with_image_tag: withImageTag ? 1 : 0,
           with_image_type: withImageType ? 1 : 0,
+          with_classification_type: withClassificationType ? 1 : 0
         },
       });
 
@@ -117,7 +138,14 @@ export class ImageTagsService {
         );
       }
 
-      return { imageTagGroupList, imageTagList, imageTypeList };
+      let classificationTypeList: ClassificationType[][] | undefined = undefined;
+      if (withClassificationType) {
+        classificationTypeList = response.data.classification_type_list.map((ImageTagSublist: any[]) =>
+          ImageTagSublist.map(ClassificationType.fromJSON)
+        );
+      }
+      
+      return { imageTagGroupList, imageTagList, imageTypeList, classificationTypeList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -322,6 +350,56 @@ export class ImageTagsService {
           throw new ImageTagGroupOrImageTypeNotFoundError();
         case HttpStatusCode.Conflict:
           throw new ImageTagGroupDoesNotHaveImageTypeError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async addClassificationTypeToImageTagGroup(imageTagGroupID: number, classificationTypeID: number) {
+    try {
+      await this.axios.post(`/api/image-tag-groups/${imageTagGroupID}/classification-types`, {
+        classification_type_id: classificationTypeID
+      })
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidImageTagInformationError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageTagGroupOrClassificationTypeNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new ImageTagGroupAlreadyHasClassificationTypeError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async removeClassificationTypeFromImageTagGroup(imageTagGroupID: number, classificationTypeID: number): Promise<void> {
+    try {
+      await this.axios.delete(`/api/image-tag-groups/${imageTagGroupID}/classification-types/${classificationTypeID}`);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidImageTagInformationError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageTagGroupOrClassificationTypeNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new ImageTagGroupDoesNotHaveClassificationTypeError();
         default:
           throw new UnknownAPIError(e);
       }
