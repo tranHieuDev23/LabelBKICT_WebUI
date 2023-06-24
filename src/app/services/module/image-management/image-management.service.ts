@@ -27,14 +27,17 @@ export class ImageManagementService {
     imageFileList: any[],
     imageTypeID: number | null,
     imageTagIDList: number[],
-    descriptionFile: File | null
+    descriptionFile: File | null,
+    shouldUseDetectionModel: boolean
   ): Observable<UploadImageBatchMessage> {
     return new Observable<UploadImageBatchMessage>((subscriber) => {
       this.getFilenameToDescriptionMap(descriptionFile).then((filenameToDescriptionMap) => {
         const uploadImageInputList = [];
         for (const imageFile of imageFileList) {
           const description = filenameToDescriptionMap.get(imageFile.name) || '';
-          uploadImageInputList.push(new UploadImageInput(imageFile, imageTypeID, imageTagIDList, description));
+          uploadImageInputList.push(
+            new UploadImageInput(imageFile, imageTypeID, imageTagIDList, description, shouldUseDetectionModel)
+          );
         }
         this.imagesService.createImageBatch(uploadImageInputList).subscribe(subscriber);
       });

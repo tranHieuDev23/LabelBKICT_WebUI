@@ -44,7 +44,7 @@ export class ImageUploadComponent {
   };
 
   public imageTypeForUploadedImage: ImageType | null = null;
-  public shouldUsePredictiveModel = false;
+  public shouldUseDetectionModel = false;
   public imageTagListForUploadedImage: ImageTag[] = [];
   public descriptionFileForUploadedImage: File | null = null;
 
@@ -139,7 +139,13 @@ export class ImageUploadComponent {
     const imageTagIDList = this.imageTagListForUploadedImage.map((imageTag) => imageTag.id);
 
     this.imageManagementService
-      .createImageBatch(imageFileList, imageTypeID, imageTagIDList, this.descriptionFileForUploadedImage)
+      .createImageBatch(
+        imageFileList,
+        imageTypeID,
+        imageTagIDList,
+        this.descriptionFileForUploadedImage,
+        this.shouldUseDetectionModel
+      )
       .subscribe((message) => this.handleUploadImageBatchMessage(imageFileList, message));
   }
 

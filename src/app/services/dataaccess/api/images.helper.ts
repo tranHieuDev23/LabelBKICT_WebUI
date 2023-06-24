@@ -7,7 +7,8 @@ export class UploadImageInput {
     public file: any,
     public imageTypeID: number | null,
     public imageTagIDList: number[],
-    public description: string
+    public description: string,
+    public shouldUseDetectionModel: boolean
   ) {}
 }
 
@@ -31,6 +32,7 @@ export async function uploadImage(input: UploadImageInput): Promise<void> {
   }
   formData.append('description', input.description);
   formData.append('image_tag_id_list', input.imageTagIDList.join(','));
+  formData.append('should_use_detection_model', input.shouldUseDetectionModel ? '1' : '0');
   await Axios.post('/api/images', formData);
 }
 
