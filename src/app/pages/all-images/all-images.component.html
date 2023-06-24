@@ -43,6 +43,14 @@
         <li nz-menu-item (click)="onRequestRegionDetectionForSelectedImagesClicked()">
             Request for AI-based lesion suggestion for selected image(s)
         </li>
+        <li nz-submenu nzTitle="Request for AI-based classification for selected image(s)">
+            <ul>
+                <li *ngFor="let classificationType of classificationTypeList; index as i" nz-menu-item
+                    (click)="onRequestClassificationForSelectedImagesClicked(i)">
+                    {{ classificationType.displayName }}
+                </li>
+            </ul>
+        </li>
         <li nz-menu-item nzDanger (click)="onDeleteSelectedImagesClicked()">
             Delete selected image(s)
         </li>

@@ -21,7 +21,9 @@ import {
   TooManyImagesError,
   ImageTagGroup,
   ImageTagGroupAndTagList,
+  ClassificationType,
 } from 'src/app/services/dataaccess/api';
+import { ClassificationTypeManagementService } from 'src/app/services/module/classification-type-management';
 import {
   ImageListManagementService,
   FilterOptionsService,
@@ -72,6 +74,8 @@ export class AllImagesComponent implements OnInit {
 
   public imageTypeList: ImageType[] = [];
 
+  public classificationTypeList: ClassificationType[] = [];
+
   private selectedIndexList: number[] = [];
 
   public isAddImageTagToSelectedImageListModalVisible: boolean = false;
@@ -88,6 +92,7 @@ export class AllImagesComponent implements OnInit {
     private readonly userManagementService: UserManagementService,
     private readonly imageTypeManagementService: ImageTypeManagementService,
     private readonly imageTagManagementService: ImageTagManagementService,
+    private readonly classificationTypeManagementService: ClassificationTypeManagementService,
     private readonly paginationService: PaginationService,
     private readonly jsonCompressService: JSONCompressService,
     private readonly activatedRoute: ActivatedRoute,
@@ -280,6 +285,18 @@ export class AllImagesComponent implements OnInit {
           return;
         }
       }
+
+      if (this.classificationTypeList.length === 0) {
+        try {
+          const classificationTypeList = 
+            await this.classificationTypeManagementService.getClassificationTypeList();
+          this.classificationTypeList = classificationTypeList;
+        } catch (e) {
+          this.handleError('Failed to get classification type list', e);
+          return;
+        }
+      }
+
       if (this.contextMenu) {
         this.contextMenuService.create(event, this.contextMenu);
       }
@@ -465,6 +482,35 @@ export class AllImagesComponent implements OnInit {
         }
       },
     });
+  }
+
+  public async onRequestClassificationForSelectedImagesClicked(classificationTypeInx: number) {
+    const selectedImageIDList = this.selectedIndexList.map(
+      (index) => this.imageList[index].id
+    );
+    this.modalService.create({
+      nzTitle: `Request for ${this.classificationTypeList[classificationTypeInx].displayName} classification for selected image(s)`,
+      nzContent: 'Are you sure?',
+      nzOnOk:async () => {
+        try {
+          const selectedClassificationTypeId = this.classificationTypeList[classificationTypeInx].id;
+          await this.imageListManagementService.createImageClassificationTaskList(
+            selectedImageIDList,
+            selectedClassificationTypeId,
+          );
+          await this.getImageListFromPaginationInfo();
+          this.notificationService.success(
+            `Request for ${this.classificationTypeList[classificationTypeInx].displayName} classification for selected image(s) successfully`,
+            ''
+          );
+        } catch (e) {
+          this.handleError(
+            `Failed to request for ${this.classificationTypeList[classificationTypeInx].displayName} classification for selected image(s)`,
+            e
+          )
+        }
+      }
+    })
   }
 
   public onImageDbClicked(imageIndex: number): void {
