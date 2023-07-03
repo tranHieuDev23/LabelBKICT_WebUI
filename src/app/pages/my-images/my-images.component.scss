@@ -8,3 +8,19 @@
 .modal-content-header {
   margin-bottom: 10px;
 }
+
+.show-duplicated-image-list-item {
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #f5f5f5;
+  };
+  position: relative;
+}
+
+.ant-list-item-action {
+  position: absolute;
+  top: 48px;
+  right: 0px;
+}

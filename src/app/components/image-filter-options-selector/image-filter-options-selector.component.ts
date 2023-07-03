@@ -19,6 +19,7 @@ import { DateToTimeService } from 'src/app/services/utils/date-to-time/date-to-t
 import { DelayedCallbackService } from 'src/app/services/utils/delayed-callback/delayed-callback.service';
 
 export class ImageListFilterOptionsWithMetadata {
+  public imageIdList: number[] = [];
   public imageTypeList: (ImageType | null)[] = [];
   public imageTagList: ImageTag[] = [];
   public regionLabelList: RegionLabel[] = [];

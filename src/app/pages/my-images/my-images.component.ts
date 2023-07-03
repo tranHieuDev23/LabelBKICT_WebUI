@@ -14,6 +14,7 @@ import {
 import {
   Image,
   ImageListSortOption,
+  ImageStatus,
   ImageTag,
   ImageType,
   ImageTypesService,
@@ -29,6 +30,7 @@ import {
   ImageListManagementService,
 } from 'src/app/services/module/image-list-management';
 import { ImageManagementService } from 'src/app/services/module/image-management';
+import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
 import { ImageTypeManagementService } from 'src/app/services/module/image-type-management';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
@@ -67,6 +69,25 @@ export class MyImagesComponent implements OnInit {
   public indeterminate = true;
   public isSelectAllChecked = false;
 
+  public isShowDuplicateImagesOfSelectedImageModalVisible = false;
+  public showDuplicatedImageListModalPageSizeOptions: number[] = [4];
+  public showDuplicatedImageListModalPageIndex: number = 0;
+  public showDuplicatedImageListModalPageSize: number = 4;
+  public showDuplicatedImageListModalTotalImageCount: number = 0;
+  public showDuplicatedImageListModalSortOrder = DEFAULT_SORT_OPTION;
+  public showDuplicatedImageListModalImageList: Image[] = [];
+  public imageTagListOfDuplicatedImageList: ImageTag[][] = [];
+  public imageListSortOptionList: ImageListSortOption[] = [
+    ImageListSortOption.UPLOAD_TIME_DESCENDING,
+    ImageListSortOption.UPLOAD_TIME_ASCENDING,
+    ImageListSortOption.PUBLISH_TIME_DESCENDING,
+    ImageListSortOption.PUBLISH_TIME_ASCENDING,
+    ImageListSortOption.VERIFY_TIME_DESCENDING,
+    ImageListSortOption.VERIFY_TIME_ASCENDING,
+    ImageListSortOption.ID_ASCENDING,
+    ImageListSortOption.ID_DESCENDING,
+  ];
+
   public fromImageIndex: number = 0;
   public toImageIndex: number = 0;
   public totalImageCount: number = 0;
@@ -96,6 +117,7 @@ export class MyImagesComponent implements OnInit {
     private readonly imageTypesService: ImageTypesService,
     private readonly paginationService: PaginationService,
     private readonly jsonCompressService: JSONCompressService,
+    private readonly imageStatusService: ImageStatusService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly location: Location,
@@ -413,6 +435,113 @@ export class MyImagesComponent implements OnInit {
     } else {
       this.indeterminate = true;
     }
+  }
+
+  private async loadDuplicatedImageList(): Promise<void> {
+    const selectedImageId = this.selectedImageList.map((image) => image.id)[0];
+    const offset = this.paginationService.getPageOffset(
+      this.showDuplicatedImageListModalPageIndex,
+      this.showDuplicatedImageListModalPageSize
+    );
+    const filterOptions =
+      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
+        this.getDefaultImageListFilterOptions()
+      );
+    try {
+      const duplicatedImageIdList = await this.imageManagementService.getDuplicatedImageIdListOfImage(selectedImageId);
+      filterOptions.imageIDList = duplicatedImageIdList;
+      
+      const { totalImageCount, imageList, imageTagList } =
+        await this.imageListManagementService.getUserImageList(
+          offset,
+          this.showDuplicatedImageListModalPageSize,
+          this.showDuplicatedImageListModalSortOrder,
+          filterOptions
+        );
+      this.showDuplicatedImageListModalImageList = imageList;
+      this.imageTagListOfDuplicatedImageList = imageTagList;
+      this.showDuplicatedImageListModalTotalImageCount = totalImageCount;
+    } catch (e) {
+      this.handleError('Failed to get image list', e);
+    }
+  }
+
+  public onShowDuplicatedImageListModalPageIndexChanged (newPageIndex: number): void {
+    this.showDuplicatedImageListModalPageIndex = newPageIndex;
+    this.loadDuplicatedImageList();
+  }
+
+  public onShowDuplicatedImageListModalPageSizeChanged (newPageSize: number): void {
+    this.showDuplicatedImageListModalPageSize = newPageSize;
+    this.loadDuplicatedImageList();
+  }
+
+  public onShowDuplicatedImageListModalSortOrderChanged (newSortOrder: ImageListSortOption): void {
+    this.showDuplicatedImageListModalSortOrder = newSortOrder;
+    this.loadDuplicatedImageList();
+  }
+
+  public getImageListSortOptionString(sortOption: ImageListSortOption): string {
+    switch (sortOption) {
+      case ImageListSortOption.ID_ASCENDING:
+        return 'Image ID (Asc.)';
+      case ImageListSortOption.ID_DESCENDING:
+        return 'Image ID (Desc.)';
+      case ImageListSortOption.UPLOAD_TIME_ASCENDING:
+        return 'Upload time (Asc.)';
+      case ImageListSortOption.UPLOAD_TIME_DESCENDING:
+        return 'Upload time (Desc.)';
+      case ImageListSortOption.PUBLISH_TIME_ASCENDING:
+        return 'Publish time (Asc.)';
+      case ImageListSortOption.PUBLISH_TIME_DESCENDING:
+        return 'Publish time (Desc.)';
+      case ImageListSortOption.VERIFY_TIME_ASCENDING:
+        return 'Verify time (Asc.)';
+      case ImageListSortOption.VERIFY_TIME_DESCENDING:
+        return 'Verify time (Desc.)';
+    }
+  }
+
+  public getImageStatusColor(status: ImageStatus): string {
+    return this.imageStatusService.getImageStatusColor(status);
+  }
+
+  public getImageStatusString(status: ImageStatus): string {
+    return this.imageStatusService.getImageStatusString(status);
+  }
+
+  public async onShowDuplicateImagesWithSelectedImageClicked(): Promise<void> {
+    this.showDuplicatedImageListModalPageIndex = 1;
+    this.showDuplicatedImageListModalPageSize = 4;
+    this.showDuplicatedImageListModalSortOrder = DEFAULT_SORT_OPTION;
+    this.loadDuplicatedImageList();
+    this.isShowDuplicateImagesOfSelectedImageModalVisible = true;
+  }
+
+  public async onShowDuplicatedImageListModalImageDeleteClicked(image: Image): Promise<void> {
+    this.modalService.create({
+      nzTitle: 'Delete image(s)',
+      nzContent:
+        'Are you sure? This will also delete all region extracted from them. ' +
+        'This action is <b>IRREVERSIBLE</b>.',
+      nzOkDanger: true,
+      nzOnOk: async () => {
+        try {
+          await this.imageListManagementService.deleteImageList(
+            [image.id]
+          );
+          await this.loadDuplicatedImageList();
+          await this.getImageListFromPaginationInfo();
+          this.notificationService.success('Delete image(s) successfully', '');
+        } catch (e) {
+          this.handleError('Failed to delete image(s)', e);
+        }
+      },
+    });
+  }
+
+  public onShowDuplicateImageListModalCancel(): void {
+    this.isShowDuplicateImagesOfSelectedImageModalVisible = false;
   }
 
   public onDeleteSelectedImagesClicked(): void {

@@ -454,4 +454,25 @@ export class ImagesService {
       }
     }
   }
+
+  public async getDuplicatedImageIdListOfImage(id: number): Promise<number[]> {
+    try {
+      const response = await this.axios.get(`/api/images/${id}/duplicate-image`);
+      return response.data.duplicate_image_id_list;
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
 }

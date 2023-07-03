@@ -67,6 +67,9 @@
     >
       Request for AI-based lesion suggestion for selected image(s)
     </li>
+    <li nz-menu-item (click)="onShowDuplicateImagesWithSelectedImageClicked()">
+      Show duplicate image(s) with selected image
+    </li>
     <li nz-menu-item nzDanger (click)="onDeleteSelectedImagesClicked()">
       Delete selected image(s)
     </li>
@@ -81,7 +84,10 @@
 >
   <ng-container *nzModalContent>
     <div class="modal-content-header">
-      <label for="" *ngIf="!isEmptyImageTagListModal && !isEmptyImageTypeListModal">
+      <label
+        for=""
+        *ngIf="!isEmptyImageTagListModal && !isEmptyImageTypeListModal"
+      >
         Choose image's tag add to image:
       </label>
       <label for="" *ngIf="isEmptyImageTagListModal">
@@ -94,7 +100,11 @@
     <nz-checkbox-wrapper
       style="width: 100%"
       (nzOnChange)="onChooseImageTagToSelectedImageListModal($event)"
-      *ngIf="!isEmptyImageTagListModal && !isEmptyImageTypeListModal && isAddImageTagToSelectedImageListModalVisible"
+      *ngIf="
+        !isEmptyImageTagListModal &&
+        !isEmptyImageTypeListModal &&
+        isAddImageTagToSelectedImageListModalVisible
+      "
     >
       <div nz-row>
         <div
@@ -121,5 +131,88 @@
         Select all
       </label>
     </nz-checkbox-wrapper>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [(nzVisible)]="isShowDuplicateImagesOfSelectedImageModalVisible"
+  nzTitle="Show duplicate image(s)"
+  [nzFooter]="null"
+  (nzOnCancel)="onShowDuplicateImageListModalCancel()"
+>
+  <ng-container *nzModalContent>
+    <ul
+      nz-list
+      [nzDataSource]="showDuplicatedImageListModalImageList"
+      nzBordered
+      nzItemLayout="vertical"
+    >
+      <nz-list-header>
+        Sort by:
+        <nz-select
+          [(ngModel)]="showDuplicatedImageListModalSortOrder"
+          (ngModelChange)="onShowDuplicatedImageListModalSortOrderChanged($event)"
+        >
+          <nz-option
+            *ngFor="let sortOption of imageListSortOptionList"
+            [nzValue]="sortOption"
+            [nzLabel]="getImageListSortOptionString(sortOption)"
+          >
+          </nz-option>
+        </nz-select>
+      </nz-list-header>
+      <li
+        nz-list-item
+        *ngFor="let image of showDuplicatedImageListModalImageList; index as i"
+        nzNoFlex
+        class="show-duplicated-image-list-item"
+      >
+        <nz-list-item-meta>
+          <nz-list-item-meta-title>
+            {{ image.originalFileName }}
+          </nz-list-item-meta-title>
+          <nz-list-item-meta-description>
+            <p>
+              <!-- <nz-tag nzColor="magenta">
+                  {{ image.imageType? image.imageType.displayName : 'No type' }}
+              </nz-tag> -->
+              <nz-tag [nzColor]="getImageStatusColor(image.status)">
+                  {{ getImageStatusString(image.status) }}
+              </nz-tag>
+          </p>
+            <p *ngIf="imageTagListOfDuplicatedImageList[i].length > 0">
+              <nz-tag *ngFor="let imageTag of imageTagListOfDuplicatedImageList[i]">
+                  {{ imageTag.displayName }}
+              </nz-tag>
+            </p>
+            <p nz-typography>
+              Uploaded at {{ image.uploadTime | date:'short' }} by
+              <b>{{ image.uploadedByUser.displayName }}</b>
+          </p>
+          </nz-list-item-meta-description>
+        </nz-list-item-meta>
+        <ul nz-list-item-actions>
+          <nz-list-item-action>
+              <a nz-typography nzType="danger"
+                  (click)="onShowDuplicatedImageListModalImageDeleteClicked(image)">
+                  <i nz-icon nzType="delete" nzTheme="outline"></i>
+              </a>
+          </nz-list-item-action>
+        </ul>
+      </li>
+      <nz-list-footer>
+        <nz-pagination
+          [nzPageIndex]="showDuplicatedImageListModalPageIndex"
+          [nzPageSize]="showDuplicatedImageListModalPageSize"
+          [nzTotal]="showDuplicatedImageListModalTotalImageCount"
+          nzShowSizeChanger
+          [nzPageSizeOptions]="showDuplicatedImageListModalPageSizeOptions"
+          (nzPageIndexChange)="onShowDuplicatedImageListModalPageIndexChanged($event)"
+          (nzPageSizeChange)="onShowDuplicatedImageListModalPageSizeChanged($event)"
+          disabled
+          >
+        </nz-pagination>
+      </nz-list-footer>
+    </ul>
   </ng-container>
 </nz-modal>

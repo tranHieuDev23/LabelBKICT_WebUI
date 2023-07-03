@@ -464,6 +464,7 @@ export class ImageListService {
     filterOptions: ImageListFilterOptions
   ): any {
     return {
+      filter_image_ids: filterOptions.imageIDList,
       filter_image_types: filterOptions.imageTypeIDList,
       filter_image_tags: filterOptions.imageTagIDList,
       filter_region_labels: filterOptions.regionLabelIDList,

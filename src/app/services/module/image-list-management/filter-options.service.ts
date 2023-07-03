@@ -10,6 +10,7 @@ export class FilterOptionsService {
     filterOptionsWithMetadata: ImageListFilterOptionsWithMetadata
   ): ImageListFilterOptions {
     const filterOptions = new ImageListFilterOptions();
+    filterOptions.imageIDList = filterOptionsWithMetadata.imageIdList;
     filterOptions.imageTypeIDList = filterOptionsWithMetadata.imageTypeList.map(
       (imageType) => imageType?.id || 0
     );
