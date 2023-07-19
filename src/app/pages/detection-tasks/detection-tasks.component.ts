@@ -1,55 +1,49 @@
+import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { ImageFilterOptionsSelectorConfig } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
 import {
+  DetectionTask,
+  DetectionTaskListSortOption,
+  ImageListFilterOptionsWithMetadata,
   ImageListSortOption,
-  User,
-  Image,
-  ImageTag,
-  InvalidImageListFilterOptionsError,
   UnauthenticatedError,
   UnauthorizedError,
-  ImageStatus,
-  ImageListFilterOptionsWithMetadata,
+  User,
 } from 'src/app/services/dataaccess/api';
-import { ImageListManagementService, FilterOptionsService } from 'src/app/services/module/image-list-management';
+import { FilterOptionsService, ImageListManagementService } from 'src/app/services/module/image-list-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
 
 const DEFAULT_PAGE_INDEX = 1;
 const DEFAULT_PAGE_SIZE = 12;
-const DEFAULT_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
+const DEFAULT_SORT_OPTION = DetectionTaskListSortOption.REQUEST_TIME_DESCENDING;
 const MAX_SEARCH_USER_RESULT = 10;
 
 @Component({
-  selector: 'app-verify-images',
-  templateUrl: './verify-images.component.html',
-  styleUrls: ['./verify-images.component.scss'],
+  selector: 'app-detection-tasks',
+  templateUrl: './detection-tasks.component.html',
+  styleUrls: ['./detection-tasks.component.scss'],
 })
-export class VerifyImagesComponent implements OnInit {
+export class DetectionTasksComponent implements OnInit {
   public pageIndex: number = DEFAULT_PAGE_INDEX;
   public pageSize: number = DEFAULT_PAGE_SIZE;
   public filterOptions: ImageListFilterOptionsWithMetadata = this.getDefaultImageListFilterOptions();
-  public imageListSortOption = DEFAULT_SORT_OPTION;
+  public detectionTaskListSortOption = DEFAULT_SORT_OPTION;
 
   public uploadedByUserOptionList: User[] = [];
   public publishedByUserOptionList: User[] = [];
   public verifiedByUserOptionList: User[] = [];
 
-  public fromImageIndex: number = 0;
-  public toImageIndex: number = 0;
-  public totalImageCount: number = 0;
-  public imageList: Image[] = [];
-  public imageTagList: ImageTag[][] = [];
+  public fromDetectionTaskIndex: number = 0;
+  public toDetectionTaskIndex: number = 0;
+  public totalDetectionTaskCount: number = 0;
+  public detectionTaskList: DetectionTask[] = [];
   public isLoadingImageList: boolean = false;
-
-  public imageListFilterOptionsSelectorConfig = new ImageFilterOptionsSelectorConfig();
 
   private getDefaultImageListFilterOptions(): ImageListFilterOptionsWithMetadata {
     const filterOptions = new ImageListFilterOptionsWithMetadata();
-    filterOptions.imageStatusList = [ImageStatus.PUBLISHED, ImageStatus.VERIFIED];
     return filterOptions;
   }
 
@@ -59,9 +53,10 @@ export class VerifyImagesComponent implements OnInit {
     private readonly userManagementService: UserManagementService,
     private readonly paginationService: PaginationService,
     private readonly jsonCompressService: JSONCompressService,
+    private readonly notificationService: NzNotificationService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
-    private readonly notificationService: NzNotificationService
+    private readonly location: Location
   ) {}
 
   ngOnInit(): void {
@@ -87,18 +82,12 @@ export class VerifyImagesComponent implements OnInit {
       this.pageSize = DEFAULT_PAGE_SIZE;
     }
     if (queryParams['sort'] !== undefined) {
-      this.imageListSortOption = +queryParams['sort'];
+      this.detectionTaskListSortOption = +queryParams['sort'];
     } else {
-      this.imageListSortOption = DEFAULT_SORT_OPTION;
+      this.detectionTaskListSortOption = DEFAULT_SORT_OPTION;
     }
     if (queryParams['filter'] !== undefined) {
       this.filterOptions = this.jsonCompressService.decompress(queryParams['filter']);
-      this.filterOptions.imageStatusList = this.filterOptions.imageStatusList.filter((imageStatus) => {
-        return imageStatus === ImageStatus.PUBLISHED || imageStatus === ImageStatus.VERIFIED;
-      });
-      if (this.filterOptions.imageStatusList.length === 0) {
-        this.filterOptions.imageStatusList = [ImageStatus.PUBLISHED, ImageStatus.VERIFIED];
-      }
     } else {
       this.filterOptions = this.getDefaultImageListFilterOptions();
     }
@@ -109,31 +98,19 @@ export class VerifyImagesComponent implements OnInit {
     const offset = this.paginationService.getPageOffset(this.pageIndex, this.pageSize);
     const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     try {
-      const { totalImageCount, imageList, imageTagList } =
-        await this.imageListManagementService.getUserVerifiableImageList(
+      const { totalDetectionTaskCount, detectionTaskList } =
+        await this.imageListManagementService.getImageDetectionTaskList(
           offset,
           this.pageSize,
-          this.imageListSortOption,
+          this.detectionTaskListSortOption,
           filterOptions
         );
-      this.totalImageCount = totalImageCount;
-      this.imageList = imageList;
-      this.imageTagList = imageTagList;
-      this.fromImageIndex = offset + 1;
-      this.toImageIndex = offset + imageList.length;
+      this.totalDetectionTaskCount = totalDetectionTaskCount;
+      this.detectionTaskList = detectionTaskList;
+      this.fromDetectionTaskIndex = offset + 1;
+      this.toDetectionTaskIndex = offset + detectionTaskList.length;
     } catch (e) {
-      if (e instanceof InvalidImageListFilterOptionsError) {
-        this.notificationService.error('Failed to get image list', 'Invalid image filter options');
-        this.router.navigateByUrl('/welcome');
-      } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error('Failed to get image list', 'User is not logged in');
-        this.router.navigateByUrl('/login');
-      } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error('Failed to get image list', 'User does not have the required permission');
-        this.router.navigateByUrl('/welcome');
-      } else {
-        this.notificationService.error('Failed to get image list', 'Unknown error');
-      }
+      this.handleError('Failed to get image list', e);
     } finally {
       this.isLoadingImageList = false;
     }
@@ -144,7 +121,7 @@ export class VerifyImagesComponent implements OnInit {
     if (query === '') {
       this.uploadedByUserOptionList = [];
     } else {
-      this.uploadedByUserOptionList = await this.imageListManagementService.searchUserVerifiableImageUserList(
+      this.uploadedByUserOptionList = await this.imageListManagementService.searchUserManageableImageUserList(
         query,
         MAX_SEARCH_USER_RESULT
       );
@@ -170,25 +147,25 @@ export class VerifyImagesComponent implements OnInit {
   }
 
   public onImageListFilterOptionsUpdated(filterOptions: ImageListFilterOptionsWithMetadata): void {
-    this.navigateToPage(this.pageIndex, this.pageSize, this.imageListSortOption, filterOptions);
+    this.navigateToPage(this.pageIndex, this.pageSize, this.detectionTaskListSortOption, filterOptions);
   }
 
-  public onImageListSortOptionUploaded(sortOption: ImageListSortOption): void {
+  public onImageListSortOptionUploaded(sortOption: DetectionTaskListSortOption): void {
     this.navigateToPage(this.pageIndex, this.pageSize, sortOption, this.filterOptions);
   }
 
   public onPageIndexChanged(newPageIndex: number): void {
-    this.navigateToPage(newPageIndex, this.pageSize, this.imageListSortOption, this.filterOptions);
+    this.navigateToPage(newPageIndex, this.pageSize, this.detectionTaskListSortOption, this.filterOptions);
   }
 
   public onPageSizeChanged(newPageSize: number): void {
-    this.navigateToPage(this.pageIndex, newPageSize, this.imageListSortOption, this.filterOptions);
+    this.navigateToPage(this.pageIndex, newPageSize, this.detectionTaskListSortOption, this.filterOptions);
   }
 
   private navigateToPage(
     pageIndex: number,
     pageSize: number,
-    sortOption: ImageListSortOption,
+    sortOption: DetectionTaskListSortOption,
     filterOptions: ImageListFilterOptionsWithMetadata
   ) {
     const queryParams: any = {};
@@ -202,17 +179,31 @@ export class VerifyImagesComponent implements OnInit {
       queryParams['sort'] = sortOption;
     }
     queryParams['filter'] = this.jsonCompressService.compress(filterOptions);
-    this.router.navigate(['/verify-images'], { queryParams });
+    this.router.navigate(['/detection-tasks'], { queryParams });
   }
 
-  public onImageDbClicked(imageIndex: number): void {
-    const image = this.imageList[imageIndex];
+  public onDetectionTaskImageDbClicked(index: number): void {
+    const image = this.detectionTaskList[index].ofImage;
     const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
-    this.router.navigate([`/verify-image/${image.id}`], {
+    this.router.navigate([`/manage-image/${image.id}`], {
       queryParams: {
-        sort: this.imageListSortOption,
+        sort: ImageListSortOption.ID_DESCENDING,
         filter: this.jsonCompressService.compress(filterOptions),
       },
     });
+  }
+
+  private handleError(notificationTitle: string, e: any): void {
+    if (e instanceof UnauthenticatedError) {
+      this.notificationService.error(notificationTitle, 'User is not logged in');
+      this.router.navigateByUrl('/login');
+      return;
+    }
+    if (e instanceof UnauthorizedError) {
+      this.notificationService.error(notificationTitle, 'User does not have the required permission');
+      this.router.navigateByUrl('/welcome');
+      return;
+    }
+    this.notificationService.error(notificationTitle, 'Unknown error');
   }
 }

@@ -4,12 +4,10 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { NzContextMenuService, NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import {
-  ImageFilterOptionsSelectorConfig,
-  ImageListFilterOptionsWithMetadata,
-} from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
+import { ImageFilterOptionsSelectorConfig } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
 import {
   Image,
+  ImageListFilterOptionsWithMetadata,
   ImageListSortOption,
   ImageTag,
   ImageTagGroup,

@@ -87,6 +87,11 @@ const routes: Routes = [
     loadChildren: () => import('./pages/pinned-pages/pinned-pages.module').then((m) => m.PinnedPagesModule),
     canActivate: [UserLoggedInGuard],
   },
+  {
+    path: 'detection-tasks',
+    loadChildren: () => import('./pages/detection-tasks/detection-tasks.module').then((m) => m.DetectionTasksModule),
+    canActivate: [UserLoggedInGuard],
+  },
   { path: '**', pathMatch: 'full', redirectTo: '/welcome' },
 ];
 

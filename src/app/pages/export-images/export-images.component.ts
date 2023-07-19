@@ -3,7 +3,6 @@ import { ActivatedRoute, Router, Params } from '@angular/router';
 import { NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { ImageListFilterOptionsWithMetadata } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
 import {
   User,
   Image,
@@ -18,6 +17,7 @@ import {
   ExportNotFoundError,
   ExportStatus,
   ImageStatus,
+  ImageListFilterOptionsWithMetadata,
 } from 'src/app/services/dataaccess/api';
 import { ExportManagementService } from 'src/app/services/module/export-management/export-management.service';
 import { ImageListManagementService, FilterOptionsService } from 'src/app/services/module/image-list-management';

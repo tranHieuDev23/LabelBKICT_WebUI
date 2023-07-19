@@ -2,8 +2,8 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
+  DetectionTaskListSortOption,
   ImageListFilterOptionsWithMetadata,
-  ImageListSortOption,
   ImageStatus,
   ImageTag,
   ImageTagGroup,
@@ -19,7 +19,7 @@ import { ImageStatusService } from 'src/app/services/module/image-management/ima
 import { DateToTimeService } from 'src/app/services/utils/date-to-time/date-to-time.service';
 import { DelayedCallbackService } from 'src/app/services/utils/delayed-callback/delayed-callback.service';
 
-export class ImageFilterOptionsSelectorConfig {
+export class DetectionTaskFilterOptionsSelectorConfig {
   public canFilterImageType = true;
   public canFilterImageStatus = true;
   public canFilterUploadedByUser = true;
@@ -45,11 +45,11 @@ const ORIGINAL_FILE_NAME_INPUT_CALLBACK_ID = 'ORIGINAL_FILE_NAME_INPUT_CALLBACK_
 const ORIGINAL_FILE_NAME_INPUT_CALLBACK_DELAY = 1000;
 
 @Component({
-  selector: 'app-image-filter-options-selector',
-  templateUrl: './image-filter-options-selector.component.html',
-  styleUrls: ['./image-filter-options-selector.component.scss'],
+  selector: 'app-detection-task-filter-options-selector',
+  templateUrl: './detection-task-filter-options-selector.component.html',
+  styleUrls: ['./detection-task-filter-options-selector.component.scss'],
 })
-export class ImageFilterOptionsSelectorComponent implements OnInit {
+export class DetectionTaskFilterOptionsSelectorComponent implements OnInit {
   private _filterOptions = new ImageListFilterOptionsWithMetadata();
 
   @Input() public set filterOptions(v: ImageListFilterOptionsWithMetadata) {
@@ -70,8 +70,8 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     return this._filterOptions;
   }
 
-  @Input() public sortOption = ImageListSortOption.UPLOAD_TIME_DESCENDING;
-  @Input() public selectorConfig = new ImageFilterOptionsSelectorConfig();
+  @Input() public sortOption = DetectionTaskListSortOption.REQUEST_TIME_DESCENDING;
+  @Input() public selectorConfig = new DetectionTaskFilterOptionsSelectorConfig();
 
   @Input() public uploadedByUserOptionList: User[] = [];
   @Input() public publishedByUserOptionList: User[] = [];
@@ -81,7 +81,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   @Output() public publishedByUserSearch = new EventEmitter<string>();
   @Output() public verifiedByUserSearch = new EventEmitter<string>();
   @Output() public filterOptionsUpdated = new EventEmitter<ImageListFilterOptionsWithMetadata>();
-  @Output() public sortOptionUpdated = new EventEmitter<ImageListSortOption>();
+  @Output() public sortOptionUpdated = new EventEmitter<DetectionTaskListSortOption>();
 
   public imageStatusList: ImageStatus[] = [
     ImageStatus.UPLOADED,
@@ -89,15 +89,13 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     ImageStatus.VERIFIED,
     ImageStatus.EXCLUDED,
   ];
-  public imageListSortOptionList: ImageListSortOption[] = [
-    ImageListSortOption.UPLOAD_TIME_DESCENDING,
-    ImageListSortOption.UPLOAD_TIME_ASCENDING,
-    ImageListSortOption.PUBLISH_TIME_DESCENDING,
-    ImageListSortOption.PUBLISH_TIME_ASCENDING,
-    ImageListSortOption.VERIFY_TIME_DESCENDING,
-    ImageListSortOption.VERIFY_TIME_ASCENDING,
-    ImageListSortOption.ID_ASCENDING,
-    ImageListSortOption.ID_DESCENDING,
+  public detectionTaskListSortOptionList: DetectionTaskListSortOption[] = [
+    DetectionTaskListSortOption.ID_ASCENDING,
+    DetectionTaskListSortOption.ID_DESCENDING,
+    DetectionTaskListSortOption.REQUEST_TIME_ASCENDING,
+    DetectionTaskListSortOption.REQUEST_TIME_DESCENDING,
+    DetectionTaskListSortOption.UPDATE_TIME_ASCENDING,
+    DetectionTaskListSortOption.UPDATE_TIME_DESCENDING,
   ];
 
   public imageTypeList: ImageType[] = [];
@@ -151,24 +149,20 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     return this.imageStatusService.getImageStatusString(status);
   }
 
-  public getImageListSortOptionString(sortOption: ImageListSortOption): string {
+  public getDetectionTaskListSortOptionString(sortOption: DetectionTaskListSortOption): string {
     switch (sortOption) {
-      case ImageListSortOption.ID_ASCENDING:
-        return 'Image ID (Asc.)';
-      case ImageListSortOption.ID_DESCENDING:
-        return 'Image ID (Desc.)';
-      case ImageListSortOption.UPLOAD_TIME_ASCENDING:
-        return 'Upload time (Asc.)';
-      case ImageListSortOption.UPLOAD_TIME_DESCENDING:
-        return 'Upload time (Desc.)';
-      case ImageListSortOption.PUBLISH_TIME_ASCENDING:
-        return 'Publish time (Asc.)';
-      case ImageListSortOption.PUBLISH_TIME_DESCENDING:
-        return 'Publish time (Desc.)';
-      case ImageListSortOption.VERIFY_TIME_ASCENDING:
-        return 'Verify time (Asc.)';
-      case ImageListSortOption.VERIFY_TIME_DESCENDING:
-        return 'Verify time (Desc.)';
+      case DetectionTaskListSortOption.ID_ASCENDING:
+        return 'Detection task ID (Asc.)';
+      case DetectionTaskListSortOption.ID_DESCENDING:
+        return 'Detection task ID (Desc.)';
+      case DetectionTaskListSortOption.REQUEST_TIME_ASCENDING:
+        return 'Request time (Asc.)';
+      case DetectionTaskListSortOption.REQUEST_TIME_DESCENDING:
+        return 'Request time (Desc.)';
+      case DetectionTaskListSortOption.UPDATE_TIME_ASCENDING:
+        return 'Update time (Asc.)';
+      case DetectionTaskListSortOption.UPDATE_TIME_DESCENDING:
+        return 'Update time (Desc.)';
     }
   }
 
@@ -254,7 +248,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     );
   }
 
-  public onSelectedImageListSortOptionChanged(option: ImageListSortOption): void {
+  public onSelectedDetectionTaskListSortOptionChanged(option: DetectionTaskListSortOption): void {
     this.sortOptionUpdated.emit(option);
   }
 }

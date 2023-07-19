@@ -4,7 +4,6 @@ import { ActivatedRoute, Router, Params } from '@angular/router';
 import { NzContextMenuService, NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { ImageListFilterOptionsWithMetadata } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
 import {
   ImageListSortOption,
   User,
@@ -18,6 +17,7 @@ import {
   TooManyImagesError,
   ImageTagGroup,
   ImageTagGroupAndTagList,
+  ImageListFilterOptionsWithMetadata,
 } from 'src/app/services/dataaccess/api';
 import { ImageListManagementService, FilterOptionsService } from 'src/app/services/module/image-list-management';
 import { ImageTagManagementService } from 'src/app/services/module/image-tag-management';

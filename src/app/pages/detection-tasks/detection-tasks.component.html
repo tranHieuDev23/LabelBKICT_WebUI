@@ -1,0 +1,74 @@
+<div class="carded-content">
+  <h1 nz-typography>Detection tasks</h1>
+
+  <app-detection-task-filter-options-selector
+    [filterOptions]="filterOptions"
+    [sortOption]="detectionTaskListSortOption"
+    [uploadedByUserOptionList]="uploadedByUserOptionList"
+    [publishedByUserOptionList]="publishedByUserOptionList"
+    [verifiedByUserOptionList]="verifiedByUserOptionList"
+    (uploadedByUserSearch)="onUploadedByUserSearch($event)"
+    (publishedByUserSearch)="onPublishedByUserSearch($event)"
+    (verifiedByUserSearch)="onVerifiedByUserSearch($event)"
+    (filterOptionsUpdated)="onImageListFilterOptionsUpdated($event)"
+    (sortOptionUpdated)="onImageListSortOptionUploaded($event)"
+  >
+  </app-detection-task-filter-options-selector>
+
+  <p *ngIf="fromDetectionTaskIndex !== 0" nz-typography>
+    Showing detection task {{ fromDetectionTaskIndex }} -
+    {{ toDetectionTaskIndex }} of
+    {{ totalDetectionTaskCount }}
+  </p>
+
+  <nz-table
+    #detectionTaskTable
+    [nzData]="detectionTaskList"
+    nzShowPagination="false"
+  >
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Status</th>
+        <th>Request time</th>
+        <th>Update time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let data of detectionTaskTable.data; index as i">
+        <td>
+          <img
+            class="thumbnail-image"
+            [src]="data.ofImage.thumbnailURL"
+            (dblclick)="onDetectionTaskImageDbClicked(i)"
+          />
+        </td>
+        <td>
+          <nz-tag *ngIf="data.status === 0" nzColor="red">Requested</nz-tag>
+          <nz-tag *ngIf="data.status === 1" nzColor="yellow">Processing</nz-tag>
+          <nz-tag *ngIf="data.status === 2" nzColor="green">Done</nz-tag>
+        </td>
+        <td>
+          {{ data.requestTime | date : "short" }}
+        </td>
+        <td>
+          {{ data.updateTime | date : "short" }}
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+
+  <div *ngIf="!isLoadingImageList" class="pagination">
+    <nz-pagination
+      [nzPageIndex]="pageIndex"
+      [nzPageSize]="pageSize"
+      [nzTotal]="totalDetectionTaskCount"
+      nzShowQuickJumper
+      nzShowSizeChanger
+      [nzPageSizeOptions]="[12, 24, 60, 120, 240]"
+      (nzPageIndexChange)="onPageIndexChanged($event)"
+      (nzPageSizeChange)="onPageSizeChanged($event)"
+    >
+    </nz-pagination>
+  </div>
+</div>

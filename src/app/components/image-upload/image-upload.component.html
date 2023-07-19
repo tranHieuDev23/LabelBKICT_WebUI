@@ -1,11 +1,21 @@
 <div style="position: relative">
-  <nz-upload nzType="drag" nzAction="#" nzAccept=".jpg,.jpeg,.png,.webp,.gif,.avif,.tiff,.svg"
-    [nzMultiple]="isMultipleUpload" [nzDirectory]="isDirectoryUpload" [nzSize]="fileSizeLimit" [nzFileList]="nzFileList"
+  <nz-upload
+    nzType="drag"
+    nzAction="#"
+    nzAccept=".jpg,.jpeg,.png,.webp,.gif,.avif,.tiff,.svg"
+    [nzMultiple]="isMultipleUpload"
+    [nzDirectory]="isDirectoryUpload"
+    [nzSize]="fileSizeLimit"
+    [nzFileList]="nzFileList"
     [nzShowUploadList]="{
       showPreviewIcon: false,
       showRemoveIcon: true,
       showDownloadIcon: false
-    }" [nzDisabled]="isUploading" [nzRemove]="onRemove" [nzBeforeUpload]="onBeforeUpload">
+    }"
+    [nzDisabled]="isUploading"
+    [nzRemove]="onRemove"
+    [nzBeforeUpload]="onBeforeUpload"
+  >
     <p class="ant-upload-drag-icon"><i nz-icon nzType="inbox"></i></p>
     <p class="ant-upload-description">{{ description }}</p>
     <p class="ant-upload-hint">{{ hint }}</p>
@@ -14,37 +24,63 @@
 
 <div class="image-type-select">
   Image type for the uploaded images:
-  <nz-select [(ngModel)]="imageTypeForUploadedImage" [nzDisabled]="isUploading" nzPlaceHolder="Select one option"
-    (ngModelChange)="onImageTypeForUploadedImageChanged($event)">
+  <nz-select
+    [(ngModel)]="imageTypeForUploadedImage"
+    [nzDisabled]="isUploading"
+    nzPlaceHolder="Select one option"
+    (ngModelChange)="onImageTypeForUploadedImageChanged($event)"
+  >
     <nz-option [nzValue]="null" nzLabel="No type"></nz-option>
-    <nz-option *ngFor="let item of allImageTypeList" [nzValue]="item" [nzLabel]="item.displayName"></nz-option>
+    <nz-option
+      *ngFor="let item of allImageTypeList"
+      [nzValue]="item"
+      [nzLabel]="item.displayName"
+    ></nz-option>
   </nz-select>
 </div>
 
 <div class="image-tag-list">
   Image tags for the uploaded images:
-  <app-editable-tag-list [allImageTagGroupList]="allowedImageTagGroupListForImageType"
-    [allImageTagList]="allowedImageTagListForImageType" [editable]="!isUploading"
-    [imageTagList]="imageTagListForUploadedImage" (imageTagAdded)="onImageTagForUploadedImageAdded($event)"
-    (imageTagDeleted)="onImageTagForUploadedImageDeleted($event)">
+  <app-editable-tag-list
+    [allImageTagGroupList]="allowedImageTagGroupListForImageType"
+    [allImageTagList]="allowedImageTagListForImageType"
+    [editable]="!isUploading"
+    [imageTagList]="imageTagListForUploadedImage"
+    (imageTagAdded)="onImageTagForUploadedImageAdded($event)"
+    (imageTagDeleted)="onImageTagForUploadedImageDeleted($event)"
+  >
   </app-editable-tag-list>
 </div>
 
 <div class="description-file-input">
   Descriptions for the uploaded images:
-  <input nz-input type="file"
+  <input
+    nz-input
+    type="file"
     accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-    (change)="onDescriptionFileForUploadedImageSelected($event)" />
+    (change)="onDescriptionFileForUploadedImageSelected($event)"
+  />
   <br />
   CSV or Excel files with two columns <i>Filename</i> and <i>Description</i> are
   accepted.
 </div>
 
-<div *ngIf="imageTypeForUploadedImage?.hasPredictiveModel" class="should-use-detection-model-checkbox">
-  <label nz-checkbox [(ngModel)]="shouldUseDetectionModel">Should use detection model?</label>
+<div
+  *ngIf="imageTypeForUploadedImage?.hasPredictiveModel"
+  class="should-use-detection-model-checkbox"
+>
+  <label nz-checkbox [(ngModel)]="shouldUseDetectionModel"
+    >Should use detection model?</label
+  >
 </div>
 
-<button nz-button class="upload-button" nzType="primary" [disabled]="isUploading" [nzLoading]="isUploading"
-  (click)="onUploadClicked()">
+<button
+  nz-button
+  class="upload-button"
+  nzType="primary"
+  [disabled]="isUploading"
+  [nzLoading]="isUploading"
+  (click)="onUploadClicked()"
+>
   Upload
 </button>

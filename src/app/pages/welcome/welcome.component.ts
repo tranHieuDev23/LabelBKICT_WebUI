@@ -56,6 +56,9 @@ export class WelcomeComponent implements OnInit {
       if (this.sessionManagementService.checkSessionUserHasPermission('images.export')) {
         submenuItemList.push(new WelcomeSubmenuItem('Export images', '/export-images'));
       }
+      if (this.sessionManagementService.checkSessionUserHasPermission('images.manage.all')) {
+        submenuItemList.push(new WelcomeSubmenuItem('Detection tasks', '/detection-tasks'));
+      }
       this.menuItemList.push(new WelcomeMenuItem('Label images', 'edit', submenuItemList));
     }
 

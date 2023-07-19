@@ -7,6 +7,8 @@ import {
   ImageListService,
   ImageListSortOption,
   ImagesService,
+  DetectionTaskListSortOption,
+  DetectionTask,
 } from '../../dataaccess/api';
 
 @Injectable({
@@ -21,6 +23,18 @@ export class ImageListManagementService {
 
   public async deleteImageList(imageIDList: number[]): Promise<void> {
     await this.imageListService.deleteImageList(imageIDList);
+  }
+
+  public async getImageDetectionTaskList(
+    offset: number,
+    limit: number,
+    sortOption: DetectionTaskListSortOption,
+    filterOptions: ImageListFilterOptions
+  ): Promise<{
+    totalDetectionTaskCount: number;
+    detectionTaskList: DetectionTask[];
+  }> {
+    return this.imageListService.getImageDetectionTaskList(offset, limit, sortOption, filterOptions);
   }
 
   public async createImageDetectionTaskList(imageIDList: number[]): Promise<void> {

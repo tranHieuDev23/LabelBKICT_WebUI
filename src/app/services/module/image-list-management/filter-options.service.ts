@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ImageListFilterOptionsWithMetadata } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
-import { ImageListFilterOptions } from '../../dataaccess/api';
+import { ImageListFilterOptions, ImageListFilterOptionsWithMetadata } from '../../dataaccess/api';
 
 @Injectable({
   providedIn: 'root',

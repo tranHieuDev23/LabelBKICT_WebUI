@@ -3,7 +3,15 @@ import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
 import qs from 'qs';
 import { InvalidImageListFilterOptionsError, UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
-import { Image, ImageListFilterOptions, ImageListSortOption, ImageTag, User } from './schemas';
+import {
+  DetectionTask,
+  DetectionTaskListSortOption,
+  Image,
+  ImageListFilterOptions,
+  ImageListSortOption,
+  ImageTag,
+  User,
+} from './schemas';
 
 export class TooManyImagesError extends Error {
   constructor() {
@@ -80,6 +88,48 @@ export class ImageListService {
           throw new UnauthorizedError();
         case HttpStatusCode.NotFound:
           throw new OneOrMoreImagesNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getImageDetectionTaskList(
+    offset: number,
+    limit: number,
+    sortOption: DetectionTaskListSortOption,
+    filterOptions: ImageListFilterOptions
+  ): Promise<{
+    totalDetectionTaskCount: number;
+    detectionTaskList: DetectionTask[];
+  }> {
+    try {
+      const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
+      const response = await this.axios.get(`/api/images/detection-task`, {
+        params: {
+          offset: offset,
+          limit: limit,
+          sort_order: sortOption,
+          ...filterOptionsQueryParams,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
+        },
+      });
+
+      const totalDetectionTaskCount = +response.data.total_detection_task_count;
+      const detectionTaskList = response.data.detection_task_list.map(DetectionTask.fromJSON);
+
+      return { totalDetectionTaskCount, detectionTaskList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
         default:
           throw new UnknownAPIError(e);
       }

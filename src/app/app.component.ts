@@ -66,6 +66,9 @@ export class AppComponent {
     if (this.sessionManagementService.checkSessionUserHasPermission('images.export')) {
       labelSubmenuList.push(new AppSubmenuItem('Export images', '/export-images', () => {}));
     }
+    if (this.sessionManagementService.checkSessionUserHasPermission('images.manage.all')) {
+      labelSubmenuList.push(new AppSubmenuItem('Detection tasks', '/detection-tasks', () => {}));
+    }
     this.menuItemList.push(new AppMenuItem('Label data', 'edit', labelSubmenuList));
 
     // Settings menu
