@@ -25,6 +25,7 @@
     #detectionTaskTable
     [nzData]="detectionTaskList"
     nzShowPagination="false"
+    [nzLoading]="isLoadingDetectionTaskList"
   >
     <thead>
       <tr>
@@ -58,7 +59,7 @@
     </tbody>
   </nz-table>
 
-  <div *ngIf="!isLoadingImageList" class="pagination">
+  <div *ngIf="!isLoadingDetectionTaskList" class="pagination">
     <nz-pagination
       [nzPageIndex]="pageIndex"
       [nzPageSize]="pageSize"

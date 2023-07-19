@@ -40,7 +40,7 @@ export class DetectionTasksComponent implements OnInit {
   public toDetectionTaskIndex: number = 0;
   public totalDetectionTaskCount: number = 0;
   public detectionTaskList: DetectionTask[] = [];
-  public isLoadingImageList: boolean = false;
+  public isLoadingDetectionTaskList: boolean = false;
 
   private getDefaultImageListFilterOptions(): ImageListFilterOptionsWithMetadata {
     const filterOptions = new ImageListFilterOptionsWithMetadata();
@@ -55,8 +55,7 @@ export class DetectionTasksComponent implements OnInit {
     private readonly jsonCompressService: JSONCompressService,
     private readonly notificationService: NzNotificationService,
     private readonly activatedRoute: ActivatedRoute,
-    private readonly router: Router,
-    private readonly location: Location
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
@@ -94,7 +93,7 @@ export class DetectionTasksComponent implements OnInit {
   }
 
   private async getImageListFromPaginationInfo(): Promise<void> {
-    this.isLoadingImageList = true;
+    this.isLoadingDetectionTaskList = true;
     const offset = this.paginationService.getPageOffset(this.pageIndex, this.pageSize);
     const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     try {
@@ -112,7 +111,7 @@ export class DetectionTasksComponent implements OnInit {
     } catch (e) {
       this.handleError('Failed to get image list', e);
     } finally {
-      this.isLoadingImageList = false;
+      this.isLoadingDetectionTaskList = false;
     }
   }
 
