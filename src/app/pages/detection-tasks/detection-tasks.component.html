@@ -53,7 +53,9 @@
           {{ data.requestTime | date : "short" }}
         </td>
         <td>
-          {{ data.updateTime | date : "short" }}
+          <span *ngIf="data.updateTime">
+            {{ data.updateTime | date : "short" }}
+          </span>
         </td>
       </tr>
     </tbody>
