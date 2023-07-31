@@ -14,14 +14,8 @@ import {
 export class ImageTagManagementService {
   constructor(private readonly imageTagGroupsService: ImageTagsService) {}
 
-  public async createImageTagGroup(
-    displayName: string,
-    isSingleValue: boolean
-  ): Promise<ImageTagGroup> {
-    return await this.imageTagGroupsService.createImageTagGroup(
-      displayName.trim(),
-      isSingleValue
-    );
+  public async createImageTagGroup(displayName: string, isSingleValue: boolean): Promise<ImageTagGroup> {
+    return await this.imageTagGroupsService.createImageTagGroup(displayName.trim(), isSingleValue);
   }
 
   public async getImageTagGroupList(): Promise<{
@@ -52,30 +46,16 @@ export class ImageTagManagementService {
     };
   }
 
-  public async updateImageTagGroup(
-    id: number,
-    displayName: string,
-    isSingleValue: boolean
-  ): Promise<ImageTagGroup> {
-    return await this.imageTagGroupsService.updateImageTagGroup(
-      id,
-      displayName.trim(),
-      isSingleValue
-    );
+  public async updateImageTagGroup(id: number, displayName: string, isSingleValue: boolean): Promise<ImageTagGroup> {
+    return await this.imageTagGroupsService.updateImageTagGroup(id, displayName.trim(), isSingleValue);
   }
 
   public async deleteImageTagGroup(id: number): Promise<void> {
     await this.imageTagGroupsService.deleteImageTagGroup(id);
   }
 
-  public async addImageTagToImageTagGroup(
-    imageTagGroupID: number,
-    displayName: string
-  ): Promise<ImageTag> {
-    return await this.imageTagGroupsService.addImageTagToImageTagGroup(
-      imageTagGroupID,
-      displayName.trim()
-    );
+  public async addImageTagToImageTagGroup(imageTagGroupID: number, displayName: string): Promise<ImageTag> {
+    return await this.imageTagGroupsService.addImageTagToImageTagGroup(imageTagGroupID, displayName.trim());
   }
 
   public async updateImageTagOfImageTagGroup(
@@ -90,34 +70,16 @@ export class ImageTagManagementService {
     );
   }
 
-  public async removeImageTagFromImageTagGroup(
-    imageTagGroupID: number,
-    imageTagID: number
-  ): Promise<void> {
-    await this.imageTagGroupsService.removeImageTagFromImageTagGroup(
-      imageTagGroupID,
-      imageTagID
-    );
+  public async removeImageTagFromImageTagGroup(imageTagGroupID: number, imageTagID: number): Promise<void> {
+    await this.imageTagGroupsService.removeImageTagFromImageTagGroup(imageTagGroupID, imageTagID);
   }
 
-  public async addImageTypeToImageTagGroup(
-    imageTagGroupID: number,
-    imageTypeID: number
-  ): Promise<void> {
-    await this.imageTagGroupsService.addImageTypeToImageTagGroup(
-      imageTagGroupID,
-      imageTypeID
-    );
+  public async addImageTypeToImageTagGroup(imageTagGroupID: number, imageTypeID: number): Promise<void> {
+    await this.imageTagGroupsService.addImageTypeToImageTagGroup(imageTagGroupID, imageTypeID);
   }
 
-  public async removeImageTypeFromImageTagGroup(
-    imageTagGroupID: number,
-    imageTypeID: number
-  ): Promise<void> {
-    await this.imageTagGroupsService.removeImageTypeFromImageTagGroup(
-      imageTagGroupID,
-      imageTypeID
-    );
+  public async removeImageTypeFromImageTagGroup(imageTagGroupID: number, imageTypeID: number): Promise<void> {
+    await this.imageTagGroupsService.removeImageTypeFromImageTagGroup(imageTagGroupID, imageTypeID);
   }
 
   public async addClassificationTypeToImageTagGroup(imageTagGroupID: number, classificationTypeID: number): Promise<void> {
@@ -141,14 +103,11 @@ export class ImageTagManagementService {
     );
     for (let i = 1; i < imageTagGroupAndTagList.length; i++) {
       const intersectionImageTagGroupIdSet = new Set(
-        intersectionList.imageTagGroupList.map(
-          (imageTagGroup) => imageTagGroup.id
-        )
+        intersectionList.imageTagGroupList.map((imageTagGroup) => imageTagGroup.id)
       );
 
       intersectionList = new ImageTagGroupAndTagList([], []);
-      const imageTagGroupCount =
-        imageTagGroupAndTagList[i].imageTagGroupList.length;
+      const imageTagGroupCount = imageTagGroupAndTagList[i].imageTagGroupList.length;
       for (let j = 0; j < imageTagGroupCount; j++) {
         const imageTagGroup = imageTagGroupAndTagList[i].imageTagGroupList[j];
         if (!intersectionImageTagGroupIdSet.has(imageTagGroup.id)) {

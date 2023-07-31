@@ -32,16 +32,14 @@ export class UserSearchBoxComponent {
     this.delayedCallbackService.scheduleDelayedCallback(
       USER_SEARCH_DELAYED_CALLBACK_ID,
       () => {
-        this.userManagementService
-          .searchUserList(query, USER_SEARCH_LIMIT)
-          .then(
-            (userList) => {
-              this.userOptionList = userList;
-            },
-            () => {
-              this.notificationService.error('Failed to search for user', '');
-            }
-          );
+        this.userManagementService.searchUserList(query, USER_SEARCH_LIMIT).then(
+          (userList) => {
+            this.userOptionList = userList;
+          },
+          () => {
+            this.notificationService.error('Failed to search for user', '');
+          }
+        );
       },
       USER_SEARCH_DELAYED_CALLBACK_DURATION
     );

@@ -1,9 +1,5 @@
 export class ImageType {
-  constructor(
-    public id: number,
-    public displayName: string,
-    public hasPredictiveModel: boolean
-  ) {}
+  constructor(public id: number, public displayName: string, public hasPredictiveModel: boolean) {}
 
   public static fromJSON(imageTypeJSON: any): ImageType {
     return new ImageType(

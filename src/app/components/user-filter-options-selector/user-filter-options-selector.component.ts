@@ -43,8 +43,7 @@ export class UserFilterOptionsSelectorComponent implements OnInit {
     return this._filterOptions;
   }
 
-  @Output() public filterOptionsUpdated =
-    new EventEmitter<UserListFilterOptionsWithMetadata>();
+  @Output() public filterOptionsUpdated = new EventEmitter<UserListFilterOptionsWithMetadata>();
 
   public userTagList: UserTag[] = [];
   public userRoleList: UserRole[] = [];
@@ -65,10 +64,7 @@ export class UserFilterOptionsSelectorComponent implements OnInit {
   ngOnInit(): void {
     (async () => {
       try {
-        const offset = this.paginationService.getPageOffset(
-          DEFAULT_PAGE_INDEX,
-          DEFAULT_PAGE_SIZE
-        );
+        const offset = this.paginationService.getPageOffset(DEFAULT_PAGE_INDEX, DEFAULT_PAGE_SIZE);
         const { userRoleList } = await this.rolesService.getUserRoleList(
           offset,
           DEFAULT_PAGE_SIZE,
@@ -85,22 +81,13 @@ export class UserFilterOptionsSelectorComponent implements OnInit {
         this.userTagList = userTagList;
       } catch (e) {
         if (e instanceof UnauthenticatedError) {
-          this.notificationService.error(
-            'Failed to load page',
-            'User is not logged in'
-          );
+          this.notificationService.error('Failed to load page', 'User is not logged in');
           this.router.navigateByUrl('/login');
         } else if (e instanceof UnauthorizedError) {
-          this.notificationService.error(
-            'Failed to load page',
-            'User does not have the required permission'
-          );
+          this.notificationService.error('Failed to load page', 'User does not have the required permission');
           this.router.navigateByUrl('/welcome');
         } else {
-          this.notificationService.error(
-            'Failed to load page',
-            'Unknown error'
-          );
+          this.notificationService.error('Failed to load page', 'Unknown error');
           this.router.navigateByUrl('/welcome');
         }
       }

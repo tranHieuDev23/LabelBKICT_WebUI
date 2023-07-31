@@ -1,20 +1,13 @@
 import { Location } from '@angular/common';
-import {
-  AfterContentInit,
-  Component,
-  HostListener,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
-import {
-  NzContextMenuService,
-  NzDropdownMenuComponent,
-} from 'ng-zorro-antd/dropdown';
+import { AfterContentInit, Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, NavigationStart, Params, Router } from '@angular/router';
+import { NzContextMenuService, NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { Subscription } from 'rxjs';
 import { EditableTextComponent } from 'src/app/components/editable-text/editable-text.component';
-import { Polygon } from 'src/app/components/region-selector/models';
+import { RegionListCheckedChangeEvent } from 'src/app/components/region-list/region-list.component';
+import { Rectangle, Shape } from 'src/app/components/region-selector/models';
 import {
   RegionClickedEvent,
   RegionEditedEvent,
@@ -57,15 +50,26 @@ import { RegionImageService } from 'src/app/services/module/region-management/re
 import { RegionManagementService } from 'src/app/services/module/region-management/region-management.service';
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
+import store from 'store2';
 
 const DEFAULT_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
+const MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY = 'MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY';
+const MANAGE_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY =
+  'MANAGE_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY';
+const MANAGE_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY =
+  'MANAGE_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY';
+const MANAGE_IMAGE_DRAW_MARGINS_LEFT_KEY = 'MANAGE_IMAGE_DRAW_MARGINS_LEFT_KEY';
+const MANAGE_IMAGE_DRAW_MARGINS_RIGHT_KEY = 'MANAGE_IMAGE_DRAW_MARGINS_RIGHT_KEY';
+const MANAGE_IMAGE_DRAW_MARGINS_BOTTOM_KEY = 'MANAGE_IMAGE_DRAW_MARGINS_BOTTOM_KEY';
+const MANAGE_IMAGE_DRAW_MARGINS_TOP_KEY = 'MANAGE_IMAGE_DRAW_MARGINS_TOP_KEY';
+const MANAGE_IMAGE_DRAW_BOUNDARY_ENABLED_KEY = 'MANAGE_IMAGE_DRAW_BOUNDARY_ENABLED_KEY';
 
 @Component({
   selector: 'app-manage-image',
   templateUrl: './manage-image.component.html',
   styleUrls: ['./manage-image.component.scss'],
 })
-export class ManageImageComponent implements OnInit, AfterContentInit {
+export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy {
   @ViewChild('regionSelector', { static: false })
   public regionSelector: RegionSelectorComponent | undefined;
   @ViewChild('descriptionEditableText', { static: false })
@@ -97,8 +101,8 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   public isShowingRegionSnapshot = false;
   public regionSnapshotList: Region[] = [];
 
-  public selectedRegionBorder: Polygon | undefined;
-  public selectedRegionHoles: Polygon[] = [];
+  public selectedRegionBorder: Shape | undefined;
+  public selectedRegionHoles: Shape[] = [];
 
   public isLabelRegionModalVisible = false;
 
@@ -111,12 +115,16 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   public imageSettingsModalImageTypeList: ImageType[] = [];
   public imageSettingsModalSelectedImageType: ImageType | undefined;
 
+  public isMassDeleteImageModalVisible = false;
+  public massDeleteImageModalCheckedRegionList: Region[] = [];
+
   public contextMenuRegion: Region | undefined;
   public contextMenuRegionID: number | undefined;
 
   public allowedImageTagGroupListForImageType: ImageTagGroup[] = [];
   public allowedImageTagListForImageType: ImageTag[][] = [];
 
+  private routerSubscription: Subscription;
   private isKeyPressed = false;
 
   constructor(
@@ -134,13 +142,16 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     private readonly modalService: NzModalService,
     private readonly contextMenuService: NzContextMenuService,
     private readonly jsonCompressService: JSONCompressService
-  ) {}
+  ) {
+    this.routerSubscription = router.events.subscribe((event) => {
+      this.onRouterEvent(event);
+    });
+  }
 
   ngOnInit(): void {
     (async () => {
       try {
-        const { imageTypeList } =
-          await this.imageTypeManagementService.getImageTypeList();
+        const { imageTypeList } = await this.imageTypeManagementService.getImageTypeList();
         this.imageSettingsModalImageTypeList = imageTypeList;
       } catch (e) {
         this.handleError('Failed to load page', e);
@@ -157,6 +168,10 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.routerSubscription.unsubscribe();
+  }
+
   private async onParamsChanged(params: Params): Promise<void> {
     this.imageID = +params['id'];
     await this.initializePage();
@@ -167,8 +182,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     if (filterParam !== undefined) {
       this.filterOptions = this.jsonCompressService.decompress(filterParam);
     } else {
-      const authUserInfo =
-        await this.sessionManagementService.getUserFromSession();
+      const authUserInfo = await this.sessionManagementService.getUserFromSession();
       if (authUserInfo === null) {
         return;
       }
@@ -185,22 +199,17 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   }
 
   private async initializePage(): Promise<void> {
-    if (
-      this.imageID === undefined ||
-      this.imageListSortOption === undefined ||
-      this.filterOptions === undefined
-    ) {
+    if (this.imageID === undefined || this.imageListSortOption === undefined || this.filterOptions === undefined) {
       return;
     }
     await Promise.all([
       this.loadImage(this.imageID),
-      this.loadImagePositionInList(
-        this.imageID,
-        this.imageListSortOption,
-        this.filterOptions
-      ),
+      this.loadImagePositionInList(this.imageID, this.imageListSortOption, this.filterOptions),
       this.loadImageBookmark(this.imageID),
     ]);
+    this.loadImageMargins();
+    this.loadImageBoundary();
+    this.onContextMenuCenterDrawBoundaryInDrawMarginsClicked();
   }
 
   private async loadImage(imageID: number): Promise<void> {
@@ -212,24 +221,18 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     this.allowedImageTagListForImageType = [];
 
     try {
-      const { image, imageTagList, regionList, canEdit } =
-        await this.imageManagementService.getImage(imageID);
+      const { image, imageTagList, regionList, canEdit } = await this.imageManagementService.getImage(imageID);
       this.image = image;
       this.imageTagList = imageTagList;
       this.regionList = regionList;
       this.isImageEditable = canEdit;
 
       if (image.imageType) {
-        const { regionLabelList } =
-          await this.imageTypeManagementService.getImageType(
-            image.imageType.id
-          );
+        const { regionLabelList } = await this.imageTypeManagementService.getImageType(image.imageType.id);
         this.regionLabelList = regionLabelList;
 
         const { imageTagGroupList, imageTagList } =
-          await this.imageTypeManagementService.getImageTagGroupListOfImageType(
-            image.imageType.id
-          );
+          await this.imageTypeManagementService.getImageTagGroupListOfImageType(image.imageType.id);
         this.allowedImageTagGroupListForImageType = imageTagGroupList;
         this.allowedImageTagListForImageType = imageTagList;
       } else {
@@ -255,7 +258,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
 
     try {
       const { position, totalImageCount, prevImageID, nextImageID } =
-        await this.imageListManagementService.getImagePositionInList(
+        await this.imageListManagementService.getImagePositionInUserManageableImageList(
           imageID,
           sortOption,
           filterOptions
@@ -271,9 +274,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
 
   private async loadImageBookmark(imageID: number): Promise<void> {
     try {
-      this.imageBookmark = await this.imageManagementService.getImageBookmark(
-        imageID
-      );
+      this.imageBookmark = await this.imageManagementService.getImageBookmark(imageID);
     } catch (e) {
       if (e instanceof UserHasNotBookmarkedImageError) {
         this.imageBookmark = undefined;
@@ -283,9 +284,35 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     }
   }
 
-  private getDefaultFilterOptions(
-    sessionUserID: number
-  ): ImageListFilterOptions {
+  private loadImageMargins(): void {
+    const enabled = store.get(MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY) || true;
+    const symmetricalVertical = store.get(MANAGE_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY) || false;
+    const symmetricalHorizontal = store.get(MANAGE_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY) || false;
+    const left = +(store.get(MANAGE_IMAGE_DRAW_MARGINS_LEFT_KEY) || 0);
+    const right = +(store.get(MANAGE_IMAGE_DRAW_MARGINS_RIGHT_KEY) || 1);
+    const bottom = +(store.get(MANAGE_IMAGE_DRAW_MARGINS_BOTTOM_KEY) || 0);
+    const top = +(store.get(MANAGE_IMAGE_DRAW_MARGINS_TOP_KEY) || 1);
+
+    if (enabled) {
+      this.regionSelector?.showDrawMargins();
+    } else {
+      this.regionSelector?.hideDrawMargins();
+    }
+    this.regionSelector?.setDrawMargins(new Rectangle(left, right, bottom, top));
+    this.onVerticalDrawMarginsSymmetricalUpdate(symmetricalVertical);
+    this.onHorizontalDrawMarginsSymmetricalUpdate(symmetricalHorizontal);
+  }
+
+  private loadImageBoundary(): void {
+    const enabled = store.get(MANAGE_IMAGE_DRAW_BOUNDARY_ENABLED_KEY) || false;
+    if (enabled) {
+      this.regionSelector?.showDrawBoundary();
+    } else {
+      this.regionSelector?.hideDrawBoundary();
+    }
+  }
+
+  private getDefaultFilterOptions(sessionUserID: number): ImageListFilterOptions {
     const filterOptions = new ImageListFilterOptions();
     filterOptions.uploadedByUserIDList = [sessionUserID];
     return filterOptions;
@@ -296,7 +323,8 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     if (
       this.isRegionInformationModalVisible ||
       this.isLabelRegionModalVisible ||
-      this.isImageSettingsModalVisible
+      this.isImageSettingsModalVisible ||
+      this.isMassDeleteImageModalVisible
     ) {
       return;
     }
@@ -327,16 +355,13 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
         }
         break;
       case 'Enter':
-        if (event.ctrlKey && this.regionSelector?.isInDrawState()) {
+        if (event.ctrlKey && this.regionSelector?.isEditing()) {
           event.preventDefault();
           this.regionSelector.finishDrawing();
         }
         break;
       case 'Escape':
-        if (
-          this.regionSelector?.isInDrawState() ||
-          this.regionSelector?.isInSelectedState()
-        ) {
+        if (this.regionSelector?.isEditing() || this.regionSelector?.isInSelectedState()) {
           this.regionSelector.cancelDrawing();
         }
         break;
@@ -396,18 +421,12 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       return;
     }
     try {
-      await this.imageManagementService.addImageTagToImage(
-        this.image.id,
-        addedImageTag.id
-      );
+      await this.imageManagementService.addImageTagToImage(this.image.id, addedImageTag.id);
     } catch (e) {
       this.handleError('Failed to add image tag to image', e);
       return;
     }
-    this.notificationService.success(
-      'Added image tag to image successfully',
-      ''
-    );
+    this.notificationService.success('Added image tag to image successfully', '');
     this.imageTagList = [...this.imageTagList, addedImageTag];
   }
 
@@ -416,21 +435,13 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       return;
     }
     try {
-      await this.imageManagementService.removeImageTagFromImage(
-        this.image.id,
-        deletedImageTag.id
-      );
+      await this.imageManagementService.removeImageTagFromImage(this.image.id, deletedImageTag.id);
     } catch (e) {
       this.handleError('Failed to remove image tag from image', e);
       return;
     }
-    this.notificationService.success(
-      'Removed image tag from image successfully',
-      ''
-    );
-    this.imageTagList = this.imageTagList.filter(
-      (imageTag) => imageTag.id !== deletedImageTag.id
-    );
+    this.notificationService.success('Removed image tag from image successfully', '');
+    this.imageTagList = this.imageTagList.filter((imageTag) => imageTag.id !== deletedImageTag.id);
   }
 
   public async onImageDescriptionUpdated(description: string): Promise<void> {
@@ -438,18 +449,12 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       return;
     }
     try {
-      this.image = await this.imageManagementService.updateImageMetadata(
-        this.image.id,
-        description
-      );
+      this.image = await this.imageManagementService.updateImageMetadata(this.image.id, description);
     } catch (e) {
       this.handleError('Failed to update image description', e);
       return;
     }
-    this.notificationService.success(
-      'Updated image description successfully',
-      ''
-    );
+    this.notificationService.success('Updated image description successfully', '');
   }
 
   public async onBookmarkImageClicked(): Promise<void> {
@@ -457,8 +462,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       return;
     }
     try {
-      this.imageBookmark =
-        await this.imageManagementService.createImageBookmark(this.imageID, '');
+      this.imageBookmark = await this.imageManagementService.createImageBookmark(this.imageID, '');
     } catch (e) {
       this.handleError('Failed to bookmark image', e);
       return;
@@ -466,18 +470,12 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     this.notificationService.success('Bookmarked image successfully', '');
   }
 
-  public async onImageBookmarkDescriptionEdited(
-    newDescription: string
-  ): Promise<void> {
+  public async onImageBookmarkDescriptionEdited(newDescription: string): Promise<void> {
     if (!this.imageID) {
       return;
     }
     try {
-      this.imageBookmark =
-        await this.imageManagementService.updateImageBookmark(
-          this.imageID,
-          newDescription
-        );
+      this.imageBookmark = await this.imageManagementService.updateImageBookmark(this.imageID, newDescription);
     } catch (e) {
       this.handleError('Failed to update image bookmark', e);
       return;
@@ -504,11 +502,10 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       return;
     }
     try {
-      this.regionSnapshotList =
-        await this.imageManagementService.getImageRegionSnapshotList(
-          this.image.id,
-          ImageStatus.PUBLISHED
-        );
+      this.regionSnapshotList = await this.imageManagementService.getImageRegionSnapshotList(
+        this.image.id,
+        ImageStatus.PUBLISHED
+      );
       this.isShowingRegionSnapshot = true;
     } catch (e) {
       this.handleError('Failed to get image region snapshot list', e);
@@ -521,11 +518,10 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       return;
     }
     try {
-      this.regionSnapshotList =
-        await this.imageManagementService.getImageRegionSnapshotList(
-          this.image.id,
-          ImageStatus.VERIFIED
-        );
+      this.regionSnapshotList = await this.imageManagementService.getImageRegionSnapshotList(
+        this.image.id,
+        ImageStatus.VERIFIED
+      );
       this.isShowingRegionSnapshot = true;
     } catch (e) {
       this.handleError('Failed to get image region snapshot list', e);
@@ -536,6 +532,34 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
   public onRestoreCurrentRegionListClicked(): void {
     this.regionSnapshotList = [];
     this.isShowingRegionSnapshot = false;
+  }
+
+  public onMassDeleteRegionsClicked(): void {
+    if (!this.image) {
+      return;
+    }
+    this.openMassDeleteRegionModal();
+  }
+
+  public onDeleteAllRegionsClicked(): void {
+    this.modalService.create({
+      nzTitle: 'Delete all regions of image',
+      nzContent: '<p>Are you sure? This action is <b>IRREVERSIBLE</b>.</p>',
+      nzOkDanger: true,
+      nzOnOk: async () => {
+        if (!this.image) {
+          return;
+        }
+        try {
+          await this.regionManagementService.deleteRegionOfImage(this.image.id);
+        } catch (e) {
+          this.handleError('Failed to delete all regions of image', e);
+          return;
+        }
+        this.notificationService.success('Deleted all regions of image successfully', '');
+        this.regionList = [];
+      },
+    });
   }
 
   public onExcludeImageClicked(): void {
@@ -551,10 +575,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
           return;
         }
         try {
-          this.image = await this.imageManagementService.updateImageStatus(
-            this.image.id,
-            ImageStatus.EXCLUDED
-          );
+          this.image = await this.imageManagementService.updateImageStatus(this.image.id, ImageStatus.EXCLUDED);
         } catch (e) {
           this.handleError('Failed to exclude image', e);
           return;
@@ -576,10 +597,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
           return;
         }
         try {
-          this.image = await this.imageManagementService.updateImageStatus(
-            this.image.id,
-            ImageStatus.UPLOADED
-          );
+          this.image = await this.imageManagementService.updateImageStatus(this.image.id, ImageStatus.UPLOADED);
         } catch (e) {
           this.handleError('Failed to include image', e);
           return;
@@ -595,17 +613,13 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     }
     this.modalService.create({
       nzTitle: 'Publish this image',
-      nzContent:
-        'Are you sure? Publishing this image will allow other people to see, label and verify its regions.',
+      nzContent: 'Are you sure? Publishing this image will allow other people to see, label and verify its regions.',
       nzOnOk: async () => {
         if (!this.image) {
           return;
         }
         try {
-          this.image = await this.imageManagementService.updateImageStatus(
-            this.image.id,
-            ImageStatus.PUBLISHED
-          );
+          this.image = await this.imageManagementService.updateImageStatus(this.image.id, ImageStatus.PUBLISHED);
         } catch (e) {
           this.handleError('Failed to publish image', e);
           return;
@@ -628,10 +642,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
           return;
         }
         try {
-          this.image = await this.imageManagementService.updateImageStatus(
-            this.image.id,
-            ImageStatus.UPLOADED
-          );
+          this.image = await this.imageManagementService.updateImageStatus(this.image.id, ImageStatus.UPLOADED);
         } catch (e) {
           this.handleError('Failed to unpublish image', e);
           return;
@@ -654,10 +665,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
           return;
         }
         try {
-          this.image = await this.imageManagementService.updateImageStatus(
-            this.image.id,
-            ImageStatus.PUBLISHED
-          );
+          this.image = await this.imageManagementService.updateImageStatus(this.image.id, ImageStatus.PUBLISHED);
         } catch (e) {
           this.handleError('Failed to unverify image', e);
           return;
@@ -671,9 +679,46 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     this.isImageSettingsModalVisible = true;
   }
 
+  public onMassDeleteRegionModalRegionListCheckedChange(event: RegionListCheckedChangeEvent): void {
+    this.massDeleteImageModalCheckedRegionList = event.checkedRegionList;
+  }
+
+  public onMassDeleteRegionModalDeleteClicked(): void {
+    this.modalService.create({
+      nzTitle: 'Delete selected regions of image',
+      nzContent: '<p>Are you sure? This action is <b>IRREVERSIBLE</b>.</p>',
+      nzOkDanger: true,
+      nzOnOk: async () => {
+        if (!this.image) {
+          return;
+        }
+        const deletedRegionIDList = this.massDeleteImageModalCheckedRegionList.map((region) => region.id);
+        try {
+          await this.regionManagementService.deleteRegionList(this.image.id, deletedRegionIDList);
+        } catch (e) {
+          this.handleError('Failed to delete selected regions of image', e);
+          return;
+        }
+        this.notificationService.success('Deleted selected regions of image successfully', '');
+        const deletedRegionIDSet = new Set(deletedRegionIDList);
+        this.regionList = this.regionList.filter((region) => !deletedRegionIDSet.has(region.id));
+        this.onMassDeleteRegionModalClose();
+      },
+    });
+  }
+
+  private openMassDeleteRegionModal(): void {
+    this.massDeleteImageModalCheckedRegionList = [];
+    this.isMassDeleteImageModalVisible = true;
+  }
+
+  public onMassDeleteRegionModalClose(): void {
+    this.isMassDeleteImageModalVisible = false;
+  }
+
   public onRegionSelected(event: RegionSelectedEvent): void {
     this.selectedRegionBorder = event.border;
-    this.selectedRegionHoles = event.holes;
+    this.selectedRegionHoles = event.holeList;
     this.isLabelRegionModalVisible = true;
   }
 
@@ -687,8 +732,10 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       const region = await this.regionManagementService.updateRegionBoundary(
         this.image.id,
         editedRegion.id,
-        event.newBorder,
-        event.newHoles
+        { vertices: event.newBorder.getVertices() },
+        event.newHoleList.map((hole) => {
+          return { vertices: hole.getVertices() };
+        })
       );
       this.regionList = [...this.regionList];
       this.regionList[event.regionID] = region;
@@ -696,19 +743,14 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       this.handleError('Failed to update region boundary', e);
       return;
     }
-    this.notificationService.success(
-      'Updated region boundary successfully',
-      ''
-    );
+    this.notificationService.success('Updated region boundary successfully', '');
   }
 
   public onCloseLabelRegionModal(): void {
     this.isLabelRegionModalVisible = false;
   }
 
-  public async onLabelRegionModalItemClicked(
-    regionLabel: RegionLabel
-  ): Promise<void> {
+  public async onLabelRegionModalItemClicked(regionLabel: RegionLabel): Promise<void> {
     await this.addSelectedRegion(regionLabel);
     this.isLabelRegionModalVisible = false;
   }
@@ -720,8 +762,10 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     try {
       const region = await this.regionManagementService.createRegion(
         this.image.id,
-        this.selectedRegionBorder,
-        this.selectedRegionHoles,
+        { vertices: this.selectedRegionBorder.getVertices() },
+        this.selectedRegionHoles.map((hole) => {
+          return { vertices: hole.getVertices() };
+        }),
         regionLabel.id
       );
       this.notificationService.success('Region added successfully', '');
@@ -768,12 +812,12 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     this.contextMenuService.create(event.event, this.contextMenu);
   }
 
-  public isRegionListVisible(): boolean {
-    return this.regionSelector?.isRegionListVisible() || false;
-  }
-
   public onContextMenuResetZoomClicked(): void {
     this.regionSelector?.resetZoom();
+  }
+
+  public isRegionListVisible(): boolean {
+    return this.regionSelector?.isRegionListVisible() || false;
   }
 
   public onContextMenuHideRegionsClicked(): void {
@@ -784,8 +828,60 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     this.regionSelector?.showRegionList();
   }
 
-  public isRegionSelectorIsInDrawState(): boolean {
-    return this.regionSelector?.isInDrawState() || false;
+  public isDrawMarginsEnabled(): boolean {
+    return this.regionSelector?.isDrawMarginsEnabled() || false;
+  }
+
+  public isVerticalDrawMarginsSymmetrical(): boolean {
+    return this.regionSelector?.symmetricalVerticalDrawMargins || false;
+  }
+
+  public onVerticalDrawMarginsSymmetricalUpdate(v: boolean): void {
+    if (this.regionSelector) {
+      this.regionSelector.symmetricalVerticalDrawMargins = v;
+    }
+  }
+
+  public isHorizontalDrawMarginsSymmetrical(): boolean {
+    return this.regionSelector?.symmetricalHorizontalDrawMargins || false;
+  }
+
+  public onHorizontalDrawMarginsSymmetricalUpdate(v: boolean): void {
+    if (this.regionSelector) {
+      this.regionSelector.symmetricalHorizontalDrawMargins = v;
+    }
+  }
+
+  public onContextMenuHideDrawMarginsClicked(): void {
+    this.regionSelector?.hideDrawMargins();
+  }
+
+  public onContextMenuShowDrawMarginsClicked(): void {
+    this.regionSelector?.showDrawMargins();
+  }
+
+  public isDrawBoundaryEnabled(): boolean {
+    return this.regionSelector?.isDrawBoundaryEnabled() || false;
+  }
+
+  public onContextMenuHideDrawBoundaryClicked(): void {
+    this.regionSelector?.hideDrawBoundary();
+  }
+
+  public onContextMenuShowDrawBoundaryClicked(): void {
+    this.regionSelector?.showDrawBoundary();
+  }
+
+  public onContextMenuCenterDrawBoundaryInImageClicked(): void {
+    this.regionSelector?.centerDrawBoundaryInImage();
+  }
+
+  public onContextMenuCenterDrawBoundaryInDrawMarginsClicked(): void {
+    this.regionSelector?.centerDrawBoundaryInDrawMargins();
+  }
+
+  public isRegionSelectorDrawingOrDeleting(): boolean {
+    return this.regionSelector?.isEditing() || false;
   }
 
   public isRegionSelectorIsInSelectedState(): boolean {
@@ -806,23 +902,16 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     this.regionSelector?.editRegion(this.contextMenuRegionID);
   }
 
-  public async onContextMenuRelabelRegionLabelClicked(
-    regionLabel: RegionLabel
-  ): Promise<void> {
-    if (
-      !this.image ||
-      !this.contextMenuRegion ||
-      this.contextMenuRegionID === undefined
-    ) {
+  public async onContextMenuRelabelRegionLabelClicked(regionLabel: RegionLabel): Promise<void> {
+    if (!this.image || !this.contextMenuRegion || this.contextMenuRegionID === undefined) {
       return;
     }
     try {
-      const updatedRegion =
-        await this.regionManagementService.updateRegionRegionLabel(
-          this.image.id,
-          this.contextMenuRegion.id,
-          regionLabel.id
-        );
+      const updatedRegion = await this.regionManagementService.updateRegionRegionLabel(
+        this.image.id,
+        this.contextMenuRegion.id,
+        regionLabel.id
+      );
       this.regionList = [...this.regionList];
       this.regionList[this.contextMenuRegionID] = updatedRegion;
       this.notificationService.success('Updated region label successfully', '');
@@ -846,47 +935,21 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     await this.handleDeleteRegion(this.contextMenuRegion);
   }
 
-  public onContextMenuDeleteAllRegionClicked(): void {
-    this.modalService.create({
-      nzTitle: 'Delete all regions of image',
-      nzContent: '<p>Are you sure? This action is <b>IRREVERSIBLE</b>.</p>',
-      nzOkDanger: true,
-      nzOnOk: async () => {
-        if (!this.image) {
-          return;
-        }
-        try {
-          await this.regionManagementService.deleteRegionOfImage(this.image.id);
-        } catch (e) {
-          this.handleError('Failed to delete all regions of image', e);
-          return;
-        }
-        this.notificationService.success(
-          'Deleted all regions of image successfully',
-          ''
-        );
-        this.regionList = [];
-      },
-    });
-  }
-
   private async openRegionInfoModal(region: Region): Promise<void> {
     if (!this.image) {
       return;
     }
-    this.regionInformationModalImage =
-      await this.regionImageService.generateRegionImage(
-        this.image.originalImageURL,
-        region.border
-      );
+    this.regionInformationModalImage = await this.regionImageService.generateRegionImage(
+      this.image.originalImageURL,
+      region.border
+    );
     this.regionInformationModalRegion = region;
 
     try {
-      this.regionInformationModalOperationLogList =
-        await this.regionManagementService.getRegionOperationLogList(
-          this.image.id,
-          region.id
-        );
+      this.regionInformationModalOperationLogList = await this.regionManagementService.getRegionOperationLogList(
+        this.image.id,
+        region.id
+      );
     } catch (e) {
       this.handleError('Failed to get region operation log list', e);
       return;
@@ -900,36 +963,26 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       return;
     }
     try {
-      await this.regionManagementService.deleteRegion(
-        this.image.id,
-        deletedRegion.id
-      );
+      await this.regionManagementService.deleteRegion(this.image.id, deletedRegion.id);
     } catch (e) {
       this.handleError('Failed to delete region', e);
       return;
     }
     this.notificationService.success('Deleted region successfully', '');
-    this.regionList = this.regionList.filter(
-      (region) => region.id !== deletedRegion.id
-    );
+    this.regionList = this.regionList.filter((region) => region.id !== deletedRegion.id);
   }
 
   public onImageSettingsModalClose(): void {
     this.isImageSettingsModalVisible = false;
   }
 
-  public async onImageSettingsModalImageTypeClicked(
-    imageType: ImageType
-  ): Promise<void> {
+  public async onImageSettingsModalImageTypeClicked(imageType: ImageType): Promise<void> {
     if (!this.image) {
       return;
     }
     this.isImageSettingsModalVisible = false;
     try {
-      await this.imageManagementService.updateImageImageType(
-        this.image.id,
-        imageType.id
-      );
+      await this.imageManagementService.updateImageImageType(this.image.id, imageType.id);
     } catch (e) {
       this.handleError('Failed to update image type', e);
       return;
@@ -949,10 +1002,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       this.handleError('Failed to request for lesion suggestion', e);
       return;
     }
-    this.notificationService.success(
-      'Requested for lesion suggestion successfully',
-      ''
-    );
+    this.notificationService.success('Requested for lesion suggestion successfully', '');
   }
 
   public async onImageSettingsModalDeleteImageClicked(): Promise<void> {
@@ -994,64 +1044,66 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
     });
   }
 
+  private onRouterEvent(event: any): void {
+    if (event instanceof NavigationStart) {
+      this.saveImageMargins();
+      this.saveImageBoundary();
+    }
+  }
+
+  private saveImageMargins(): void {
+    if (this.regionSelector === undefined) {
+      return;
+    }
+
+    const drawMargins = this.regionSelector.getDrawMargins();
+    store.set(MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY, this.isDrawMarginsEnabled());
+    store.set(MANAGE_IMAGE_SYMMETRICAL_VERTICAL_DRAW_MARGINS_ENABLED_KEY, this.isVerticalDrawMarginsSymmetrical());
+    store.set(MANAGE_IMAGE_SYMMETRICAL_HORIZONTAL_DRAW_MARGINS_ENABLED_KEY, this.isHorizontalDrawMarginsSymmetrical());
+    store.set(MANAGE_IMAGE_DRAW_MARGINS_LEFT_KEY, drawMargins.left);
+    store.set(MANAGE_IMAGE_DRAW_MARGINS_RIGHT_KEY, drawMargins.right);
+    store.set(MANAGE_IMAGE_DRAW_MARGINS_BOTTOM_KEY, drawMargins.bottom);
+    store.set(MANAGE_IMAGE_DRAW_MARGINS_TOP_KEY, drawMargins.top);
+  }
+
+  private saveImageBoundary(): void {
+    store.set(MANAGE_IMAGE_DRAW_BOUNDARY_ENABLED_KEY, this.isDrawBoundaryEnabled());
+  }
+
   private handleError(notificationTitle: string, e: any): void {
     if (e instanceof UnauthenticatedError) {
-      this.notificationService.error(
-        notificationTitle,
-        'User is not logged in'
-      );
+      this.notificationService.error(notificationTitle, 'User is not logged in');
       this.router.navigateByUrl('/login');
       return;
     }
     if (e instanceof UnauthorizedError) {
-      this.notificationService.error(
-        notificationTitle,
-        'User does not have the required permission'
-      );
+      this.notificationService.error(notificationTitle, 'User does not have the required permission');
       this.router.navigateByUrl('/welcome');
       return;
     }
     if (e instanceof ImageCannotBeAssignedWithImageTagError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Image of this image type cannot be assigned with image tag'
-      );
+      this.notificationService.error(notificationTitle, 'Image of this image type cannot be assigned with image tag');
       return;
     }
     if (e instanceof ImageDoesNotHaveImageTagError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Image does not have image tag'
-      );
+      this.notificationService.error(notificationTitle, 'Image does not have image tag');
       return;
     }
     if (e instanceof ImageNotFoundError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Image cannot be found'
-      );
+      this.notificationService.error(notificationTitle, 'Image cannot be found');
       this.location.back();
       return;
     }
     if (e instanceof ImageOrImageTagNotFoundError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Image or image tag cannot be found'
-      );
+      this.notificationService.error(notificationTitle, 'Image or image tag cannot be found');
       return;
     }
     if (e instanceof ImageOrImageTypeNotFoundError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Image or image type cannot be found'
-      );
+      this.notificationService.error(notificationTitle, 'Image or image type cannot be found');
       return;
     }
     if (e instanceof InvalidImageInformationError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Invalid image information'
-      );
+      this.notificationService.error(notificationTitle, 'Invalid image information');
       return;
     }
     if (e instanceof InvalidImageStatusError) {
@@ -1059,38 +1111,23 @@ export class ManageImageComponent implements OnInit, AfterContentInit {
       return;
     }
     if (e instanceof InvalidRegionInformation) {
-      this.notificationService.error(
-        notificationTitle,
-        'Invalid region information'
-      );
+      this.notificationService.error(notificationTitle, 'Invalid region information');
       return;
     }
     if (e instanceof RegionLabelCannotBeAssignedToImageError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Region label cannot be assigned to image of this image type'
-      );
+      this.notificationService.error(notificationTitle, 'Region label cannot be assigned to image of this image type');
       return;
     }
     if (e instanceof RegionNotFoundError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Region cannot be found'
-      );
+      this.notificationService.error(notificationTitle, 'Region cannot be found');
       return;
     }
     if (e instanceof DetectionTaskAlreadyExistsError) {
-      this.notificationService.error(
-        notificationTitle,
-        'A detection task has already been created for this image'
-      );
+      this.notificationService.error(notificationTitle, 'A detection task has already been created for this image');
       return;
     }
     if (e instanceof ImageHasUnlabeledRegionError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Image has at least one unlabeled region'
-      );
+      this.notificationService.error(notificationTitle, 'Image has at least one unlabeled region');
       return;
     }
     this.notificationService.error(notificationTitle, 'Unknown error');

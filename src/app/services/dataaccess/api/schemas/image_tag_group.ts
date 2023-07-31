@@ -1,9 +1,5 @@
 export class ImageTagGroup {
-  constructor(
-    public id: number,
-    public displayName: string,
-    public isSingleValue: boolean
-  ) {}
+  constructor(public id: number, public displayName: string, public isSingleValue: boolean) {}
 
   public static fromJSON(imageTagGroupJSON: any): ImageTagGroup {
     return new ImageTagGroup(

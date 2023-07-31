@@ -33,25 +33,15 @@ export class UserManagementService {
     return null;
   }
 
-  public isValidDisplayName(
-    displayName: string
-  ): { [k: string]: boolean } | null {
+  public isValidDisplayName(displayName: string): { [k: string]: boolean } | null {
     if (displayName.length > 256) {
       return { error: true, maxLength: true };
     }
     return null;
   }
 
-  public async createUser(
-    username: string,
-    displayName: string,
-    password: string
-  ): Promise<User> {
-    return await this.userDataAccessService.createUser(
-      username.trim(),
-      displayName.trim(),
-      password
-    );
+  public async createUser(username: string, displayName: string, password: string): Promise<User> {
+    return await this.userDataAccessService.createUser(username.trim(), displayName.trim(), password);
   }
 
   public async getUserList(
@@ -91,15 +81,9 @@ export class UserManagementService {
     if (username !== undefined) username = username.trim();
     if (displayName !== undefined) displayName = displayName.trim();
 
-    const updatedUser = await this.userDataAccessService.updateUser(
-      id,
-      username,
-      displayName,
-      password
-    );
+    const updatedUser = await this.userDataAccessService.updateUser(id, username, displayName, password);
 
-    const sessionUserInfo =
-      await this.sessionManagementService.getUserFromSession();
+    const sessionUserInfo = await this.sessionManagementService.getUserFromSession();
     if (sessionUserInfo?.user.id === id) {
       sessionUserInfo.user = updatedUser;
       this.sessionManagementService.setSessionUserInfo(sessionUserInfo);
@@ -113,11 +97,7 @@ export class UserManagementService {
     imageOfUserID: number,
     canEdit: boolean
   ): Promise<UserCanManageUserImage> {
-    return await this.userDataAccessService.createUserCanManageUserImage(
-      userID,
-      imageOfUserID,
-      canEdit
-    );
+    return await this.userDataAccessService.createUserCanManageUserImage(userID, imageOfUserID, canEdit);
   }
 
   public async getUserCanManageUserImageListOfUser(
@@ -125,11 +105,7 @@ export class UserManagementService {
     offset: number,
     limit: number
   ): Promise<{ totalUserCount: number; userList: UserCanManageUserImage[] }> {
-    return await this.userDataAccessService.getUserCanManageUserImageListOfUser(
-      userID,
-      offset,
-      limit
-    );
+    return await this.userDataAccessService.getUserCanManageUserImageListOfUser(userID, offset, limit);
   }
 
   public async updateUserCanManageUserImage(
@@ -137,31 +113,15 @@ export class UserManagementService {
     imageOfUserID: number,
     canEdit: boolean | undefined
   ): Promise<UserCanManageUserImage> {
-    return await this.userDataAccessService.updateUserCanManageUserImage(
-      userID,
-      imageOfUserID,
-      canEdit
-    );
+    return await this.userDataAccessService.updateUserCanManageUserImage(userID, imageOfUserID, canEdit);
   }
 
-  public async deleteUserCanManageUserImage(
-    userID: number,
-    imageOfUserID: number
-  ): Promise<void> {
-    await this.userDataAccessService.deleteUserCanManageUserImage(
-      userID,
-      imageOfUserID
-    );
+  public async deleteUserCanManageUserImage(userID: number, imageOfUserID: number): Promise<void> {
+    await this.userDataAccessService.deleteUserCanManageUserImage(userID, imageOfUserID);
   }
 
-  public async createUserCanVerifyUserImage(
-    userID: number,
-    imageOfUserID: number
-  ): Promise<UserCanVerifyUserImage> {
-    return await this.userDataAccessService.createUserCanVerifyUserImage(
-      userID,
-      imageOfUserID
-    );
+  public async createUserCanVerifyUserImage(userID: number, imageOfUserID: number): Promise<UserCanVerifyUserImage> {
+    return await this.userDataAccessService.createUserCanVerifyUserImage(userID, imageOfUserID);
   }
 
   public async getUserCanVerifyUserImageListOfUser(
@@ -169,20 +129,10 @@ export class UserManagementService {
     offset: number,
     limit: number
   ): Promise<{ totalUserCount: number; userList: UserCanVerifyUserImage[] }> {
-    return await this.userDataAccessService.getUserCanVerifyUserImageListOfUser(
-      userID,
-      offset,
-      limit
-    );
+    return await this.userDataAccessService.getUserCanVerifyUserImageListOfUser(userID, offset, limit);
   }
 
-  public async deleteUserCanVerifyUserImage(
-    userID: number,
-    imageOfUserID: number
-  ): Promise<void> {
-    await this.userDataAccessService.deleteUserCanVerifyUserImage(
-      userID,
-      imageOfUserID
-    );
+  public async deleteUserCanVerifyUserImage(userID: number, imageOfUserID: number): Promise<void> {
+    await this.userDataAccessService.deleteUserCanVerifyUserImage(userID, imageOfUserID);
   }
 }

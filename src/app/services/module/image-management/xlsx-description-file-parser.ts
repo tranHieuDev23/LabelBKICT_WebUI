@@ -1,7 +1,4 @@
-import {
-  DescriptionFileParser,
-  FilenameWithDescription,
-} from './description-file-parser';
+import { DescriptionFileParser, FilenameWithDescription } from './description-file-parser';
 import { read, utils } from 'xlsx';
 
 export class XlsxDescriptionFileParser implements DescriptionFileParser {

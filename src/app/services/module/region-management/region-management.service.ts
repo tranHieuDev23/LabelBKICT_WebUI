@@ -1,10 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  Polygon,
-  Region,
-  RegionOperationLog,
-  RegionsService,
-} from '../../dataaccess/api';
+import { Polygon, Region, RegionOperationLog, RegionsService } from '../../dataaccess/api';
 
 @Injectable({
   providedIn: 'root',
@@ -18,12 +13,7 @@ export class RegionManagementService {
     holes: Polygon[],
     regionLabelID: number
   ): Promise<Region> {
-    return await this.regionsService.createRegion(
-      imageID,
-      border,
-      holes,
-      regionLabelID
-    );
+    return await this.regionsService.createRegion(imageID, border, holes, regionLabelID);
   }
 
   public async deleteRegionOfImage(imageID: number): Promise<void> {
@@ -34,39 +24,24 @@ export class RegionManagementService {
     return await this.regionsService.deleteRegion(imageID, regionID);
   }
 
+  public async deleteRegionList(imageID: number, regionIDList: number[]): Promise<void> {
+    Promise.all(regionIDList.map((regionID) => this.deleteRegion(imageID, regionID)));
+  }
+
   public async updateRegionBoundary(
     imageID: number,
     regionID: number,
     border: Polygon,
     holes: Polygon[]
   ): Promise<Region> {
-    return await this.regionsService.updateRegionBoundary(
-      imageID,
-      regionID,
-      border,
-      holes
-    );
+    return await this.regionsService.updateRegionBoundary(imageID, regionID, border, holes);
   }
 
-  public async updateRegionRegionLabel(
-    imageID: number,
-    regionID: number,
-    regionLabelID: number
-  ): Promise<Region> {
-    return await this.regionsService.updateRegionRegionLabel(
-      imageID,
-      regionID,
-      regionLabelID
-    );
+  public async updateRegionRegionLabel(imageID: number, regionID: number, regionLabelID: number): Promise<Region> {
+    return await this.regionsService.updateRegionRegionLabel(imageID, regionID, regionLabelID);
   }
 
-  public async getRegionOperationLogList(
-    imageID: number,
-    regionID: number
-  ): Promise<RegionOperationLog[]> {
-    return await this.regionsService.getRegionOperationLogList(
-      imageID,
-      regionID
-    );
+  public async getRegionOperationLogList(imageID: number, regionID: number): Promise<RegionOperationLog[]> {
+    return await this.regionsService.getRegionOperationLogList(imageID, regionID);
   }
 }

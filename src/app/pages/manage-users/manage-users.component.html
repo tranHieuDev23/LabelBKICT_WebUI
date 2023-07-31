@@ -1,439 +1,658 @@
 <div class="carded-content">
-    <h1 nz-typography>
-        Manage users
-    </h1>
-    <app-user-filter-options-selector [filterOptions]="filterOptions"
-        (filterOptionsUpdated)="onUserListFilterOptionsUpdated($event)">
-    </app-user-filter-options-selector>
-    <button nz-button nzType="primary" class="create-new-user-btn" (click)="onCreateNewUserClicked()">
-        <i nz-icon nzType="user-add" nzTheme="outline"></i> Create a new user
-    </button>
-    <ul nz-list [nzDataSource]="userList" nzBordered nzItemLayout="vertical">
-        <nz-list-header>
-            Sort by:
-            <nz-select [(ngModel)]="sortOrder" (ngModelChange)="onSortOrderChanged($event)">
-                <nz-option *ngFor="let sortOrderOption of sortOrderOptions" [nzValue]="sortOrderOption.value"
-                    [nzLabel]="sortOrderOption.title">
-                </nz-option>
-            </nz-select>
-        </nz-list-header>
-        <li nz-list-item *ngFor="let user of userList; index as i" nzNoFlex>
-            <nz-list-item-meta>
-                <nz-list-item-meta-title>
-                    {{ user.displayName }} <i>({{ user.username }})</i>
-                </nz-list-item-meta-title>
-                <nz-list-item-meta-description>
-                    {{ getUserRoleListString(userRoleList[i]) }}
-                </nz-list-item-meta-description>
-            </nz-list-item-meta>
-            <nz-tag *ngFor="let userTag of userTagList[i]">
-                {{ userTag.displayName }}
-            </nz-tag>
-            <ul nz-list-item-actions>
-                <nz-list-item-action>
-                    <a (click)="onEditUserClicked(i)">Edit</a>
-                </nz-list-item-action>
-            </ul>
-        </li>
-        <nz-list-footer>
-            <nz-pagination [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzTotal]="totalUserCount"
-                nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions" (nzPageIndexChange)="onPageIndexChanged($event)"
-                (nzPageSizeChange)="onPageSizeChanged($event)">
-            </nz-pagination>
-        </nz-list-footer>
-    </ul>
+  <h1 nz-typography>Manage users</h1>
+  <app-user-filter-options-selector
+    [filterOptions]="filterOptions"
+    (filterOptionsUpdated)="onUserListFilterOptionsUpdated($event)"
+  >
+  </app-user-filter-options-selector>
+  <button
+    nz-button
+    nzType="primary"
+    class="create-new-user-btn"
+    (click)="onCreateNewUserClicked()"
+  >
+    <i nz-icon nzType="user-add" nzTheme="outline"></i> Create a new user
+  </button>
+  <ul nz-list [nzDataSource]="userList" nzBordered nzItemLayout="vertical">
+    <nz-list-header>
+      Sort by:
+      <nz-select
+        [(ngModel)]="sortOrder"
+        (ngModelChange)="onSortOrderChanged($event)"
+      >
+        <nz-option
+          *ngFor="let sortOrderOption of sortOrderOptions"
+          [nzValue]="sortOrderOption.value"
+          [nzLabel]="sortOrderOption.title"
+        >
+        </nz-option>
+      </nz-select>
+    </nz-list-header>
+    <li nz-list-item *ngFor="let user of userList; index as i" nzNoFlex>
+      <nz-list-item-meta>
+        <nz-list-item-meta-title>
+          {{ user.displayName }} <i>({{ user.username }})</i>
+        </nz-list-item-meta-title>
+        <nz-list-item-meta-description>
+          {{ getUserRoleListString(userRoleList[i]) }}
+        </nz-list-item-meta-description>
+      </nz-list-item-meta>
+      <nz-tag *ngFor="let userTag of userTagList[i]">
+        {{ userTag.displayName }}
+      </nz-tag>
+      <ul nz-list-item-actions>
+        <nz-list-item-action>
+          <a (click)="onEditUserClicked(i)">Edit</a>
+        </nz-list-item-action>
+      </ul>
+    </li>
+    <nz-list-footer>
+      <nz-pagination
+        [nzPageIndex]="pageIndex"
+        [nzPageSize]="pageSize"
+        [nzTotal]="totalUserCount"
+        nzShowSizeChanger
+        [nzPageSizeOptions]="pageSizeOptions"
+        (nzPageIndexChange)="onPageIndexChanged($event)"
+        (nzPageSizeChange)="onPageSizeChanged($event)"
+      >
+      </nz-pagination>
+    </nz-list-footer>
+  </ul>
 </div>
 
-<nz-modal [(nzVisible)]="isCreateNewUserModalVisible" nzTitle="Create a new user"
-    (nzOnCancel)="onCreateNewUserModalCancel()" [nzOkDisabled]="createNewUserModalFormGroup.invalid"
-    (nzOnOk)="onCreateNewUserModalOk()">
-    <ng-container *nzModalContent>
-        <form nz-form [formGroup]="createNewUserModalFormGroup">
-            <nz-form-item>
-                <nz-form-control [nzErrorTip]="displayNameErrorTpl">
-                    <nz-input-group nzPrefixIcon="user">
-                        <input type="text" nz-input formControlName="displayName" placeholder="Display name"
-                            name="displayName" nzRequired />
-                        <ng-template #displayNameErrorTpl let-control>
-                            <ng-container *ngIf="control.errors.required">
-                                Please enter your display name
-                            </ng-container>
-                            <ng-container *ngIf="control.errors.minLength">
-                                Display name must be at least 1 character long
-                            </ng-container>
-                            <ng-container *ngIf="control.errors.maxLength">
-                                Display name must not be longer than 256 character
-                            </ng-container>
-                        </ng-template>
-                    </nz-input-group>
-                </nz-form-control>
-            </nz-form-item>
+<nz-modal
+  [(nzVisible)]="isCreateNewUserModalVisible"
+  nzTitle="Create a new user"
+  (nzOnCancel)="onCreateNewUserModalCancel()"
+  [nzOkDisabled]="createNewUserModalFormGroup.invalid"
+  (nzOnOk)="onCreateNewUserModalOk()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="createNewUserModalFormGroup">
+      <nz-form-item>
+        <nz-form-control [nzErrorTip]="displayNameErrorTpl">
+          <nz-input-group nzPrefixIcon="user">
+            <input
+              type="text"
+              nz-input
+              formControlName="displayName"
+              placeholder="Display name"
+              name="displayName"
+              nzRequired
+            />
+            <ng-template #displayNameErrorTpl let-control>
+              <ng-container *ngIf="control.errors.required">
+                Please enter your display name
+              </ng-container>
+              <ng-container *ngIf="control.errors.minLength">
+                Display name must be at least 1 character long
+              </ng-container>
+              <ng-container *ngIf="control.errors.maxLength">
+                Display name must not be longer than 256 character
+              </ng-container>
+            </ng-template>
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
 
-            <nz-form-item>
-                <nz-form-control [nzErrorTip]="usernameErrorTpl">
-                    <nz-input-group nzPrefixIcon="user">
-                        <input type="text" formControlName="username" nz-input placeholder="Username" name="username"
-                            nzRequired />
-                        <ng-template #usernameErrorTpl let-control>
-                            <ng-container *ngIf="control.errors.required">
-                                Please enter your username
-                            </ng-container>
-                            <ng-container *ngIf="control.errors.minLength">
-                                Username must be at least 6 character long
-                            </ng-container>
-                            <ng-container *ngIf="control.errors.maxLength">
-                                Username must not be longer than 64 character
-                            </ng-container>
-                            <ng-container *ngIf="control.errors.pattern">
-                                Username must only contain English letters and digits
-                            </ng-container>
-                        </ng-template>
-                    </nz-input-group>
-                </nz-form-control>
-            </nz-form-item>
+      <nz-form-item>
+        <nz-form-control [nzErrorTip]="usernameErrorTpl">
+          <nz-input-group nzPrefixIcon="user">
+            <input
+              type="text"
+              formControlName="username"
+              nz-input
+              placeholder="Username"
+              name="username"
+              nzRequired
+            />
+            <ng-template #usernameErrorTpl let-control>
+              <ng-container *ngIf="control.errors.required">
+                Please enter your username
+              </ng-container>
+              <ng-container *ngIf="control.errors.minLength">
+                Username must be at least 6 character long
+              </ng-container>
+              <ng-container *ngIf="control.errors.maxLength">
+                Username must not be longer than 64 character
+              </ng-container>
+              <ng-container *ngIf="control.errors.pattern">
+                Username must only contain English letters and digits
+              </ng-container>
+            </ng-template>
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
 
-            <nz-form-item>
-                <nz-form-control [nzErrorTip]="passwordErrorTpl">
-                    <nz-input-group nzPrefixIcon="lock">
-                        <input type="password" nz-input formControlName="password" placeholder="Password"
-                            name="password" nzRequired />
-                        <ng-template #passwordErrorTpl let-control>
-                            <ng-container *ngIf="control.errors.required">
-                                Please enter your password
-                            </ng-container>
-                            <ng-container *ngIf="control.errors.minLength">
-                                Password must be at least 8 character long
-                            </ng-container>
-                        </ng-template>
-                    </nz-input-group>
-                </nz-form-control>
-            </nz-form-item>
+      <nz-form-item>
+        <nz-form-control [nzErrorTip]="passwordErrorTpl">
+          <nz-input-group nzPrefixIcon="lock">
+            <input
+              type="password"
+              nz-input
+              formControlName="password"
+              placeholder="Password"
+              name="password"
+              nzRequired
+            />
+            <ng-template #passwordErrorTpl let-control>
+              <ng-container *ngIf="control.errors.required">
+                Please enter your password
+              </ng-container>
+              <ng-container *ngIf="control.errors.minLength">
+                Password must be at least 8 character long
+              </ng-container>
+            </ng-template>
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
 
-            <nz-form-item>
-                <nz-form-control [nzErrorTip]="passwordConfirmErrorTpl">
-                    <nz-input-group nzPrefixIcon="lock">
-                        <input type="password" nz-input formControlName="passwordConfirm" placeholder="Verify password"
-                            name="passwordConfirm" nzRequired />
-                        <ng-template #passwordConfirmErrorTpl let-control>
-                            <ng-container *ngIf="control.errors.required">
-                                Please confirm your password
-                            </ng-container>
-                            <ng-container *ngIf="control.errors.confirmed">
-                                Two passwords that you entered are not equal
-                            </ng-container>
-                        </ng-template>
-                    </nz-input-group>
-                </nz-form-control>
-            </nz-form-item>
+      <nz-form-item>
+        <nz-form-control [nzErrorTip]="passwordConfirmErrorTpl">
+          <nz-input-group nzPrefixIcon="lock">
+            <input
+              type="password"
+              nz-input
+              formControlName="passwordConfirm"
+              placeholder="Verify password"
+              name="passwordConfirm"
+              nzRequired
+            />
+            <ng-template #passwordConfirmErrorTpl let-control>
+              <ng-container *ngIf="control.errors.required">
+                Please confirm your password
+              </ng-container>
+              <ng-container *ngIf="control.errors.confirmed">
+                Two passwords that you entered are not equal
+              </ng-container>
+            </ng-template>
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [(nzVisible)]="isEditUserModalVisible"
+  nzTitle="Edit user information"
+  [nzFooter]="null"
+  (nzOnCancel)="onEditUserModalCancel()"
+>
+  <ng-container *nzModalContent>
+    <nz-collapse nzAccordion>
+      <nz-collapse-panel nzHeader="User information" [nzActive]="true">
+        <form nz-form [formGroup]="editUserModalFormGroup">
+          <nz-form-item>
+            <nz-form-control [nzErrorTip]="displayNameErrorTpl">
+              <nz-input-group nzPrefixIcon="user">
+                <input
+                  type="text"
+                  nz-input
+                  formControlName="displayName"
+                  placeholder="Display name"
+                  name="displayName"
+                  nzRequired
+                />
+                <ng-template #displayNameErrorTpl let-control>
+                  <ng-container *ngIf="control.errors.required">
+                    Please enter your display name
+                  </ng-container>
+                  <ng-container *ngIf="control.errors.minLength">
+                    Display name must be at least 1 character long
+                  </ng-container>
+                  <ng-container *ngIf="control.errors.maxLength">
+                    Display name must not be longer than 256 character
+                  </ng-container>
+                </ng-template>
+              </nz-input-group>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-control [nzErrorTip]="usernameErrorTpl">
+              <nz-input-group nzPrefixIcon="user">
+                <input
+                  type="text"
+                  formControlName="username"
+                  nz-input
+                  placeholder="Username"
+                  name="username"
+                  nzRequired
+                />
+                <ng-template #usernameErrorTpl let-control>
+                  <ng-container *ngIf="control.errors.required">
+                    Please enter your username
+                  </ng-container>
+                  <ng-container *ngIf="control.errors.minLength">
+                    Username must be at least 6 character long
+                  </ng-container>
+                  <ng-container *ngIf="control.errors.maxLength">
+                    Username must not be longer than 64 character
+                  </ng-container>
+                  <ng-container *ngIf="control.errors.pattern">
+                    Username must only contain English letters and digits
+                  </ng-container>
+                </ng-template>
+              </nz-input-group>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-control [nzErrorTip]="passwordErrorTpl">
+              <nz-input-group nzPrefixIcon="lock">
+                <input
+                  type="password"
+                  nz-input
+                  formControlName="password"
+                  placeholder="Password"
+                  name="password"
+                />
+                <ng-template #passwordErrorTpl let-control>
+                  <ng-container *ngIf="control.errors.minLength">
+                    Password must be at least 8 character long
+                  </ng-container>
+                </ng-template>
+              </nz-input-group>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-control [nzErrorTip]="passwordConfirmErrorTpl">
+              <nz-input-group nzPrefixIcon="lock">
+                <input
+                  type="password"
+                  nz-input
+                  formControlName="passwordConfirm"
+                  placeholder="Verify password"
+                  name="passwordConfirm"
+                />
+                <ng-template #passwordConfirmErrorTpl let-control>
+                  <ng-container *ngIf="control.errors.confirmed">
+                    Two passwords that you entered are not equal
+                  </ng-container>
+                </ng-template>
+              </nz-input-group>
+            </nz-form-control>
+          </nz-form-item>
         </form>
-    </ng-container>
+        <button
+          nz-button
+          [nzType]="'primary'"
+          [disabled]="editUserModalFormGroup.invalid"
+          (click)="onEditUserModalSubmitClicked()"
+        >
+          Submit
+        </button>
+      </nz-collapse-panel>
+      <nz-collapse-panel nzHeader="Assigned roles">
+        <nz-list
+          [nzDataSource]="userRoleList[editUserModalUserListItemIndex]"
+          nzBordered
+        >
+          <nz-list-item
+            *ngFor="
+              let userRole of userRoleList[editUserModalUserListItemIndex]
+            "
+          >
+            <nz-list-item-meta>
+              <nz-list-item-meta-title>
+                {{ userRole.displayName }}
+              </nz-list-item-meta-title>
+              <nz-list-item-meta-description>
+                {{ userRole.description }}
+              </nz-list-item-meta-description>
+            </nz-list-item-meta>
+            <ul nz-list-item-actions>
+              <nz-list-item-action>
+                <a
+                  nz-typography
+                  nzType="danger"
+                  (click)="onEditUserModalUserRoleListDeleteClicked(userRole)"
+                >
+                  <i nz-icon nzType="delete" nzTheme="outline"></i>
+                </a>
+              </nz-list-item-action>
+            </ul>
+          </nz-list-item>
+        </nz-list>
+        <button
+          nz-button
+          nzType="primary"
+          class="add-user-role-btn"
+          (click)="onAddUserRoleClicked()"
+        >
+          <i nz-icon nzType="plus" nzTheme="outline"></i> Add user role
+        </button>
+      </nz-collapse-panel>
+      <nz-collapse-panel nzHeader="Assigned tags">
+        <nz-list
+          [nzDataSource]="userTagList[editUserModalUserListItemIndex]"
+          nzBordered
+        >
+          <nz-list-item
+            *ngFor="let userTag of userTagList[editUserModalUserListItemIndex]"
+          >
+            <nz-list-item-meta>
+              <nz-list-item-meta-title>
+                {{ userTag.displayName }}
+              </nz-list-item-meta-title>
+              <nz-list-item-meta-description>
+                {{ userTag.description }}
+              </nz-list-item-meta-description>
+            </nz-list-item-meta>
+            <ul nz-list-item-actions>
+              <nz-list-item-action>
+                <a
+                  nz-typography
+                  nzType="danger"
+                  (click)="onEditUserModalUserTagListDeleteClicked(userTag)"
+                >
+                  <i nz-icon nzType="delete" nzTheme="outline"></i>
+                </a>
+              </nz-list-item-action>
+            </ul>
+          </nz-list-item>
+        </nz-list>
+        <button
+          nz-button
+          nzType="primary"
+          class="add-user-tag-btn"
+          (click)="onAddUserTagClicked()"
+        >
+          <i nz-icon nzType="plus" nzTheme="outline"></i> Add user tag
+        </button>
+      </nz-collapse-panel>
+      <nz-collapse-panel
+        nzHeader="Manage image permission"
+        (nzActiveChange)="onManageUserPermissionPanelActiveChange($event)"
+      >
+        <p nz-typography>
+          If the user has <code>images.manage.all</code> or
+          <code>images.export</code> permission, the following list is the list
+          of users whose images this user can manage and export.
+        </p>
+        <p nz-typography>
+          If no user is provided, by default the user can manage and export all
+          users' images.
+        </p>
+        <nz-list [nzDataSource]="editUserUserCanManageUserImageList" nzBordered>
+          <nz-list-item
+            *ngFor="
+              let userCanManageUserImage of editUserUserCanManageUserImageList
+            "
+          >
+            <nz-list-item-meta>
+              <nz-list-item-meta-title>
+                {{ userCanManageUserImage.user.displayName }}
+              </nz-list-item-meta-title>
+              <nz-list-item-meta-description>
+                <label
+                  nz-checkbox
+                  [(ngModel)]="userCanManageUserImage.canEdit"
+                  (ngModelChange)="
+                    onUserCanManageUserImageCanEditChanged(
+                      userCanManageUserImage,
+                      $event
+                    )
+                  "
+                >
+                  Can edit image?
+                </label>
+              </nz-list-item-meta-description>
+            </nz-list-item-meta>
+            <ul nz-list-item-actions>
+              <nz-list-item-action>
+                <button
+                  nz-button
+                  nzType="text"
+                  nzDanger
+                  (click)="
+                    onDeleteUserCanManageUserImageClicked(
+                      userCanManageUserImage
+                    )
+                  "
+                >
+                  <i nz-icon nzType="delete" nzTheme="outline"></i>
+                </button>
+              </nz-list-item-action>
+            </ul>
+          </nz-list-item>
+          <nz-list-pagination>
+            <nz-pagination
+              [nzPageIndex]="editUserUserCanManageUserImagePageIndex"
+              [nzPageSize]="editUserUserCanManageUserImagePageSize"
+              [nzTotal]="editUserUserCanManageUserImageCount"
+              (nzPageIndexChange)="
+                onUserCanManageUserImagePageIndexChanged($event)
+              "
+            >
+            </nz-pagination>
+          </nz-list-pagination>
+        </nz-list>
+        <button
+          nz-button
+          class="add-user-btn"
+          (click)="onAddUserCanManageUserImageClicked()"
+        >
+          <i nz-icon nzType="user-add" nzTheme="outline"></i> Add user
+        </button>
+      </nz-collapse-panel>
+      <nz-collapse-panel
+        nzHeader="Verify image permission"
+        (nzActiveChange)="onVerifyUserPermissionPanelActiveChange($event)"
+      >
+        <p nz-typography>
+          If the user has <code>images.verify</code> permission, the following
+          list is the list of users whose images this user can verify.
+        </p>
+        <p nz-typography>
+          If no user is provided, by default the user can verify all users'
+          images.
+        </p>
+        <nz-list [nzDataSource]="editUserUserCanVerifyUserImageList" nzBordered>
+          <nz-list-item
+            *ngFor="
+              let userCanVerifyUserImage of editUserUserCanVerifyUserImageList
+            "
+          >
+            <nz-list-item-meta>
+              <nz-list-item-meta-title>
+                {{ userCanVerifyUserImage.user.displayName }}
+              </nz-list-item-meta-title>
+            </nz-list-item-meta>
+            <ul nz-list-item-actions>
+              <nz-list-item-action>
+                <button
+                  nz-button
+                  nzType="text"
+                  nzDanger
+                  (click)="
+                    onDeleteUserCanVerifyUserImageClicked(
+                      userCanVerifyUserImage
+                    )
+                  "
+                >
+                  <i nz-icon nzType="delete" nzTheme="outline"></i>
+                </button>
+              </nz-list-item-action>
+            </ul>
+          </nz-list-item>
+          <nz-list-pagination>
+            <nz-pagination
+              [nzPageIndex]="editUserUserCanVerifyUserImagePageIndex"
+              [nzPageSize]="editUserUserCanVerifyUserImagePageSize"
+              [nzTotal]="editUserUserCanVerifyUserImageCount"
+              (nzPageIndexChange)="
+                onUserCanVerifyUserImagePageIndexChanged($event)
+              "
+            >
+            </nz-pagination>
+          </nz-list-pagination>
+        </nz-list>
+        <button
+          nz-button
+          class="add-user-btn"
+          (click)="onAddUserCanVerifyUserImageClicked()"
+        >
+          <i nz-icon nzType="user-add" nzTheme="outline"></i> Add user
+        </button>
+      </nz-collapse-panel>
+    </nz-collapse>
+  </ng-container>
 </nz-modal>
 
-<nz-modal [(nzVisible)]="isEditUserModalVisible" nzTitle="Edit user information" [nzFooter]="null"
-    (nzOnCancel)="onEditUserModalCancel()">
-    <ng-container *nzModalContent>
-        <nz-collapse nzAccordion>
-            <nz-collapse-panel nzHeader="User information" [nzActive]="true">
-                <form nz-form [formGroup]="editUserModalFormGroup">
-                    <nz-form-item>
-                        <nz-form-control [nzErrorTip]="displayNameErrorTpl">
-                            <nz-input-group nzPrefixIcon="user">
-                                <input type="text" nz-input formControlName="displayName" placeholder="Display name"
-                                    name="displayName" nzRequired />
-                                <ng-template #displayNameErrorTpl let-control>
-                                    <ng-container *ngIf="control.errors.required">
-                                        Please enter your display name
-                                    </ng-container>
-                                    <ng-container *ngIf="control.errors.minLength">
-                                        Display name must be at least 1 character long
-                                    </ng-container>
-                                    <ng-container *ngIf="control.errors.maxLength">
-                                        Display name must not be longer than 256 character
-                                    </ng-container>
-                                </ng-template>
-                            </nz-input-group>
-                        </nz-form-control>
-                    </nz-form-item>
-
-                    <nz-form-item>
-                        <nz-form-control [nzErrorTip]="usernameErrorTpl">
-                            <nz-input-group nzPrefixIcon="user">
-                                <input type="text" formControlName="username" nz-input placeholder="Username"
-                                    name="username" nzRequired />
-                                <ng-template #usernameErrorTpl let-control>
-                                    <ng-container *ngIf="control.errors.required">
-                                        Please enter your username
-                                    </ng-container>
-                                    <ng-container *ngIf="control.errors.minLength">
-                                        Username must be at least 6 character long
-                                    </ng-container>
-                                    <ng-container *ngIf="control.errors.maxLength">
-                                        Username must not be longer than 64 character
-                                    </ng-container>
-                                    <ng-container *ngIf="control.errors.pattern">
-                                        Username must only contain English letters and digits
-                                    </ng-container>
-                                </ng-template>
-                            </nz-input-group>
-                        </nz-form-control>
-                    </nz-form-item>
-
-                    <nz-form-item>
-                        <nz-form-control [nzErrorTip]="passwordErrorTpl">
-                            <nz-input-group nzPrefixIcon="lock">
-                                <input type="password" nz-input formControlName="password" placeholder="Password"
-                                    name="password" />
-                                <ng-template #passwordErrorTpl let-control>
-                                    <ng-container *ngIf="control.errors.minLength">
-                                        Password must be at least 8 character long
-                                    </ng-container>
-                                </ng-template>
-                            </nz-input-group>
-                        </nz-form-control>
-                    </nz-form-item>
-
-                    <nz-form-item>
-                        <nz-form-control [nzErrorTip]="passwordConfirmErrorTpl">
-                            <nz-input-group nzPrefixIcon="lock">
-                                <input type="password" nz-input formControlName="passwordConfirm"
-                                    placeholder="Verify password" name="passwordConfirm" />
-                                <ng-template #passwordConfirmErrorTpl let-control>
-                                    <ng-container *ngIf="control.errors.confirmed">
-                                        Two passwords that you entered are not equal
-                                    </ng-container>
-                                </ng-template>
-                            </nz-input-group>
-                        </nz-form-control>
-                    </nz-form-item>
-                </form>
-                <button nz-button [nzType]="'primary'" [disabled]="editUserModalFormGroup.invalid"
-                    (click)="onEditUserModalSubmitClicked()">
-                    Submit
-                </button>
-            </nz-collapse-panel>
-            <nz-collapse-panel nzHeader="Assigned roles">
-                <nz-list [nzDataSource]="userRoleList[editUserModalUserListItemIndex]" nzBordered>
-                    <nz-list-item *ngFor="let userRole of userRoleList[editUserModalUserListItemIndex]">
-                        <nz-list-item-meta>
-                            <nz-list-item-meta-title>
-                                {{ userRole.displayName }}
-                            </nz-list-item-meta-title>
-                            <nz-list-item-meta-description>
-                                {{ userRole.description }}
-                            </nz-list-item-meta-description>
-                        </nz-list-item-meta>
-                        <ul nz-list-item-actions>
-                            <nz-list-item-action>
-                                <a nz-typography nzType="danger"
-                                    (click)="onEditUserModalUserRoleListDeleteClicked(userRole)">
-                                    <i nz-icon nzType="delete" nzTheme="outline"></i>
-                                </a>
-                            </nz-list-item-action>
-                        </ul>
-                    </nz-list-item>
-                </nz-list>
-                <button nz-button nzType="primary" class="add-user-role-btn" (click)="onAddUserRoleClicked()">
-                    <i nz-icon nzType="plus" nzTheme="outline"></i> Add user role
-                </button>
-            </nz-collapse-panel>
-            <nz-collapse-panel nzHeader="Assigned tags">
-                <nz-list [nzDataSource]="userTagList[editUserModalUserListItemIndex]" nzBordered>
-                    <nz-list-item *ngFor="let userTag of userTagList[editUserModalUserListItemIndex]">
-                        <nz-list-item-meta>
-                            <nz-list-item-meta-title>
-                                {{ userTag.displayName }}
-                            </nz-list-item-meta-title>
-                            <nz-list-item-meta-description>
-                                {{ userTag.description }}
-                            </nz-list-item-meta-description>
-                        </nz-list-item-meta>
-                        <ul nz-list-item-actions>
-                            <nz-list-item-action>
-                                <a nz-typography nzType="danger"
-                                    (click)="onEditUserModalUserTagListDeleteClicked(userTag)">
-                                    <i nz-icon nzType="delete" nzTheme="outline"></i>
-                                </a>
-                            </nz-list-item-action>
-                        </ul>
-                    </nz-list-item>
-                </nz-list>
-                <button nz-button nzType="primary" class="add-user-tag-btn" (click)="onAddUserTagClicked()">
-                    <i nz-icon nzType="plus" nzTheme="outline"></i> Add user tag
-                </button>
-            </nz-collapse-panel>
-            <nz-collapse-panel nzHeader="Manage image permission"
-                (nzActiveChange)="onManageUserPermissionPanelActiveChange($event)">
-                <p nz-typography>
-                    If the user has <code>images.manage.all</code> or <code>images.export</code> permission, the
-                    following list is the list of users
-                    whose images this user can manage and export.
-                </p>
-                <p nz-typography>
-                    If no user is provided, by default the user can manage and export all users' images.
-                </p>
-                <nz-list [nzDataSource]="editUserUserCanManageUserImageList" nzBordered>
-                    <nz-list-item *ngFor="let userCanManageUserImage of editUserUserCanManageUserImageList">
-                        <nz-list-item-meta>
-                            <nz-list-item-meta-title>
-                                {{ userCanManageUserImage.user.displayName }}
-                            </nz-list-item-meta-title>
-                            <nz-list-item-meta-description>
-                                <label nz-checkbox [(ngModel)]="userCanManageUserImage.canEdit"
-                                    (ngModelChange)="onUserCanManageUserImageCanEditChanged(userCanManageUserImage, $event)">
-                                    Can edit image?
-                                </label>
-                            </nz-list-item-meta-description>
-                        </nz-list-item-meta>
-                        <ul nz-list-item-actions>
-                            <nz-list-item-action>
-                                <button nz-button nzType="text" nzDanger
-                                    (click)="onDeleteUserCanManageUserImageClicked(userCanManageUserImage)">
-                                    <i nz-icon nzType="delete" nzTheme="outline"></i>
-                                </button>
-                            </nz-list-item-action>
-                        </ul>
-                    </nz-list-item>
-                    <nz-list-pagination>
-                        <nz-pagination [nzPageIndex]="editUserUserCanManageUserImagePageIndex"
-                            [nzPageSize]="editUserUserCanManageUserImagePageSize"
-                            [nzTotal]="editUserUserCanManageUserImageCount"
-                            (nzPageIndexChange)="onUserCanManageUserImagePageIndexChanged($event)">
-                        </nz-pagination>
-                    </nz-list-pagination>
-                </nz-list>
-                <button nz-button class="add-user-btn" (click)="onAddUserCanManageUserImageClicked()">
-                    <i nz-icon nzType="user-add" nzTheme="outline"></i> Add user
-                </button>
-            </nz-collapse-panel>
-            <nz-collapse-panel nzHeader="Verify image permission"
-                (nzActiveChange)="onVerifyUserPermissionPanelActiveChange($event)">
-                <p nz-typography>
-                    If the user has <code>images.verify</code> permission, the following list is the list of users
-                    whose images this user can verify.
-                </p>
-                <p nz-typography>
-                    If no user is provided, by default the user can verify all users' images.
-                </p>
-                <nz-list [nzDataSource]="editUserUserCanVerifyUserImageList" nzBordered>
-                    <nz-list-item *ngFor="let userCanVerifyUserImage of editUserUserCanVerifyUserImageList">
-                        <nz-list-item-meta>
-                            <nz-list-item-meta-title>
-                                {{ userCanVerifyUserImage.user.displayName }}
-                            </nz-list-item-meta-title>
-                        </nz-list-item-meta>
-                        <ul nz-list-item-actions>
-                            <nz-list-item-action>
-                                <button nz-button nzType="text" nzDanger
-                                    (click)="onDeleteUserCanVerifyUserImageClicked(userCanVerifyUserImage)">
-                                    <i nz-icon nzType="delete" nzTheme="outline"></i>
-                                </button>
-                            </nz-list-item-action>
-                        </ul>
-                    </nz-list-item>
-                    <nz-list-pagination>
-                        <nz-pagination [nzPageIndex]="editUserUserCanVerifyUserImagePageIndex"
-                            [nzPageSize]="editUserUserCanVerifyUserImagePageSize"
-                            [nzTotal]="editUserUserCanVerifyUserImageCount"
-                            (nzPageIndexChange)="onUserCanVerifyUserImagePageIndexChanged($event)">
-                        </nz-pagination>
-                    </nz-list-pagination>
-                </nz-list>
-                <button nz-button class="add-user-btn" (click)="onAddUserCanVerifyUserImageClicked()">
-                    <i nz-icon nzType="user-add" nzTheme="outline"></i> Add user
-                </button>
-            </nz-collapse-panel>
-        </nz-collapse>
-    </ng-container>
+<nz-modal
+  [(nzVisible)]="isAddUserRoleModalVisible"
+  nzTitle="Add user role"
+  [nzFooter]="null"
+  (nzOnCancel)="onAddUserRoleModalCancel()"
+>
+  <ng-container *nzModalContent>
+    <ul
+      nz-list
+      [nzDataSource]="addUserRoleModalUserRoleList"
+      nzBordered
+      nzItemLayout="vertical"
+    >
+      <nz-list-header>
+        Sort by:
+        <nz-select
+          [(ngModel)]="addUserRoleModalSortOrder"
+          (ngModelChange)="onAddUserRoleModalSortOrderChanged($event)"
+        >
+          <nz-option
+            *ngFor="let sortOrderOption of addUserRoleModalSortOrderOptions"
+            [nzValue]="sortOrderOption.value"
+            [nzLabel]="sortOrderOption.title"
+          >
+          </nz-option>
+        </nz-select>
+      </nz-list-header>
+      <li
+        nz-list-item
+        *ngFor="let userRole of addUserRoleModalUserRoleList"
+        nzNoFlex
+        class="add-user-role-list-item"
+        (click)="onAddUserRoleModalItemClicked(userRole)"
+      >
+        <nz-list-item-meta>
+          <nz-list-item-meta-title>
+            {{ userRole.displayName }}
+          </nz-list-item-meta-title>
+          <nz-list-item-meta-description>
+            {{ userRole.description }}
+          </nz-list-item-meta-description>
+        </nz-list-item-meta>
+      </li>
+      <nz-list-footer>
+        <nz-pagination
+          [nzPageIndex]="addUserRoleModalPageIndex"
+          [nzPageSize]="addUserRoleModalPageSize"
+          [nzTotal]="addUserRoleModalTotalUserRoleCount"
+          nzShowSizeChanger
+          [nzPageSizeOptions]="addUserRoleModalPageSizeOptions"
+          (nzPageIndexChange)="onAddUserRoleModalPageIndexChanged($event)"
+          (nzPageSizeChange)="onAddUserRoleModalPageSizeChanged($event)"
+        >
+        </nz-pagination>
+      </nz-list-footer>
+    </ul>
+  </ng-container>
 </nz-modal>
 
-<nz-modal [(nzVisible)]="isAddUserRoleModalVisible" nzTitle="Add user role" [nzFooter]="null"
-    (nzOnCancel)="onAddUserRoleModalCancel()">
-    <ng-container *nzModalContent>
-        <ul nz-list [nzDataSource]="addUserRoleModalUserRoleList" nzBordered nzItemLayout="vertical">
-            <nz-list-header>
-                Sort by:
-                <nz-select [(ngModel)]="addUserRoleModalSortOrder"
-                    (ngModelChange)="onAddUserRoleModalSortOrderChanged($event)">
-                    <nz-option *ngFor="let sortOrderOption of addUserRoleModalSortOrderOptions"
-                        [nzValue]="sortOrderOption.value" [nzLabel]="sortOrderOption.title">
-                    </nz-option>
-                </nz-select>
-            </nz-list-header>
-            <li nz-list-item *ngFor="let userRole of addUserRoleModalUserRoleList" nzNoFlex
-                class="add-user-role-list-item" (click)="onAddUserRoleModalItemClicked(userRole)">
-                <nz-list-item-meta>
-                    <nz-list-item-meta-title>
-                        {{ userRole.displayName }}
-                    </nz-list-item-meta-title>
-                    <nz-list-item-meta-description>
-                        {{ userRole.description }}
-                    </nz-list-item-meta-description>
-                </nz-list-item-meta>
-            </li>
-            <nz-list-footer>
-                <nz-pagination [nzPageIndex]="addUserRoleModalPageIndex" [nzPageSize]="addUserRoleModalPageSize"
-                    [nzTotal]="addUserRoleModalTotalUserRoleCount" nzShowSizeChanger
-                    [nzPageSizeOptions]="addUserRoleModalPageSizeOptions"
-                    (nzPageIndexChange)="onAddUserRoleModalPageIndexChanged($event)"
-                    (nzPageSizeChange)="onAddUserRoleModalPageSizeChanged($event)">
-                </nz-pagination>
-            </nz-list-footer>
-        </ul>
-    </ng-container>
+<nz-modal
+  [(nzVisible)]="isAddUserTagModalVisible"
+  nzTitle="Add user tag"
+  [nzFooter]="null"
+  (nzOnCancel)="onAddUserTagModalCancel()"
+>
+  <ng-container *nzModalContent>
+    <ul
+      nz-list
+      [nzDataSource]="addUserTagModalUserTagList"
+      nzBordered
+      nzItemLayout="vertical"
+    >
+      <nz-list-header>
+        Sort by:
+        <nz-select
+          [(ngModel)]="addUserTagModalSortOrder"
+          (ngModelChange)="onAddUserTagModalSortOrderChanged($event)"
+        >
+          <nz-option
+            *ngFor="let sortOrderOption of addUserTagModalSortOrderOptions"
+            [nzValue]="sortOrderOption.value"
+            [nzLabel]="sortOrderOption.title"
+          >
+          </nz-option>
+        </nz-select>
+      </nz-list-header>
+      <li
+        nz-list-item
+        *ngFor="let userTag of addUserTagModalUserTagList"
+        nzNoFlex
+        class="add-user-tag-list-item"
+        (click)="onAddUserTagModalItemClicked(userTag)"
+      >
+        <nz-list-item-meta>
+          <nz-list-item-meta-title>
+            {{ userTag.displayName }}
+          </nz-list-item-meta-title>
+          <nz-list-item-meta-description>
+            {{ userTag.description }}
+          </nz-list-item-meta-description>
+        </nz-list-item-meta>
+      </li>
+      <nz-list-footer>
+        <nz-pagination
+          [nzPageIndex]="addUserTagModalPageIndex"
+          [nzPageSize]="addUserTagModalPageSize"
+          [nzTotal]="addUserTagModalTotalUserTagCount"
+          nzShowSizeChanger
+          [nzPageSizeOptions]="addUserTagModalPageSizeOptions"
+          (nzPageIndexChange)="onAddUserTagModalPageIndexChanged($event)"
+          (nzPageSizeChange)="onAddUserTagModalPageSizeChanged($event)"
+        >
+        </nz-pagination>
+      </nz-list-footer>
+    </ul>
+  </ng-container>
 </nz-modal>
 
-<nz-modal [(nzVisible)]="isAddUserTagModalVisible" nzTitle="Add user tag" [nzFooter]="null"
-    (nzOnCancel)="onAddUserTagModalCancel()">
-    <ng-container *nzModalContent>
-        <ul nz-list [nzDataSource]="addUserTagModalUserTagList" nzBordered nzItemLayout="vertical">
-            <nz-list-header>
-                Sort by:
-                <nz-select [(ngModel)]="addUserTagModalSortOrder"
-                    (ngModelChange)="onAddUserTagModalSortOrderChanged($event)">
-                    <nz-option *ngFor="let sortOrderOption of addUserTagModalSortOrderOptions"
-                        [nzValue]="sortOrderOption.value" [nzLabel]="sortOrderOption.title">
-                    </nz-option>
-                </nz-select>
-            </nz-list-header>
-            <li nz-list-item *ngFor="let userTag of addUserTagModalUserTagList" nzNoFlex class="add-user-tag-list-item"
-                (click)="onAddUserTagModalItemClicked(userTag)">
-                <nz-list-item-meta>
-                    <nz-list-item-meta-title>
-                        {{ userTag.displayName }}
-                    </nz-list-item-meta-title>
-                    <nz-list-item-meta-description>
-                        {{ userTag.description }}
-                    </nz-list-item-meta-description>
-                </nz-list-item-meta>
-            </li>
-            <nz-list-footer>
-                <nz-pagination [nzPageIndex]="addUserTagModalPageIndex" [nzPageSize]="addUserTagModalPageSize"
-                    [nzTotal]="addUserTagModalTotalUserTagCount" nzShowSizeChanger
-                    [nzPageSizeOptions]="addUserTagModalPageSizeOptions"
-                    (nzPageIndexChange)="onAddUserTagModalPageIndexChanged($event)"
-                    (nzPageSizeChange)="onAddUserTagModalPageSizeChanged($event)">
-                </nz-pagination>
-            </nz-list-footer>
-        </ul>
-    </ng-container>
+<nz-modal
+  [(nzVisible)]="isAddUserCanMangeUserImageModalVisible"
+  nzTitle="Add user"
+  [nzOkDisabled]="!addUserCanMangeUserImageUser"
+  (nzOnOk)="onUserCanManageUserImageAddUserModalOk()"
+  (nzOnCancel)="onUserCanManageUserImageAddUserModalCancel()"
+>
+  <ng-container *nzModalContent>
+    <app-user-search-box
+      (userSelected)="onUserCanManageUserImageAddUserModalUserSelected($event)"
+    >
+    </app-user-search-box>
+    <label
+      style="margin-top: 8px"
+      nz-checkbox
+      [(ngModel)]="addUserCanMangeUserImageCanEdit"
+      >Can edit image?</label
+    >
+  </ng-container>
 </nz-modal>
 
-<nz-modal [(nzVisible)]="isAddUserCanMangeUserImageModalVisible" nzTitle="Add user"
-    [nzOkDisabled]="!addUserCanMangeUserImageUser" (nzOnOk)="onUserCanManageUserImageAddUserModalOk()"
-    (nzOnCancel)="onUserCanManageUserImageAddUserModalCancel()">
-    <ng-container *nzModalContent>
-        <app-user-search-box (userSelected)="onUserCanManageUserImageAddUserModalUserSelected($event)">
-        </app-user-search-box>
-        <label style="margin-top: 8px;" nz-checkbox [(ngModel)]="addUserCanMangeUserImageCanEdit">Can edit
-            image?</label>
-    </ng-container>
-</nz-modal>
-
-<nz-modal [(nzVisible)]="isAddUserCanVerifyUserImageModalVisible" nzTitle="Add user"
-    [nzOkDisabled]="!addUserCanVerifyUserImageUser" (nzOnOk)="onUserCanVerifyUserImageAddUserModalOk()"
-    (nzOnCancel)="onUserCanVerifyUserImageAddUserModalCancel()">
-    <ng-container *nzModalContent>
-        <app-user-search-box (userSelected)="onUserCanVerifyUserImageAddUserModalUserSelected($event)">
-        </app-user-search-box>
-    </ng-container>
+<nz-modal
+  [(nzVisible)]="isAddUserCanVerifyUserImageModalVisible"
+  nzTitle="Add user"
+  [nzOkDisabled]="!addUserCanVerifyUserImageUser"
+  (nzOnOk)="onUserCanVerifyUserImageAddUserModalOk()"
+  (nzOnCancel)="onUserCanVerifyUserImageAddUserModalCancel()"
+>
+  <ng-container *nzModalContent>
+    <app-user-search-box
+      (userSelected)="onUserCanVerifyUserImageAddUserModalUserSelected($event)"
+    >
+    </app-user-search-box>
+  </ng-container>
 </nz-modal>

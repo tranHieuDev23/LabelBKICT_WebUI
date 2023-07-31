@@ -11,18 +11,11 @@ export class PinnedPageManagementService {
     private readonly screenshotService: ScreenshotService
   ) {}
 
-  public async createPinnedPage(
-    url: string,
-    description: string
-  ): Promise<PinnedPage> {
+  public async createPinnedPage(url: string, description: string): Promise<PinnedPage> {
     url = url.trim();
     description = description.trim();
     const screenshotData = await this.screenshotService.getScreenshot();
-    return await this.pinnedPagesService.createPinnedPage(
-      url,
-      description,
-      screenshotData
-    );
+    return await this.pinnedPagesService.createPinnedPage(url, description, screenshotData);
   }
 
   public async getPinnedPageList(
@@ -32,10 +25,7 @@ export class PinnedPageManagementService {
     return await this.pinnedPagesService.getPinnedPageList(offset, limit);
   }
 
-  public async updatePinnedPage(
-    id: number,
-    description: string | undefined
-  ): Promise<PinnedPage> {
+  public async updatePinnedPage(id: number, description: string | undefined): Promise<PinnedPage> {
     description = description?.trim();
     return await this.pinnedPagesService.updatePinnedPage(id, description);
   }

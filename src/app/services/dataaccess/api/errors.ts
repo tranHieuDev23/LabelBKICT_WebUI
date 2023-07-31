@@ -6,9 +6,7 @@ export class UnauthenticatedError extends Error {
 
 export class UnauthorizedError extends Error {
   constructor() {
-    super(
-      'User does not have the required permission to perform the operation'
-    );
+    super('User does not have the required permission to perform the operation');
   }
 }
 

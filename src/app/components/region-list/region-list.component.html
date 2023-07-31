@@ -1,0 +1,36 @@
+<nz-table
+  #regionListTable
+  [nzData]="regionListDataList"
+  nzTableLayout="auto"
+  [nzPageSize]="5"
+>
+  <thead>
+    <tr>
+      <th
+        [(nzChecked)]="allRowsChecked"
+        (nzCheckedChange)="onAllRowsCheckedChange()"
+        nzAlign="center"
+      ></th>
+      <th
+        *ngFor="let column of columnList"
+        nzAlign="center"
+        [nzSortOrder]="column.sortDirection"
+        [nzSortFn]="column.sortFunc"
+      >
+        {{ column.name }}
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let data of regionListTable.data" nzAlign="center">
+      <td
+        [(nzChecked)]="data.checked"
+        (nzCheckedChange)="onRowCheckedChange()"
+      ></td>
+      <td><img class="region-image" [src]="data.image" /></td>
+      <td>{{ data.region.drawnByUser?.displayName || "System" }}</td>
+      <td>{{ data.region.labeledByUser?.displayName || "System" }}</td>
+      <td>{{ data.region.label?.displayName || "Not labeled" }}</td>
+    </tr>
+  </tbody>
+</nz-table>

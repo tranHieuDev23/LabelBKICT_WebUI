@@ -1,11 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  AbstractControl,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { UserListFilterOptionsWithMetadata } from 'src/app/components/user-filter-options-selector/user-filter-options-selector.component';
@@ -32,10 +26,7 @@ import {
   UserTagListSortOrder,
 } from 'src/app/services/dataaccess/api';
 import { SessionManagementService } from 'src/app/services/module/session-management';
-import {
-  FilterOptionsService,
-  UserManagementService,
-} from 'src/app/services/module/user-management';
+import { FilterOptionsService, UserManagementService } from 'src/app/services/module/user-management';
 import { UserRoleManagementService } from 'src/app/services/module/user-role-management';
 import { UserTagManagementService } from 'src/app/services/module/user-tag-management';
 import { ConfirmedValidator } from 'src/app/services/utils/confirmed-validator/confirmed-validator';
@@ -78,8 +69,7 @@ export class ManageUsersComponent implements OnInit {
 
   public pageIndex: number = DEFAULT_USER_LIST_PAGE_INDEX;
   public pageSize: number = DEFAULT_USER_LIST_PAGE_SIZE;
-  public filterOptions: UserListFilterOptionsWithMetadata =
-    this.getDefaultUserListFilterOptions();
+  public filterOptions: UserListFilterOptionsWithMetadata = this.getDefaultUserListFilterOptions();
   public sortOrder: UserListSortOrder = DEFAULT_SORT_ORDER;
   public totalUserCount: number = 0;
   public userList: User[] = [];
@@ -94,10 +84,8 @@ export class ManageUsersComponent implements OnInit {
   public editUserModalUserID: number = 0;
   public editUserModalFormGroup: UntypedFormGroup;
 
-  public editUserUserCanManageUserImagePageIndex =
-    DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_INDEX;
-  public editUserUserCanManageUserImagePageSize =
-    DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_SIZE;
+  public editUserUserCanManageUserImagePageIndex = DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_INDEX;
+  public editUserUserCanManageUserImagePageSize = DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_SIZE;
   public editUserUserCanManageUserImageCount = 0;
   public editUserUserCanManageUserImageList: UserCanManageUserImage[] = [];
 
@@ -105,10 +93,8 @@ export class ManageUsersComponent implements OnInit {
   public addUserCanMangeUserImageUser: User | undefined;
   public addUserCanMangeUserImageCanEdit = false;
 
-  public editUserUserCanVerifyUserImagePageIndex =
-    DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_INDEX;
-  public editUserUserCanVerifyUserImagePageSize =
-    DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_SIZE;
+  public editUserUserCanVerifyUserImagePageIndex = DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_INDEX;
+  public editUserUserCanVerifyUserImagePageSize = DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_SIZE;
   public editUserUserCanVerifyUserImageCount = 0;
   public editUserUserCanVerifyUserImageList: UserCanVerifyUserImage[] = [];
 
@@ -141,8 +127,7 @@ export class ManageUsersComponent implements OnInit {
   public addUserRoleModalPageIndex: number = 0;
   public addUserRoleModalPageSize: number = 10;
   public addUserRoleModalTotalUserRoleCount: number = 0;
-  public addUserRoleModalSortOrder: UserRoleListSortOrder =
-    UserRoleListSortOrder.ID_ASCENDING;
+  public addUserRoleModalSortOrder: UserRoleListSortOrder = UserRoleListSortOrder.ID_ASCENDING;
   public addUserRoleModalUserRoleList: UserRole[] = [];
 
   public isAddUserTagModalVisible: boolean = false;
@@ -171,8 +156,7 @@ export class ManageUsersComponent implements OnInit {
   public addUserTagModalPageIndex: number = 0;
   public addUserTagModalPageSize: number = 10;
   public addUserTagModalTotalUserTagCount: number = 0;
-  public addUserTagModalSortOrder: UserTagListSortOrder =
-    UserTagListSortOrder.ID_ASCENDING;
+  public addUserTagModalSortOrder: UserTagListSortOrder = UserTagListSortOrder.ID_ASCENDING;
   public addUserTagModalUserTagList: UserTag[] = [];
 
   private getDefaultUserListFilterOptions(): UserListFilterOptionsWithMetadata {
@@ -259,10 +243,7 @@ export class ManageUsersComponent implements OnInit {
           console.error(error);
         }
       );
-      const offset = this.paginationService.getPageOffset(
-        DEFAULT_PAGE_INDEX,
-        DEFAULT_PAGE_SIZE
-      );
+      const offset = this.paginationService.getPageOffset(DEFAULT_PAGE_INDEX, DEFAULT_PAGE_SIZE);
     });
   }
 
@@ -283,33 +264,24 @@ export class ManageUsersComponent implements OnInit {
       this.sortOrder = DEFAULT_SORT_ORDER;
     }
     if (params['filter'] !== undefined) {
-      this.filterOptions = this.jsonCompressService.decompress(
-        params['filter']
-      );
+      this.filterOptions = this.jsonCompressService.decompress(params['filter']);
     } else {
       this.filterOptions = this.getDefaultUserListFilterOptions();
     }
   }
 
   private async loadPageUserList(): Promise<void> {
-    const offset = this.paginationService.getPageOffset(
-      this.pageIndex,
-      this.pageSize
-    );
-    const filterOptions =
-      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
-        this.filterOptions
-      );
+    const offset = this.paginationService.getPageOffset(this.pageIndex, this.pageSize);
+    const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     try {
-      const { totalUserCount, userList, userRoleList, userTagList } =
-        await this.userManagementService.getUserList(
-          offset,
-          this.pageSize,
-          this.sortOrder,
-          true,
-          true,
-          filterOptions
-        );
+      const { totalUserCount, userList, userRoleList, userTagList } = await this.userManagementService.getUserList(
+        offset,
+        this.pageSize,
+        this.sortOrder,
+        true,
+        true,
+        filterOptions
+      );
       this.totalUserCount = totalUserCount;
       this.userList = userList;
       this.userRoleList = userRoleList || [];
@@ -319,15 +291,8 @@ export class ManageUsersComponent implements OnInit {
     }
   }
 
-  public onUserListFilterOptionsUpdated(
-    filterOptions: UserListFilterOptionsWithMetadata
-  ): void {
-    this.navigateToPage(
-      this.pageIndex,
-      this.pageSize,
-      this.sortOrder,
-      filterOptions
-    );
+  public onUserListFilterOptionsUpdated(filterOptions: UserListFilterOptionsWithMetadata): void {
+    this.navigateToPage(this.pageIndex, this.pageSize, this.sortOrder, filterOptions);
   }
 
   public getUserRoleListString(userRoleList: UserRole[]): string {
@@ -338,30 +303,15 @@ export class ManageUsersComponent implements OnInit {
   }
 
   public onSortOrderChanged(newSortOrder: UserListSortOrder): void {
-    this.navigateToPage(
-      this.pageIndex,
-      this.pageSize,
-      newSortOrder,
-      this.filterOptions
-    );
+    this.navigateToPage(this.pageIndex, this.pageSize, newSortOrder, this.filterOptions);
   }
 
   public onPageIndexChanged(newPageIndex: number): void {
-    this.navigateToPage(
-      newPageIndex,
-      this.pageSize,
-      this.sortOrder,
-      this.filterOptions
-    );
+    this.navigateToPage(newPageIndex, this.pageSize, this.sortOrder, this.filterOptions);
   }
 
   public onPageSizeChanged(newPageSize: number): void {
-    this.navigateToPage(
-      this.pageIndex,
-      newPageSize,
-      this.sortOrder,
-      this.filterOptions
-    );
+    this.navigateToPage(this.pageIndex, newPageSize, this.sortOrder, this.filterOptions);
   }
 
   private navigateToPage(
@@ -401,14 +351,9 @@ export class ManageUsersComponent implements OnInit {
   }
 
   public async onCreateNewUserModalOk(): Promise<void> {
-    const { displayName, username, password } =
-      this.createNewUserModalFormGroup.value;
+    const { displayName, username, password } = this.createNewUserModalFormGroup.value;
     try {
-      await this.userManagementService.createUser(
-        username,
-        displayName,
-        password
-      );
+      await this.userManagementService.createUser(username, displayName, password);
     } catch (e) {
       this.handleError('Failed to create new user', e);
       return;
@@ -436,20 +381,14 @@ export class ManageUsersComponent implements OnInit {
   }
 
   public async onEditUserModalSubmitClicked(): Promise<void> {
-    const { displayName, username, password } =
-      this.editUserModalFormGroup.value;
+    const { displayName, username, password } = this.editUserModalFormGroup.value;
     let newPassword: string | undefined = undefined;
     if (password !== '') {
       newPassword = password;
     }
 
     try {
-      await this.userManagementService.updateUser(
-        this.editUserModalUserID,
-        username,
-        displayName,
-        newPassword
-      );
+      await this.userManagementService.updateUser(this.editUserModalUserID, username, displayName, newPassword);
     } catch (e) {
       this.handleError('Failed to remove user role from user', e);
       return;
@@ -460,23 +399,15 @@ export class ManageUsersComponent implements OnInit {
     this.isEditUserModalVisible = false;
   }
 
-  public async onEditUserModalUserRoleListDeleteClicked(
-    userRole: UserRole
-  ): Promise<void> {
+  public async onEditUserModalUserRoleListDeleteClicked(userRole: UserRole): Promise<void> {
     try {
-      await this.userRoleManagementService.removeUserRoleFromUser(
-        this.editUserModalUserID,
-        userRole.id
-      );
+      await this.userRoleManagementService.removeUserRoleFromUser(this.editUserModalUserID, userRole.id);
     } catch (e) {
       this.handleError('Failed to remove user role from user', e);
       return;
     }
 
-    this.notificationService.success(
-      'Successfully remove user role from user',
-      ''
-    );
+    this.notificationService.success('Successfully remove user role from user', '');
     this.userRoleList[this.editUserModalUserListItemIndex] = this.userRoleList[
       this.editUserModalUserListItemIndex
     ].filter((userRoleItem) => userRoleItem.id != userRole.id);
@@ -494,40 +425,30 @@ export class ManageUsersComponent implements OnInit {
     this.isAddUserRoleModalVisible = false;
   }
 
-  public async onAddUserRoleModalSortOrderChanged(
-    newSortOrder: UserRoleListSortOrder
-  ): Promise<void> {
+  public async onAddUserRoleModalSortOrderChanged(newSortOrder: UserRoleListSortOrder): Promise<void> {
     this.addUserRoleModalSortOrder = newSortOrder;
     await this.loadUserRoleList();
   }
 
-  public async onAddUserRoleModalPageIndexChanged(
-    newPageIndex: number
-  ): Promise<void> {
+  public async onAddUserRoleModalPageIndexChanged(newPageIndex: number): Promise<void> {
     this.addUserRoleModalPageIndex = newPageIndex;
     await this.loadUserRoleList();
   }
 
-  public async onAddUserRoleModalPageSizeChanged(
-    newPageSize: number
-  ): Promise<void> {
+  public async onAddUserRoleModalPageSizeChanged(newPageSize: number): Promise<void> {
     this.addUserRoleModalPageSize = newPageSize;
     await this.loadUserRoleList();
   }
 
   private async loadUserRoleList(): Promise<void> {
-    const offset = this.paginationService.getPageOffset(
-      this.addUserRoleModalPageIndex,
-      this.addUserRoleModalPageSize
-    );
+    const offset = this.paginationService.getPageOffset(this.addUserRoleModalPageIndex, this.addUserRoleModalPageSize);
     try {
-      const { totalUserRoleCount, userRoleList } =
-        await this.userRoleManagementService.getUserRoleList(
-          offset,
-          this.addUserRoleModalPageSize,
-          this.addUserRoleModalSortOrder,
-          false
-        );
+      const { totalUserRoleCount, userRoleList } = await this.userRoleManagementService.getUserRoleList(
+        offset,
+        this.addUserRoleModalPageSize,
+        this.addUserRoleModalSortOrder,
+        false
+      );
       this.addUserRoleModalTotalUserRoleCount = totalUserRoleCount;
       this.addUserRoleModalUserRoleList = userRoleList;
     } catch (e) {
@@ -535,22 +456,14 @@ export class ManageUsersComponent implements OnInit {
     }
   }
 
-  public async onAddUserRoleModalItemClicked(
-    userRole: UserRole
-  ): Promise<void> {
+  public async onAddUserRoleModalItemClicked(userRole: UserRole): Promise<void> {
     try {
-      await this.userRoleManagementService.addUserRoleToUser(
-        this.editUserModalUserID,
-        userRole.id
-      );
+      await this.userRoleManagementService.addUserRoleToUser(this.editUserModalUserID, userRole.id);
     } catch (e) {
       this.handleError('Failed to add user role to user', e);
       return;
     }
-    this.notificationService.success(
-      'Successfully added user role to user',
-      ''
-    );
+    this.notificationService.success('Successfully added user role to user', '');
     this.userRoleList[this.editUserModalUserListItemIndex] = [
       ...this.userRoleList[this.editUserModalUserListItemIndex],
       userRole,
@@ -558,23 +471,15 @@ export class ManageUsersComponent implements OnInit {
     this.isAddUserRoleModalVisible = false;
   }
 
-  public async onEditUserModalUserTagListDeleteClicked(
-    userTag: UserTag
-  ): Promise<void> {
+  public async onEditUserModalUserTagListDeleteClicked(userTag: UserTag): Promise<void> {
     try {
-      await this.userTagManagementService.removeUserTagFromUser(
-        this.editUserModalUserID,
-        userTag.id
-      );
+      await this.userTagManagementService.removeUserTagFromUser(this.editUserModalUserID, userTag.id);
     } catch (e) {
       this.handleError('Failed to remove user tag from user', e);
       return;
     }
 
-    this.notificationService.success(
-      'Successfully remove user tag from user',
-      ''
-    );
+    this.notificationService.success('Successfully remove user tag from user', '');
     this.userTagList[this.editUserModalUserListItemIndex] = this.userTagList[
       this.editUserModalUserListItemIndex
     ].filter((userTagItem) => userTagItem.id != userTag.id);
@@ -592,39 +497,29 @@ export class ManageUsersComponent implements OnInit {
     this.isAddUserTagModalVisible = false;
   }
 
-  public async onAddUserTagModalSortOrderChanged(
-    newSortOrder: UserTagListSortOrder
-  ): Promise<void> {
+  public async onAddUserTagModalSortOrderChanged(newSortOrder: UserTagListSortOrder): Promise<void> {
     this.addUserTagModalSortOrder = newSortOrder;
     await this.loadUserTagList();
   }
 
-  public async onAddUserTagModalPageIndexChanged(
-    newPageIndex: number
-  ): Promise<void> {
+  public async onAddUserTagModalPageIndexChanged(newPageIndex: number): Promise<void> {
     this.addUserTagModalPageIndex = newPageIndex;
     await this.loadUserTagList();
   }
 
-  public async onAddUserTagModalPageSizeChanged(
-    newPageSize: number
-  ): Promise<void> {
+  public async onAddUserTagModalPageSizeChanged(newPageSize: number): Promise<void> {
     this.addUserTagModalPageSize = newPageSize;
     await this.loadUserTagList();
   }
 
   private async loadUserTagList(): Promise<void> {
-    const offset = this.paginationService.getPageOffset(
-      this.addUserTagModalPageIndex,
-      this.addUserTagModalPageSize
-    );
+    const offset = this.paginationService.getPageOffset(this.addUserTagModalPageIndex, this.addUserTagModalPageSize);
     try {
-      const { totalUserTagCount, userTagList } =
-        await this.userTagManagementService.getUserTagList(
-          offset,
-          this.addUserTagModalPageSize,
-          this.addUserTagModalSortOrder
-        );
+      const { totalUserTagCount, userTagList } = await this.userTagManagementService.getUserTagList(
+        offset,
+        this.addUserTagModalPageSize,
+        this.addUserTagModalSortOrder
+      );
       this.addUserTagModalTotalUserTagCount = totalUserTagCount;
       this.addUserTagModalUserTagList = userTagList;
     } catch (e) {
@@ -634,10 +529,7 @@ export class ManageUsersComponent implements OnInit {
 
   public async onAddUserTagModalItemClicked(userTag: UserTag): Promise<void> {
     try {
-      await this.userTagManagementService.addUserTagToUser(
-        this.editUserModalUserID,
-        userTag.id
-      );
+      await this.userTagManagementService.addUserTagToUser(this.editUserModalUserID, userTag.id);
     } catch (e) {
       this.handleError('Failed to add user tag to user', e);
       return;
@@ -650,22 +542,16 @@ export class ManageUsersComponent implements OnInit {
     this.isAddUserTagModalVisible = false;
   }
 
-  public async onManageUserPermissionPanelActiveChange(
-    isActive: boolean
-  ): Promise<void> {
+  public async onManageUserPermissionPanelActiveChange(isActive: boolean): Promise<void> {
     if (!isActive) {
       return;
     }
-    this.editUserUserCanManageUserImagePageIndex =
-      DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_INDEX;
-    this.editUserUserCanManageUserImagePageSize =
-      DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_SIZE;
+    this.editUserUserCanManageUserImagePageIndex = DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_INDEX;
+    this.editUserUserCanManageUserImagePageSize = DEFAULT_USER_CAN_MANAGE_USER_IMAGE_LIST_PAGE_SIZE;
     await this.loadUserCanManageUserImageList();
   }
 
-  public async onUserCanManageUserImagePageIndexChanged(
-    newPageIndex: number
-  ): Promise<void> {
+  public async onUserCanManageUserImagePageIndexChanged(newPageIndex: number): Promise<void> {
     this.editUserUserCanManageUserImagePageIndex = newPageIndex;
     await this.loadUserCanManageUserImageList();
   }
@@ -676,12 +562,11 @@ export class ManageUsersComponent implements OnInit {
       this.editUserUserCanManageUserImagePageSize
     );
     try {
-      const { totalUserCount, userList } =
-        await this.userManagementService.getUserCanManageUserImageListOfUser(
-          this.editUserModalUserID,
-          offset,
-          this.editUserUserCanManageUserImagePageSize
-        );
+      const { totalUserCount, userList } = await this.userManagementService.getUserCanManageUserImageListOfUser(
+        this.editUserModalUserID,
+        offset,
+        this.editUserUserCanManageUserImagePageSize
+      );
       this.editUserUserCanManageUserImageCount = totalUserCount;
       this.editUserUserCanManageUserImageList = userList;
     } catch (e) {
@@ -703,16 +588,11 @@ export class ManageUsersComponent implements OnInit {
       this.handleError('Failed to update user can manage image relation', e);
       return;
     }
-    this.notificationService.success(
-      'Updated user can manage image relation successfully',
-      ''
-    );
+    this.notificationService.success('Updated user can manage image relation successfully', '');
     this.loadUserCanManageUserImageList();
   }
 
-  public async onDeleteUserCanManageUserImageClicked(
-    userCanManageUserImage: UserCanManageUserImage
-  ): Promise<void> {
+  public async onDeleteUserCanManageUserImageClicked(userCanManageUserImage: UserCanManageUserImage): Promise<void> {
     try {
       await this.userManagementService.deleteUserCanManageUserImage(
         this.editUserModalUserID,
@@ -722,10 +602,7 @@ export class ManageUsersComponent implements OnInit {
       this.handleError('Failed to remove user from the list', e);
       return;
     }
-    this.notificationService.success(
-      'Removed user from the list successfully',
-      ''
-    );
+    this.notificationService.success('Removed user from the list successfully', '');
     this.loadUserCanManageUserImageList();
   }
 
@@ -735,9 +612,7 @@ export class ManageUsersComponent implements OnInit {
     this.isAddUserCanMangeUserImageModalVisible = true;
   }
 
-  public onUserCanManageUserImageAddUserModalUserSelected(
-    user: User | undefined
-  ): void {
+  public onUserCanManageUserImageAddUserModalUserSelected(user: User | undefined): void {
     this.addUserCanMangeUserImageUser = user;
   }
 
@@ -765,22 +640,16 @@ export class ManageUsersComponent implements OnInit {
     this.isAddUserCanMangeUserImageModalVisible = false;
   }
 
-  public async onVerifyUserPermissionPanelActiveChange(
-    isActive: boolean
-  ): Promise<void> {
+  public async onVerifyUserPermissionPanelActiveChange(isActive: boolean): Promise<void> {
     if (!isActive) {
       return;
     }
-    this.editUserUserCanVerifyUserImagePageIndex =
-      DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_INDEX;
-    this.editUserUserCanVerifyUserImagePageSize =
-      DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_SIZE;
+    this.editUserUserCanVerifyUserImagePageIndex = DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_INDEX;
+    this.editUserUserCanVerifyUserImagePageSize = DEFAULT_USER_CAN_VERIFY_USER_IMAGE_LIST_PAGE_SIZE;
     await this.loadUserCanVerifyUserImageList();
   }
 
-  public async onUserCanVerifyUserImagePageIndexChanged(
-    newPageIndex: number
-  ): Promise<void> {
+  public async onUserCanVerifyUserImagePageIndexChanged(newPageIndex: number): Promise<void> {
     this.editUserUserCanVerifyUserImagePageIndex = newPageIndex;
     await this.loadUserCanVerifyUserImageList();
   }
@@ -791,12 +660,11 @@ export class ManageUsersComponent implements OnInit {
       this.editUserUserCanVerifyUserImagePageSize
     );
     try {
-      const { totalUserCount, userList } =
-        await this.userManagementService.getUserCanVerifyUserImageListOfUser(
-          this.editUserModalUserID,
-          offset,
-          this.editUserUserCanVerifyUserImagePageSize
-        );
+      const { totalUserCount, userList } = await this.userManagementService.getUserCanVerifyUserImageListOfUser(
+        this.editUserModalUserID,
+        offset,
+        this.editUserUserCanVerifyUserImagePageSize
+      );
       this.editUserUserCanVerifyUserImageCount = totalUserCount;
       this.editUserUserCanVerifyUserImageList = userList;
     } catch (e) {
@@ -804,9 +672,7 @@ export class ManageUsersComponent implements OnInit {
     }
   }
 
-  public async onDeleteUserCanVerifyUserImageClicked(
-    userCanVerifyUserImage: UserCanVerifyUserImage
-  ): Promise<void> {
+  public async onDeleteUserCanVerifyUserImageClicked(userCanVerifyUserImage: UserCanVerifyUserImage): Promise<void> {
     try {
       await this.userManagementService.deleteUserCanVerifyUserImage(
         this.editUserModalUserID,
@@ -816,10 +682,7 @@ export class ManageUsersComponent implements OnInit {
       this.handleError('Failed to remove user from the list', e);
       return;
     }
-    this.notificationService.success(
-      'Removed user from the list successfully',
-      ''
-    );
+    this.notificationService.success('Removed user from the list successfully', '');
     this.loadUserCanVerifyUserImageList();
   }
 
@@ -828,9 +691,7 @@ export class ManageUsersComponent implements OnInit {
     this.isAddUserCanVerifyUserImageModalVisible = true;
   }
 
-  public onUserCanVerifyUserImageAddUserModalUserSelected(
-    user: User | undefined
-  ): void {
+  public onUserCanVerifyUserImageAddUserModalUserSelected(user: User | undefined): void {
     this.addUserCanVerifyUserImageUser = user;
   }
 
@@ -841,10 +702,7 @@ export class ManageUsersComponent implements OnInit {
     const imageOfUserID = this.addUserCanVerifyUserImageUser.id;
     this.isAddUserCanVerifyUserImageModalVisible = false;
     try {
-      await this.userManagementService.createUserCanVerifyUserImage(
-        this.editUserModalUserID,
-        imageOfUserID
-      );
+      await this.userManagementService.createUserCanVerifyUserImage(this.editUserModalUserID, imageOfUserID);
     } catch (e) {
       this.handleError('Failed to add user to the list', e);
       return;
@@ -859,63 +717,39 @@ export class ManageUsersComponent implements OnInit {
 
   private handleError(notificationTitle: string, e: any) {
     if (e instanceof InvalidUserListArgumentError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Invalid user list arguments'
-      );
+      this.notificationService.error(notificationTitle, 'Invalid user list arguments');
       this.router.navigateByUrl('/welcome');
       return;
     }
     if (e instanceof InvalidUserRoleListArgument) {
-      this.notificationService.error(
-        notificationTitle,
-        'Invalid user role list arguments'
-      );
+      this.notificationService.error(notificationTitle, 'Invalid user role list arguments');
       this.router.navigateByUrl('/welcome');
       return;
     }
     if (e instanceof UnauthenticatedError) {
-      this.notificationService.error(
-        notificationTitle,
-        'User is not logged in'
-      );
+      this.notificationService.error(notificationTitle, 'User is not logged in');
       this.router.navigateByUrl('/login');
       return;
     }
     if (e instanceof UnauthorizedError) {
-      this.notificationService.error(
-        notificationTitle,
-        'User does not have the required permission'
-      );
+      this.notificationService.error(notificationTitle, 'User does not have the required permission');
       this.router.navigateByUrl('/welcome');
       return;
     }
     if (e instanceof InvalidUserInformationError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Invalid user information'
-      );
+      this.notificationService.error(notificationTitle, 'Invalid user information');
       return;
     }
     if (e instanceof UserOrUserRoleNotFoundError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Cannot find user or user role'
-      );
+      this.notificationService.error(notificationTitle, 'Cannot find user or user role');
       return;
     }
     if (e instanceof UserAlreadyHasUserRoleError) {
-      this.notificationService.error(
-        notificationTitle,
-        'User already has user role'
-      );
+      this.notificationService.error(notificationTitle, 'User already has user role');
       return;
     }
     if (e instanceof UserDoesNotHaveUserRoleError) {
-      this.notificationService.error(
-        notificationTitle,
-        'User does not have user role'
-      );
+      this.notificationService.error(notificationTitle, 'User does not have user role');
       return;
     }
     if (e instanceof UserNotFoundError) {
@@ -923,24 +757,15 @@ export class ManageUsersComponent implements OnInit {
       return;
     }
     if (e instanceof SameUserError) {
-      this.notificationService.error(
-        notificationTitle,
-        'Trying to add a user to their own list'
-      );
+      this.notificationService.error(notificationTitle, 'Trying to add a user to their own list');
       return;
     }
     if (e instanceof UserAlreadyInListError) {
-      this.notificationService.error(
-        notificationTitle,
-        'User is already in the list'
-      );
+      this.notificationService.error(notificationTitle, 'User is already in the list');
       return;
     }
     if (e instanceof UserNotInListError) {
-      this.notificationService.error(
-        notificationTitle,
-        'User is not in the list'
-      );
+      this.notificationService.error(notificationTitle, 'User is not in the list');
       return;
     }
     this.notificationService.error(notificationTitle, 'Unknown error');

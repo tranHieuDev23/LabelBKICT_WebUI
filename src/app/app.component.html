@@ -6,17 +6,31 @@
         <h1>{{ appTitle }}</h1>
       </a>
 
-      <li *ngFor="let menuItem of menuItemList" nz-submenu [nzTitle]="menuItem.title| emptyStringOnMobile"
-        [nzIcon]="menuItem.icon" class="header-item">
+      <li
+        *ngFor="let menuItem of menuItemList"
+        nz-submenu
+        [nzTitle]="menuItem.title | emptyStringOnMobile"
+        [nzIcon]="menuItem.icon"
+        class="header-item"
+      >
         <ul>
-          <li *ngFor="let submenuItem of menuItem.submenuItemList" nz-menu-item (click)="submenuItem.onClick()">
+          <li
+            *ngFor="let submenuItem of menuItem.submenuItemList"
+            nz-menu-item
+            (click)="submenuItem.onClick()"
+          >
             <a [routerLink]="submenuItem.url">{{ submenuItem.title }}</a>
           </li>
         </ul>
       </li>
 
-      <li *ngIf="isUserLoggedIn" nz-menu-item class="header-item header-pin" nz-popover
-        [nzPopoverContent]="pinPageContent">
+      <li
+        *ngIf="isUserLoggedIn"
+        nz-menu-item
+        class="header-item header-pin"
+        nz-popover
+        [nzPopoverContent]="pinPageContent"
+      >
         <i nz-icon nzType="pushpin" nzTheme="outline"></i>
         {{ "Pin this page" | emptyStringOnMobile }}
       </li>
@@ -29,10 +43,20 @@
     </nz-content>
 
     <nz-footer>
-      {{ appTitle }} ©2022 by <a target="blank" href="https://github.com/tranHieuDev23">tranHieuDev23</a> <br />
-      Icon <img src="/assets/image/favicon-16x16.png" alt="Doctor Icon" /> made by <a href="https://www.freepik.com"
-        title="Freepik" target="blank">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"
-        target="blank">www.flaticon.com</a>
+      {{ appTitle }} ©2022 by
+      <a target="blank" href="https://github.com/tranHieuDev23"
+        >tranHieuDev23</a
+      >
+      <br />
+      Icon <img src="/assets/image/favicon-16x16.png" alt="Doctor Icon" /> made
+      by
+      <a href="https://www.freepik.com" title="Freepik" target="blank"
+        >Freepik</a
+      >
+      from
+      <a href="https://www.flaticon.com/" title="Flaticon" target="blank"
+        >www.flaticon.com</a
+      >
     </nz-footer>
   </nz-layout>
 </nz-layout>
@@ -41,11 +65,22 @@
 <ng-template #pinPageContent>
   <p>Pin this page and come back to continue your work later</p>
   <p>
-    <input nz-input placeholder="Description" [disabled]="isPinningPage" [(ngModel)]="pinPageDescription"
-      (keydown.enter)="onPinThisPageClicked()" />
+    <input
+      nz-input
+      placeholder="Description"
+      [disabled]="isPinningPage"
+      [(ngModel)]="pinPageDescription"
+      (keydown.enter)="onPinThisPageClicked()"
+    />
   </p>
-  <button nz-button type="button" nzType="primary" [disabled]="isPinningPage" [nzLoading]="isPinningPage"
-    (click)="onPinThisPageClicked()">
+  <button
+    nz-button
+    type="button"
+    nzType="primary"
+    [disabled]="isPinningPage"
+    [nzLoading]="isPinningPage"
+    (click)="onPinThisPageClicked()"
+  >
     <i nz-icon nzType="pushpin" nzTheme="outline"></i> Pin this page
   </button>
 </ng-template>

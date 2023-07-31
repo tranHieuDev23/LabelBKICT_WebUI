@@ -1,10 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import {
-  ImageFilterOptionsSelectorConfig,
-  ImageListFilterOptionsWithMetadata,
-} from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
+import { ImageFilterOptionsSelectorConfig } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
 import {
   ImageListSortOption,
   User,
@@ -14,11 +11,9 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
   ImageStatus,
+  ImageListFilterOptionsWithMetadata,
 } from 'src/app/services/dataaccess/api';
-import {
-  ImageListManagementService,
-  FilterOptionsService,
-} from 'src/app/services/module/image-list-management';
+import { ImageListManagementService, FilterOptionsService } from 'src/app/services/module/image-list-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
@@ -36,8 +31,7 @@ const MAX_SEARCH_USER_RESULT = 10;
 export class VerifyImagesComponent implements OnInit {
   public pageIndex: number = DEFAULT_PAGE_INDEX;
   public pageSize: number = DEFAULT_PAGE_SIZE;
-  public filterOptions: ImageListFilterOptionsWithMetadata =
-    this.getDefaultImageListFilterOptions();
+  public filterOptions: ImageListFilterOptionsWithMetadata = this.getDefaultImageListFilterOptions();
   public imageListSortOption = DEFAULT_SORT_OPTION;
 
   public uploadedByUserOptionList: User[] = [];
@@ -51,15 +45,11 @@ export class VerifyImagesComponent implements OnInit {
   public imageTagList: ImageTag[][] = [];
   public isLoadingImageList: boolean = false;
 
-  public imageListFilterOptionsSelectorConfig =
-    new ImageFilterOptionsSelectorConfig();
+  public imageListFilterOptionsSelectorConfig = new ImageFilterOptionsSelectorConfig();
 
   private getDefaultImageListFilterOptions(): ImageListFilterOptionsWithMetadata {
     const filterOptions = new ImageListFilterOptionsWithMetadata();
-    filterOptions.imageStatusList = [
-      ImageStatus.PUBLISHED,
-      ImageStatus.VERIFIED,
-    ];
+    filterOptions.imageStatusList = [ImageStatus.PUBLISHED, ImageStatus.VERIFIED];
     return filterOptions;
   }
 
@@ -102,21 +92,12 @@ export class VerifyImagesComponent implements OnInit {
       this.imageListSortOption = DEFAULT_SORT_OPTION;
     }
     if (queryParams['filter'] !== undefined) {
-      this.filterOptions = this.jsonCompressService.decompress(
-        queryParams['filter']
-      );
-      this.filterOptions.imageStatusList =
-        this.filterOptions.imageStatusList.filter((imageStatus) => {
-          return (
-            imageStatus === ImageStatus.PUBLISHED ||
-            imageStatus === ImageStatus.VERIFIED
-          );
-        });
+      this.filterOptions = this.jsonCompressService.decompress(queryParams['filter']);
+      this.filterOptions.imageStatusList = this.filterOptions.imageStatusList.filter((imageStatus) => {
+        return imageStatus === ImageStatus.PUBLISHED || imageStatus === ImageStatus.VERIFIED;
+      });
       if (this.filterOptions.imageStatusList.length === 0) {
-        this.filterOptions.imageStatusList = [
-          ImageStatus.PUBLISHED,
-          ImageStatus.VERIFIED,
-        ];
+        this.filterOptions.imageStatusList = [ImageStatus.PUBLISHED, ImageStatus.VERIFIED];
       }
     } else {
       this.filterOptions = this.getDefaultImageListFilterOptions();
@@ -125,14 +106,8 @@ export class VerifyImagesComponent implements OnInit {
 
   private async getImageListFromPaginationInfo(): Promise<void> {
     this.isLoadingImageList = true;
-    const offset = this.paginationService.getPageOffset(
-      this.pageIndex,
-      this.pageSize
-    );
-    const filterOptions =
-      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
-        this.filterOptions
-      );
+    const offset = this.paginationService.getPageOffset(this.pageIndex, this.pageSize);
+    const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     try {
       const { totalImageCount, imageList, imageTagList } =
         await this.imageListManagementService.getUserVerifiableImageList(
@@ -148,28 +123,16 @@ export class VerifyImagesComponent implements OnInit {
       this.toImageIndex = offset + imageList.length;
     } catch (e) {
       if (e instanceof InvalidImageListFilterOptionsError) {
-        this.notificationService.error(
-          'Failed to get image list',
-          'Invalid image filter options'
-        );
+        this.notificationService.error('Failed to get image list', 'Invalid image filter options');
         this.router.navigateByUrl('/welcome');
       } else if (e instanceof UnauthenticatedError) {
-        this.notificationService.error(
-          'Failed to get image list',
-          'User is not logged in'
-        );
+        this.notificationService.error('Failed to get image list', 'User is not logged in');
         this.router.navigateByUrl('/login');
       } else if (e instanceof UnauthorizedError) {
-        this.notificationService.error(
-          'Failed to get image list',
-          'User does not have the required permission'
-        );
+        this.notificationService.error('Failed to get image list', 'User does not have the required permission');
         this.router.navigateByUrl('/welcome');
       } else {
-        this.notificationService.error(
-          'Failed to get image list',
-          'Unknown error'
-        );
+        this.notificationService.error('Failed to get image list', 'Unknown error');
       }
     } finally {
       this.isLoadingImageList = false;
@@ -181,11 +144,10 @@ export class VerifyImagesComponent implements OnInit {
     if (query === '') {
       this.uploadedByUserOptionList = [];
     } else {
-      this.uploadedByUserOptionList =
-        await this.imageListManagementService.searchUserVerifiableImageUserList(
-          query,
-          MAX_SEARCH_USER_RESULT
-        );
+      this.uploadedByUserOptionList = await this.imageListManagementService.searchUserVerifiableImageUserList(
+        query,
+        MAX_SEARCH_USER_RESULT
+      );
     }
   }
 
@@ -194,11 +156,7 @@ export class VerifyImagesComponent implements OnInit {
     if (query === '') {
       this.publishedByUserOptionList = [];
     } else {
-      this.publishedByUserOptionList =
-        await this.userManagementService.searchUserList(
-          query,
-          MAX_SEARCH_USER_RESULT
-        );
+      this.publishedByUserOptionList = await this.userManagementService.searchUserList(query, MAX_SEARCH_USER_RESULT);
     }
   }
 
@@ -207,50 +165,24 @@ export class VerifyImagesComponent implements OnInit {
     if (query === '') {
       this.publishedByUserOptionList = [];
     } else {
-      this.verifiedByUserOptionList =
-        await this.userManagementService.searchUserList(
-          query,
-          MAX_SEARCH_USER_RESULT
-        );
+      this.verifiedByUserOptionList = await this.userManagementService.searchUserList(query, MAX_SEARCH_USER_RESULT);
     }
   }
 
-  public onImageListFilterOptionsUpdated(
-    filterOptions: ImageListFilterOptionsWithMetadata
-  ): void {
-    this.navigateToPage(
-      this.pageIndex,
-      this.pageSize,
-      this.imageListSortOption,
-      filterOptions
-    );
+  public onImageListFilterOptionsUpdated(filterOptions: ImageListFilterOptionsWithMetadata): void {
+    this.navigateToPage(this.pageIndex, this.pageSize, this.imageListSortOption, filterOptions);
   }
 
   public onImageListSortOptionUploaded(sortOption: ImageListSortOption): void {
-    this.navigateToPage(
-      this.pageIndex,
-      this.pageSize,
-      sortOption,
-      this.filterOptions
-    );
+    this.navigateToPage(this.pageIndex, this.pageSize, sortOption, this.filterOptions);
   }
 
   public onPageIndexChanged(newPageIndex: number): void {
-    this.navigateToPage(
-      newPageIndex,
-      this.pageSize,
-      this.imageListSortOption,
-      this.filterOptions
-    );
+    this.navigateToPage(newPageIndex, this.pageSize, this.imageListSortOption, this.filterOptions);
   }
 
   public onPageSizeChanged(newPageSize: number): void {
-    this.navigateToPage(
-      this.pageIndex,
-      newPageSize,
-      this.imageListSortOption,
-      this.filterOptions
-    );
+    this.navigateToPage(this.pageIndex, newPageSize, this.imageListSortOption, this.filterOptions);
   }
 
   private navigateToPage(
@@ -275,10 +207,7 @@ export class VerifyImagesComponent implements OnInit {
 
   public onImageDbClicked(imageIndex: number): void {
     const image = this.imageList[imageIndex];
-    const filterOptions =
-      this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(
-        this.filterOptions
-      );
+    const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     this.router.navigate([`/verify-image/${image.id}`], {
       queryParams: {
         sort: this.imageListSortOption,

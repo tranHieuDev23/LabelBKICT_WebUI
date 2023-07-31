@@ -1,6 +1,15 @@
-<nz-tag *ngFor="let imageTag of imageTagList" class="tag-list-item" [nzMode]="editable? 'closeable' : 'default'"
-    (nzOnClose)="onDeleteImageTag(imageTag)">
-    {{ imageTag.displayName }}
+<nz-tag
+  *ngFor="let imageTag of imageTagList"
+  class="tag-list-item"
+  [nzMode]="editable ? 'closeable' : 'default'"
+  (nzOnClose)="onDeleteImageTag(imageTag)"
+>
+  {{ imageTag.displayName }}
 </nz-tag>
-<app-image-tag-select *ngIf="editable" [allImageTagGroupList]="allImageTagGroupList" [allImageTagList]="allImageTagList"
-    [imageTagList]="imageTagList" (imageTagAdded)="onAddImageTag($event)"></app-image-tag-select>
+<app-image-tag-select
+  *ngIf="editable"
+  [allImageTagGroupList]="allImageTagGroupList"
+  [allImageTagList]="allImageTagList"
+  [imageTagList]="imageTagList"
+  (imageTagAdded)="onAddImageTag($event)"
+></app-image-tag-select>

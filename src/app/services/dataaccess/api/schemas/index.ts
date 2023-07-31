@@ -20,3 +20,5 @@ export * from './pinned_page';
 export * from './user_can_manage_user_image';
 export * from './user_can_verify_user_image';
 export * from './classification_type';
+export * from './detection_task';
+export * from './detection_task_list_sort_option';

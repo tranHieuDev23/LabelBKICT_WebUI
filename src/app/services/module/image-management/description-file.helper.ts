@@ -1,8 +1,5 @@
 import { CsvDescriptionFileParser } from './csv-description-file-parser';
-import {
-  DescriptionFileParser,
-  FilenameWithDescription,
-} from './description-file-parser';
+import { DescriptionFileParser, FilenameWithDescription } from './description-file-parser';
 import { XlsxDescriptionFileParser } from './xlsx-description-file-parser';
 
 export enum DescriptionFileFormat {
@@ -11,15 +8,10 @@ export enum DescriptionFileFormat {
 }
 
 export class DescriptionFileParserInput {
-  constructor(
-    public readonly file: File,
-    public readonly format: DescriptionFileFormat
-  ) {}
+  constructor(public readonly file: File, public readonly format: DescriptionFileFormat) {}
 }
 
-export async function parseDescriptionFile(
-  input: DescriptionFileParserInput
-): Promise<FilenameWithDescription[]> {
+export async function parseDescriptionFile(input: DescriptionFileParserInput): Promise<FilenameWithDescription[]> {
   const { file, format } = input;
   let parser: DescriptionFileParser;
   switch (format) {

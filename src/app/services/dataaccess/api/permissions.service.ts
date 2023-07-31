@@ -1,11 +1,7 @@
 import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
-import {
-  UnauthenticatedError,
-  UnauthorizedError,
-  UnknownAPIError,
-} from './errors';
+import { UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
 import { UserPermission } from './schemas';
 
 export class InvalidUserPermissionInformationError extends Error {
@@ -32,10 +28,7 @@ export class UserPermissionNotFoundError extends Error {
 export class PermissionsService {
   constructor(private readonly axios: Axios) {}
 
-  public async createUserPermission(
-    permissionName: string,
-    description: string
-  ): Promise<UserPermission> {
+  public async createUserPermission(permissionName: string, description: string): Promise<UserPermission> {
     try {
       const response = await this.axios.post('/api/permissions', {
         permission_name: permissionName,

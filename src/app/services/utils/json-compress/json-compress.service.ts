@@ -1,8 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  compressToEncodedURIComponent,
-  decompressFromEncodedURIComponent,
-} from 'lz-string';
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 
 @Injectable({
   providedIn: 'root',

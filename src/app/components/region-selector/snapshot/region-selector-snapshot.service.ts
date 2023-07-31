@@ -27,10 +27,7 @@ export class RegionSelectorSnapshotService {
 
   public storeSnapshot(snapshot: RegionSelectorSnapshot): void {
     if (this.canRedo()) {
-      this.snapshotList = this.snapshotList.slice(
-        0,
-        this.currentSnapshotID + 1
-      );
+      this.snapshotList = this.snapshotList.slice(0, this.currentSnapshotID + 1);
     }
     this.snapshotList.push(snapshot);
     this.currentSnapshotID = this.snapshotList.length - 1;

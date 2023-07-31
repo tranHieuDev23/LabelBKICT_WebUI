@@ -1,10 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  Export,
-  ExportsService,
-  ExportType,
-  ImageListFilterOptions,
-} from '../../dataaccess/api';
+import { Export, ExportsService, ExportType, ImageListFilterOptions } from '../../dataaccess/api';
 
 @Injectable({
   providedIn: 'root',
@@ -12,10 +7,7 @@ import {
 export class ExportManagementService {
   constructor(private readonly exportsService: ExportsService) {}
 
-  public async createExport(
-    type: ExportType,
-    filterOptions: ImageListFilterOptions
-  ): Promise<Export> {
+  public async createExport(type: ExportType, filterOptions: ImageListFilterOptions): Promise<Export> {
     return this.exportsService.createExport(type, filterOptions);
   }
 

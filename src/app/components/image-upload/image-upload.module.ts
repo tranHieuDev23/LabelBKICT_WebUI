@@ -9,6 +9,7 @@ import { NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { EditableTagListModule } from '../editable-tag-list/editable-tag-list.module';
 import { NzNotificationModule } from 'ng-zorro-antd/notification';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 
 @NgModule({
   declarations: [ImageUploadComponent],
@@ -22,6 +23,7 @@ import { NzNotificationModule } from 'ng-zorro-antd/notification';
     FormsModule,
     EditableTagListModule,
     NzNotificationModule,
+    NzCheckboxModule,
   ],
   exports: [ImageUploadComponent],
 })

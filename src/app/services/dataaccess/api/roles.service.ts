@@ -1,11 +1,7 @@
 import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
-import {
-  UnauthenticatedError,
-  UnauthorizedError,
-  UnknownAPIError,
-} from './errors';
+import { UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
 import { UserPermission, UserRole } from './schemas';
 
 export enum UserRoleListSortOrder {
@@ -57,10 +53,7 @@ export class UserRoleDoesNotHaveUserPermissionError extends Error {
 export class RolesService {
   constructor(private readonly axios: Axios) {}
 
-  public async createUserRole(
-    displayName: string,
-    description: string
-  ): Promise<UserRole> {
+  public async createUserRole(displayName: string, description: string): Promise<UserRole> {
     try {
       const response = await this.axios.post('/api/roles', {
         display_name: displayName,
@@ -114,11 +107,8 @@ export class RolesService {
         };
       }
 
-      const userPermissionJSONList = response.data
-        .user_permission_list as any[];
-      const userPermissionList = userPermissionJSONList.map((list) =>
-        list.map(UserPermission.fromJSON)
-      );
+      const userPermissionJSONList = response.data.user_permission_list as any[];
+      const userPermissionList = userPermissionJSONList.map((list) => list.map(UserPermission.fromJSON));
       return { totalUserRoleCount, userRoleList, userPermissionList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -187,10 +177,7 @@ export class RolesService {
     }
   }
 
-  public async addUserPermissionToUserRole(
-    userRoleID: number,
-    userPermissionID: number
-  ): Promise<void> {
+  public async addUserPermissionToUserRole(userRoleID: number, userPermissionID: number): Promise<void> {
     try {
       await this.axios.post(`/api/roles/${userRoleID}/permissions`, {
         user_permission_id: userPermissionID,
@@ -214,14 +201,9 @@ export class RolesService {
     }
   }
 
-  public async removeUserPermissionFromUserRole(
-    userRoleID: number,
-    userPermissionID: number
-  ): Promise<void> {
+  public async removeUserPermissionFromUserRole(userRoleID: number, userPermissionID: number): Promise<void> {
     try {
-      await this.axios.delete(
-        `/api/roles/${userRoleID}/permissions/${userPermissionID}`
-      );
+      await this.axios.delete(`/api/roles/${userRoleID}/permissions/${userPermissionID}`);
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

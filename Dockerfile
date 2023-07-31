@@ -10,7 +10,7 @@ COPY . .
 RUN npm run build
 
 # Deploy stage
-FROM nginx:1.21.6
+FROM nginx:1.25.1
 # Copy source from build to deploy
 COPY --from=build /build/dist/label.bkict.org/ /usr/app
 COPY --from=build /build/deploy/ /etc/nginx/

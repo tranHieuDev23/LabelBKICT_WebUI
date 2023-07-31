@@ -9,14 +9,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 
 @NgModule({
   declarations: [WelcomeComponent],
-  imports: [
-    CommonModule,
-    WelcomeRoutingModule,
-    NzGridModule,
-    NzTypographyModule,
-    NzIconModule,
-    NzButtonModule,
-  ],
+  imports: [CommonModule, WelcomeRoutingModule, NzGridModule, NzTypographyModule, NzIconModule, NzButtonModule],
   exports: [WelcomeComponent],
 })
 export class WelcomeModule {}

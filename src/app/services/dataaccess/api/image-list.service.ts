@@ -2,13 +2,10 @@ import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import axios, { Axios } from 'axios';
 import qs from 'qs';
+import { InvalidImageListFilterOptionsError, UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
 import {
-  InvalidImageListFilterOptionsError,
-  UnauthenticatedError,
-  UnauthorizedError,
-  UnknownAPIError,
-} from './errors';
-import {
+  DetectionTask,
+  DetectionTaskListSortOption,
   Image,
   ImageListFilterOptions,
   ImageListSortOption,
@@ -52,10 +49,7 @@ export class ImageUserSearchArgumentsError extends Error {
 export class ImageListService {
   constructor(private readonly axios: Axios) {}
 
-  public async updateImageListImageType(
-    imageIDList: number[],
-    imageTypeID: number
-  ): Promise<void> {
+  public async updateImageListImageType(imageIDList: number[], imageTypeID: number): Promise<void> {
     try {
       await this.axios.patch('/api/images', {
         image_id_list: imageIDList,
@@ -106,9 +100,49 @@ export class ImageListService {
     }
   }
 
-  public async createImageDetectionTaskList(
-    imageIdList: number[]
-  ): Promise<void> {
+  public async getImageDetectionTaskList(
+    offset: number,
+    limit: number,
+    sortOption: DetectionTaskListSortOption,
+    filterOptions: ImageListFilterOptions
+  ): Promise<{
+    totalDetectionTaskCount: number;
+    detectionTaskList: DetectionTask[];
+  }> {
+    try {
+      const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
+      const response = await this.axios.get(`/api/images/detection-task`, {
+        params: {
+          offset: offset,
+          limit: limit,
+          sort_order: sortOption,
+          ...filterOptionsQueryParams,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
+        },
+      });
+
+      const totalDetectionTaskCount = +response.data.total_detection_task_count;
+      const detectionTaskList = response.data.detection_task_list.map(DetectionTask.fromJSON);
+
+      return { totalDetectionTaskCount, detectionTaskList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async createImageDetectionTaskList(imageIdList: number[]): Promise<void> {
     try {
       await this.axios.post(`/api/images/detection-task`, {
         image_id_list: imageIdList,
@@ -171,8 +205,7 @@ export class ImageListService {
     imageTagList: ImageTag[][];
   }> {
     try {
-      const filterOptionsQueryParams =
-        this.getQueryParamsFromFilterOptions(filterOptions);
+      const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
       const response = await this.axios.get('/api/sessions/user/images', {
         params: {
           offset: offset,
@@ -187,8 +220,8 @@ export class ImageListService {
 
       const totalImageCount = +response.data.total_image_count;
       const imageList = response.data.image_list.map(Image.fromJSON);
-      const imageTagList = (response.data.image_tag_list || []).map(
-        (imageTagSublist: any[]) => imageTagSublist.map(ImageTag.fromJSON)
+      const imageTagList = (response.data.image_tag_list || []).map((imageTagSublist: any[]) =>
+        imageTagSublist.map(ImageTag.fromJSON)
       );
 
       return { totalImageCount, imageList, imageTagList };
@@ -209,15 +242,11 @@ export class ImageListService {
     }
   }
 
-  public async getUserManageableImageUserList(
-    query: string,
-    limit: number
-  ): Promise<User[]> {
+  public async getUserManageableImageUserList(query: string, limit: number): Promise<User[]> {
     try {
-      const response = await this.axios.get(
-        '/api/sessions/user/manageable-image-users',
-        { params: { query: query, limit: limit } }
-      );
+      const response = await this.axios.get('/api/sessions/user/manageable-image-users', {
+        params: { query: query, limit: limit },
+      });
 
       const userList = response.data.user_list.map(User.fromJSON);
       return userList;
@@ -249,27 +278,23 @@ export class ImageListService {
     imageTagList: ImageTag[][];
   }> {
     try {
-      const filterOptionsQueryParams =
-        this.getQueryParamsFromFilterOptions(filterOptions);
-      const response = await this.axios.get(
-        '/api/sessions/user/manageable-images',
-        {
-          params: {
-            offset: offset,
-            limit: limit,
-            sort_order: sortOption,
-            ...filterOptionsQueryParams,
-          },
-          paramsSerializer: (params) => {
-            return qs.stringify(params, { arrayFormat: 'repeat' });
-          },
-        }
-      );
+      const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
+      const response = await this.axios.get('/api/sessions/user/manageable-images', {
+        params: {
+          offset: offset,
+          limit: limit,
+          sort_order: sortOption,
+          ...filterOptionsQueryParams,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
+        },
+      });
 
       const totalImageCount = +response.data.total_image_count;
       const imageList = response.data.image_list.map(Image.fromJSON);
-      const imageTagList = (response.data.image_tag_list || []).map(
-        (imageTagSublist: any[]) => imageTagSublist.map(ImageTag.fromJSON)
+      const imageTagList = (response.data.image_tag_list || []).map((imageTagSublist: any[]) =>
+        imageTagSublist.map(ImageTag.fromJSON)
       );
 
       return { totalImageCount, imageList, imageTagList };
@@ -290,15 +315,11 @@ export class ImageListService {
     }
   }
 
-  public async getUserVerifiableImageUserList(
-    query: string,
-    limit: number
-  ): Promise<User[]> {
+  public async getUserVerifiableImageUserList(query: string, limit: number): Promise<User[]> {
     try {
-      const response = await this.axios.get(
-        '/api/sessions/user/verifiable-image-users',
-        { params: { query: query, limit: limit } }
-      );
+      const response = await this.axios.get('/api/sessions/user/verifiable-image-users', {
+        params: { query: query, limit: limit },
+      });
 
       const userList = response.data.user_list.map(User.fromJSON);
       return userList;
@@ -330,22 +351,18 @@ export class ImageListService {
     imageTagList: ImageTag[][];
   }> {
     try {
-      const filterOptionsQueryParams =
-        this.getQueryParamsFromFilterOptions(filterOptions);
-      const response = await this.axios.get(
-        '/api/sessions/user/verifiable-images',
-        {
-          params: {
-            offset: offset,
-            limit: limit,
-            sort_order: sortOption,
-            ...filterOptionsQueryParams,
-          },
-          paramsSerializer: (params) => {
-            return qs.stringify(params, { arrayFormat: 'repeat' });
-          },
-        }
-      );
+      const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
+      const response = await this.axios.get('/api/sessions/user/verifiable-images', {
+        params: {
+          offset: offset,
+          limit: limit,
+          sort_order: sortOption,
+          ...filterOptionsQueryParams,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
+        },
+      });
 
       const totalImageCount = +response.data.total_image_count;
       const imageList = response.data.image_list.map(Image.fromJSON);
@@ -371,15 +388,11 @@ export class ImageListService {
     }
   }
 
-  public async getUserExportableImageUserList(
-    query: string,
-    limit: number
-  ): Promise<User[]> {
+  public async getUserExportableImageUserList(query: string, limit: number): Promise<User[]> {
     try {
-      const response = await this.axios.get(
-        '/api/sessions/user/exportable-image-users',
-        { params: { query: query, limit: limit } }
-      );
+      const response = await this.axios.get('/api/sessions/user/exportable-image-users', {
+        params: { query: query, limit: limit },
+      });
 
       const userList = response.data.user_list.map(User.fromJSON);
       return userList;
@@ -411,27 +424,23 @@ export class ImageListService {
     imageTagList: ImageTag[][];
   }> {
     try {
-      const filterOptionsQueryParams =
-        this.getQueryParamsFromFilterOptions(filterOptions);
-      const response = await this.axios.get(
-        '/api/sessions/user/exportable-images',
-        {
-          params: {
-            offset: offset,
-            limit: limit,
-            sort_order: sortOption,
-            ...filterOptionsQueryParams,
-          },
-          paramsSerializer: (params) => {
-            return qs.stringify(params, { arrayFormat: 'repeat' });
-          },
-        }
-      );
+      const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
+      const response = await this.axios.get('/api/sessions/user/exportable-images', {
+        params: {
+          offset: offset,
+          limit: limit,
+          sort_order: sortOption,
+          ...filterOptionsQueryParams,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
+        },
+      });
 
       const totalImageCount = +response.data.total_image_count;
       const imageList = response.data.image_list.map(Image.fromJSON);
-      const imageTagList = (response.data.image_tag_list || []).map(
-        (imageTagSublist: any[]) => imageTagSublist.map(ImageTag.fromJSON)
+      const imageTagList = (response.data.image_tag_list || []).map((imageTagSublist: any[]) =>
+        imageTagSublist.map(ImageTag.fromJSON)
       );
 
       return { totalImageCount, imageList, imageTagList };
@@ -463,9 +472,8 @@ export class ImageListService {
     nextImageID: number | undefined;
   }> {
     try {
-      const filterOptionsQueryParams =
-        this.getQueryParamsFromFilterOptions(filterOptions);
-      const response = await this.axios.get(`/api/images/${imageID}/position`, {
+      const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
+      const response = await this.axios.get(`/api/images/${imageID}/manageable-images-position`, {
         params: {
           sort_order: sortOption,
           ...filterOptionsQueryParams,

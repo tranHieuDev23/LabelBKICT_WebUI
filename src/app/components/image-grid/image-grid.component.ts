@@ -1,10 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { SelectContainerComponent } from 'ngx-drag-to-select';
 import { Image, ImageStatus, ImageTag } from 'src/app/services/dataaccess/api';
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
@@ -43,9 +37,7 @@ export class ImageGridComponent {
   }
 
   public onImageListSelected(): void {
-    this.imageListSelected.emit(
-      this.selectedIndexList.map((index) => index - 1)
-    );
+    this.imageListSelected.emit(this.selectedIndexList.map((index) => index - 1));
   }
 
   public onSelectAllClicked(): void {
@@ -57,9 +49,7 @@ export class ImageGridComponent {
       return;
     }
     this.selectContainer?.clearSelection();
-    this.selectContainer?.selectItems(
-      (index: number) => index === selectedIndex
-    );
+    this.selectContainer?.selectItems((index: number) => index === selectedIndex);
     this.onImageListSelected();
   }
 }

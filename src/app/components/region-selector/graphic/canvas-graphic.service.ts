@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Coordinate, Polygon } from '../models';
+import { Coordinate } from '../models';
 
 export interface DrawCircleArguments {
   canvasWidth: number;
@@ -7,8 +7,8 @@ export interface DrawCircleArguments {
   ctx: CanvasRenderingContext2D;
   center: Coordinate;
   radius: number;
-  lineColor: string;
-  fillColor?: string;
+  strokeStyle: string;
+  fillStyle?: string;
 }
 
 export interface DrawLineArguments {
@@ -17,16 +17,18 @@ export interface DrawLineArguments {
   ctx: CanvasRenderingContext2D;
   lineStart: Coordinate;
   lineEnd: Coordinate;
-  lineColor: string;
+  strokeStyle: string;
+  dashSegments?: number[];
 }
 
-export interface DrawPolygonArguments {
+export interface DrawRectangleArguments {
   canvasWidth: number;
   canvasHeight: number;
   ctx: CanvasRenderingContext2D;
-  polygon: Polygon;
-  lineColor: string;
-  fillColor?: string;
+  bottomLeft: Coordinate;
+  topRight: Coordinate;
+  strokeStyle?: string;
+  fillStyle?: string;
 }
 
 export interface DrawCheckerboardArguments {
@@ -75,50 +77,48 @@ export class CanvasGraphicService {
       false
     );
     args.ctx.closePath();
-    if (args.fillColor) {
-      args.ctx.fillStyle = args.fillColor;
+    if (args.fillStyle) {
+      args.ctx.fillStyle = args.fillStyle;
       args.ctx.fill();
     }
     args.ctx.lineWidth = 1;
-    args.ctx.strokeStyle = args.lineColor;
+    args.ctx.strokeStyle = args.strokeStyle;
     args.ctx.stroke();
+    this.clearContext(args.ctx);
   }
 
   public drawLine(args: DrawLineArguments): void {
     args.ctx.beginPath();
-    args.ctx.moveTo(
-      args.lineStart.x * args.canvasWidth,
-      args.lineStart.y * args.canvasHeight
-    );
-    args.ctx.lineTo(
-      args.lineEnd.x * args.canvasWidth,
-      args.lineEnd.y * args.canvasHeight
-    );
+    args.ctx.moveTo(args.lineStart.x * args.canvasWidth, args.lineStart.y * args.canvasHeight);
+    args.ctx.lineTo(args.lineEnd.x * args.canvasWidth, args.lineEnd.y * args.canvasHeight);
     args.ctx.closePath();
     args.ctx.lineWidth = 2;
-    args.ctx.strokeStyle = args.lineColor;
+    args.ctx.strokeStyle = args.strokeStyle;
+    if (args.dashSegments !== undefined) {
+      args.ctx.setLineDash(args.dashSegments);
+    }
     args.ctx.stroke();
+    this.clearContext(args.ctx);
   }
 
-  public drawPolygon(args: DrawPolygonArguments): void {
-    const { vertices } = args.polygon;
-    const lastVertex: Coordinate = vertices[vertices.length - 1];
+  public drawRectangle(args: DrawRectangleArguments): void {
     args.ctx.beginPath();
-    args.ctx.lineWidth = 2;
-    args.ctx.strokeStyle = args.lineColor;
-    args.ctx.moveTo(
-      lastVertex.x * args.canvasWidth,
-      lastVertex.y * args.canvasHeight
-    );
-    for (const vert of vertices) {
-      args.ctx.lineTo(vert.x * args.canvasWidth, vert.y * args.canvasHeight);
-    }
+    args.ctx.moveTo(args.bottomLeft.x * args.canvasWidth, args.bottomLeft.y * args.canvasHeight);
+    args.ctx.lineTo(args.bottomLeft.x * args.canvasWidth, args.topRight.y * args.canvasHeight);
+    args.ctx.lineTo(args.topRight.x * args.canvasWidth, args.topRight.y * args.canvasHeight);
+    args.ctx.lineTo(args.topRight.x * args.canvasWidth, args.bottomLeft.y * args.canvasHeight);
+    args.ctx.lineTo(args.bottomLeft.x * args.canvasWidth, args.bottomLeft.y * args.canvasHeight);
     args.ctx.closePath();
-    if (args.fillColor) {
-      args.ctx.fillStyle = args.fillColor;
+    if (args.fillStyle) {
+      args.ctx.fillStyle = args.fillStyle;
       args.ctx.fill();
     }
-    args.ctx.stroke();
+    if (args.strokeStyle) {
+      args.ctx.lineWidth = 1;
+      args.ctx.strokeStyle = args.strokeStyle;
+      args.ctx.stroke();
+    }
+    this.clearContext(args.ctx);
   }
 
   public drawCheckerboard(args: DrawCheckerboardArguments): void {
@@ -136,6 +136,7 @@ export class CanvasGraphicService {
         args.ctx.fillRect(x, y, args.cellSize, args.cellSize);
       }
     }
+    this.clearContext(args.ctx);
   }
 
   public drawTextBox(args: DrawTextBoxArguments): void {
@@ -143,9 +144,7 @@ export class CanvasGraphicService {
     const centerY = args.canvasHeight * args.textBoxCenter.y;
     args.ctx.font = `${args.fontSize}px ${args.font}`;
     const measureResult = args.ctx.measureText(args.text);
-    const textWidth =
-      Math.abs(measureResult.actualBoundingBoxLeft) +
-      Math.abs(measureResult.actualBoundingBoxRight);
+    const textWidth = Math.abs(measureResult.actualBoundingBoxLeft) + Math.abs(measureResult.actualBoundingBoxRight);
     const textHeight = args.fontSize;
     const boxWidth = textWidth + this.textBoxPadding * 2;
     const boxHeight = textHeight + this.textBoxPadding * 2;
@@ -156,11 +155,8 @@ export class CanvasGraphicService {
     args.ctx.fillRect(topLeftX, topLeftY - boxHeight, boxWidth, boxHeight);
     args.ctx.fillStyle = args.textColor;
     args.ctx.textBaseline = 'bottom';
-    args.ctx.fillText(
-      args.text,
-      topLeftX + this.textBoxPadding,
-      topLeftY - this.textBoxPadding
-    );
+    args.ctx.fillText(args.text, topLeftX + this.textBoxPadding, topLeftY - this.textBoxPadding);
+    this.clearContext(args.ctx);
   }
 
   public resizeCanvasMatchParent(canvas: HTMLCanvasElement): void {
@@ -174,5 +170,12 @@ export class CanvasGraphicService {
 
   public clearCanvas(args: ClearCanvasArguments): void {
     args.ctx.clearRect(0, 0, args.canvasWidth, args.canvasHeight);
+  }
+
+  public clearContext(ctx: CanvasRenderingContext2D): void {
+    ctx.strokeStyle = 'transparent';
+    ctx.fillStyle = 'transparent';
+    ctx.lineWidth = 0;
+    ctx.setLineDash([]);
   }
 }

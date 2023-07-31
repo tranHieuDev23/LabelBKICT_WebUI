@@ -1,10 +1,9 @@
 import { Directive, ElementRef } from '@angular/core';
 
 @Directive({
-  selector: '[appFocusable]'
+  selector: '[appFocusable]',
 })
 export class FocusableDirective {
-
   constructor(private el: ElementRef) {
     if (!el.nativeElement.focus) {
       throw new Error('Element does not support focus.');

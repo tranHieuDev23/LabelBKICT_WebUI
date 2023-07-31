@@ -1,0 +1,37 @@
+<span *ngIf="!isEditing">
+  <div class="text-display" (click)="startEditing()">
+    <span *ngIf="text !== ''" nz-typography [innerHTML]="text"></span>
+    <span
+      *ngIf="text === ''"
+      nz-typography
+      nzType="secondary"
+      [innerHTML]="placeholder"
+    ></span>
+  </div>
+  <button *ngIf="editable" nz-button (click)="startEditing()">
+    <i nz-icon nzType="edit" nzTheme="outline"></i>
+  </button>
+</span>
+<span *ngIf="isEditing">
+  <form class="form" nz-form [formGroup]="formGroup">
+    <quill-editor
+      formControlName="text"
+      [readOnly]="!isEditing"
+      name="text"
+      [modules]="quillModules"
+      [placeholder]="placeholder"
+      (keyup.esc)="stopEditing()"
+      class="text-input"
+    >
+    </quill-editor>
+  </form>
+  <br />
+  <nz-button-group>
+    <button nz-button nzType="primary" nzGhost (click)="submit()">
+      <i nz-icon nzType="check" nzTheme="outline"></i>
+    </button>
+    <button nz-button nzDanger nzGhost (click)="stopEditing()">
+      <i nz-icon nzType="close" nzTheme="outline"></i>
+    </button>
+  </nz-button-group>
+</span>

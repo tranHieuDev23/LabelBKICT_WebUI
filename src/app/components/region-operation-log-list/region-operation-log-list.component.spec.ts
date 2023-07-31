@@ -8,9 +8,8 @@ describe('RegionOperationLogListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ RegionOperationLogListComponent ]
-    })
-    .compileComponents();
+      declarations: [RegionOperationLogListComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

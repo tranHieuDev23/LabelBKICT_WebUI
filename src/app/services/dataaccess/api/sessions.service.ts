@@ -37,9 +37,7 @@ export class SessionsService {
       });
       const user = User.fromJSON(response.data.user);
       const userRoleList = response.data.user_role_list.map(UserRole.fromJSON);
-      const userPermissionList = response.data.user_permission_list.map(
-        UserPermission.fromJSON
-      );
+      const userPermissionList = response.data.user_permission_list.map(UserPermission.fromJSON);
       return { user, userRoleList, userPermissionList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
@@ -81,9 +79,7 @@ export class SessionsService {
       const response = await this.axios.get('/api/sessions/user');
       const user = User.fromJSON(response.data.user);
       const userRoleList = response.data.user_role_list.map(UserRole.fromJSON);
-      const userPermissionList = response.data.user_permission_list.map(
-        UserPermission.fromJSON
-      );
+      const userPermissionList = response.data.user_permission_list.map(UserPermission.fromJSON);
       return { user, userRoleList, userPermissionList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {

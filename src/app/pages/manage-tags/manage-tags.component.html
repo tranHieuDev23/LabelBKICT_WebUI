@@ -1,145 +1,198 @@
 <div class="carded-content">
-    <h1 nz-typography>
-        Manage user tags
-    </h1>
-    <button nz-button nzType="primary" class="create-new-user-tag-btn" (click)="onCreateNewUserTagClicked()">
-        <i nz-icon nzType="user-add" nzTheme="outline"></i> Create a new user tag
-    </button>
-    <ul nz-list [nzDataSource]="userTagList" nzBordered nzItemLayout="vertical">
-        <nz-list-header>
-            Sort by:
-            <nz-select [(ngModel)]="sortOrder" (ngModelChange)="onSortOrderChanged($event)">
-                <nz-option *ngFor="let sortOrderOption of sortOrderOptions" [nzValue]="sortOrderOption.value"
-                    [nzLabel]="sortOrderOption.title">
-                </nz-option>
-            </nz-select>
-        </nz-list-header>
-        <li nz-list-item *ngFor="let userTag of userTagList; index as i" nzNoFlex>
-            <nz-list-item-meta>
-                <nz-list-item-meta-title>
-                    {{ userTag.displayName }}
-                </nz-list-item-meta-title>
-                <nz-list-item-meta-description>
-                    {{ userTag.description }}
-                </nz-list-item-meta-description>
-            </nz-list-item-meta>
-            <ul nz-list-item-actions>
-                <nz-list-item-action>
-                    <a nz-typography (click)="onEditUserTagClicked(i)">Edit</a>
-                </nz-list-item-action>
-                <nz-list-item-action>
-                    <a nz-typography nzType="danger" (click)="onDeleteUserTagClicked(i)">Delete</a>
-                </nz-list-item-action>
-            </ul>
-        </li>
-        <nz-list-footer>
-            <nz-pagination [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzTotal]="totalUserTagCount"
-                nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions" (nzPageIndexChange)="onPageIndexChanged($event)"
-                (nzPageSizeChange)="onPageSizeChanged($event)">
-            </nz-pagination>
-        </nz-list-footer>
-    </ul>
+  <h1 nz-typography>Manage user tags</h1>
+  <button
+    nz-button
+    nzType="primary"
+    class="create-new-user-tag-btn"
+    (click)="onCreateNewUserTagClicked()"
+  >
+    <i nz-icon nzType="user-add" nzTheme="outline"></i> Create a new user tag
+  </button>
+  <ul nz-list [nzDataSource]="userTagList" nzBordered nzItemLayout="vertical">
+    <nz-list-header>
+      Sort by:
+      <nz-select
+        [(ngModel)]="sortOrder"
+        (ngModelChange)="onSortOrderChanged($event)"
+      >
+        <nz-option
+          *ngFor="let sortOrderOption of sortOrderOptions"
+          [nzValue]="sortOrderOption.value"
+          [nzLabel]="sortOrderOption.title"
+        >
+        </nz-option>
+      </nz-select>
+    </nz-list-header>
+    <li nz-list-item *ngFor="let userTag of userTagList; index as i" nzNoFlex>
+      <nz-list-item-meta>
+        <nz-list-item-meta-title>
+          {{ userTag.displayName }}
+        </nz-list-item-meta-title>
+        <nz-list-item-meta-description>
+          {{ userTag.description }}
+        </nz-list-item-meta-description>
+      </nz-list-item-meta>
+      <ul nz-list-item-actions>
+        <nz-list-item-action>
+          <a nz-typography (click)="onEditUserTagClicked(i)">Edit</a>
+        </nz-list-item-action>
+        <nz-list-item-action>
+          <a nz-typography nzType="danger" (click)="onDeleteUserTagClicked(i)"
+            >Delete</a
+          >
+        </nz-list-item-action>
+      </ul>
+    </li>
+    <nz-list-footer>
+      <nz-pagination
+        [nzPageIndex]="pageIndex"
+        [nzPageSize]="pageSize"
+        [nzTotal]="totalUserTagCount"
+        nzShowSizeChanger
+        [nzPageSizeOptions]="pageSizeOptions"
+        (nzPageIndexChange)="onPageIndexChanged($event)"
+        (nzPageSizeChange)="onPageSizeChanged($event)"
+      >
+      </nz-pagination>
+    </nz-list-footer>
+  </ul>
 </div>
 
-<nz-modal [(nzVisible)]="isCreateNewUserTagModalVisible" nzTitle="Create a new user tag"
-    (nzOnCancel)="onCreateNewUserTagModalCancel()" [nzOkDisabled]="createNewUserTagModalFormGroup.invalid"
-    (nzOnOk)="onCreateNewUserTagModalOk()">
-    <ng-container *nzModalContent>
-        <form nz-form [formGroup]="createNewUserTagModalFormGroup">
-            <nz-form-item>
-                <nz-form-control [nzErrorTip]="displayNameErrorTpl">
-                    <nz-input-group nzPrefixIcon="user">
-                        <input type="text" nz-input formControlName="displayName" placeholder="Display name"
-                            name="displayName" nzRequired />
-                        <ng-template #displayNameErrorTpl let-control>
-                            <ng-container *ngIf="control.errors.required">
-                                Please enter user tag's display name
-                            </ng-container>
-                            <ng-container *ngIf="control.errors.minLength">
-                                Display name must be at least 1 character long
-                            </ng-container>
-                            <ng-container *ngIf="control.errors.maxLength">
-                                Display name must not be longer than 256 character
-                            </ng-container>
-                        </ng-template>
-                    </nz-input-group>
-                </nz-form-control>
-            </nz-form-item>
+<nz-modal
+  [(nzVisible)]="isCreateNewUserTagModalVisible"
+  nzTitle="Create a new user tag"
+  (nzOnCancel)="onCreateNewUserTagModalCancel()"
+  [nzOkDisabled]="createNewUserTagModalFormGroup.invalid"
+  (nzOnOk)="onCreateNewUserTagModalOk()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="createNewUserTagModalFormGroup">
+      <nz-form-item>
+        <nz-form-control [nzErrorTip]="displayNameErrorTpl">
+          <nz-input-group nzPrefixIcon="user">
+            <input
+              type="text"
+              nz-input
+              formControlName="displayName"
+              placeholder="Display name"
+              name="displayName"
+              nzRequired
+            />
+            <ng-template #displayNameErrorTpl let-control>
+              <ng-container *ngIf="control.errors.required">
+                Please enter user tag's display name
+              </ng-container>
+              <ng-container *ngIf="control.errors.minLength">
+                Display name must be at least 1 character long
+              </ng-container>
+              <ng-container *ngIf="control.errors.maxLength">
+                Display name must not be longer than 256 character
+              </ng-container>
+            </ng-template>
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
 
-            <nz-form-item>
-                <nz-form-control [nzErrorTip]="descriptionErrorTpl">
-                    <nz-input-group nzPrefixIcon="info-circle">
-                        <input type="text" formControlName="description" nz-input placeholder="Description"
-                            name="description" nzRequired />
-                        <ng-template #descriptionErrorTpl let-control>
-                            <ng-container *ngIf="control.errors.required">
-                                Please enter user tag's description
-                            </ng-container>
-                            <ng-container *ngIf="control.errors.minLength">
-                                Description must be at least 1 character long
-                            </ng-container>
-                            <ng-container *ngIf="control.errors.maxLength">
-                                Description must not be longer than 256 character
-                            </ng-container>
-                        </ng-template>
-                    </nz-input-group>
-                </nz-form-control>
-            </nz-form-item>
-        </form>
-    </ng-container>
+      <nz-form-item>
+        <nz-form-control [nzErrorTip]="descriptionErrorTpl">
+          <nz-input-group nzPrefixIcon="info-circle">
+            <input
+              type="text"
+              formControlName="description"
+              nz-input
+              placeholder="Description"
+              name="description"
+              nzRequired
+            />
+            <ng-template #descriptionErrorTpl let-control>
+              <ng-container *ngIf="control.errors.required">
+                Please enter user tag's description
+              </ng-container>
+              <ng-container *ngIf="control.errors.minLength">
+                Description must be at least 1 character long
+              </ng-container>
+              <ng-container *ngIf="control.errors.maxLength">
+                Description must not be longer than 256 character
+              </ng-container>
+            </ng-template>
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
 </nz-modal>
 
-<nz-modal [(nzVisible)]="isEditUserTagModalVisible" nzTitle="Edit user tag information" [nzFooter]="null"
-    (nzOnCancel)="onEditUserTagModalCancel()">
-    <ng-container *nzModalContent>
-        <nz-collapse nzAccordion>
-            <nz-collapse-panel nzHeader="User tag information" [nzActive]="true">
-                <form nz-form [formGroup]="editUserTagModalFormGroup">
-                    <nz-form-item>
-                        <nz-form-control [nzErrorTip]="displayNameErrorTpl">
-                            <nz-input-group nzPrefixIcon="user">
-                                <input type="text" nz-input formControlName="displayName" placeholder="Display name"
-                                    name="displayName" nzRequired />
-                                <ng-template #displayNameErrorTpl let-control>
-                                    <ng-container *ngIf="control.errors.required">
-                                        Please enter user tag's display name
-                                    </ng-container>
-                                    <ng-container *ngIf="control.errors.minLength">
-                                        Display name must be at least 1 character long
-                                    </ng-container>
-                                    <ng-container *ngIf="control.errors.maxLength">
-                                        Display name must not be longer than 256 character
-                                    </ng-container>
-                                </ng-template>
-                            </nz-input-group>
-                        </nz-form-control>
-                    </nz-form-item>
+<nz-modal
+  [(nzVisible)]="isEditUserTagModalVisible"
+  nzTitle="Edit user tag information"
+  [nzFooter]="null"
+  (nzOnCancel)="onEditUserTagModalCancel()"
+>
+  <ng-container *nzModalContent>
+    <nz-collapse nzAccordion>
+      <nz-collapse-panel nzHeader="User tag information" [nzActive]="true">
+        <form nz-form [formGroup]="editUserTagModalFormGroup">
+          <nz-form-item>
+            <nz-form-control [nzErrorTip]="displayNameErrorTpl">
+              <nz-input-group nzPrefixIcon="user">
+                <input
+                  type="text"
+                  nz-input
+                  formControlName="displayName"
+                  placeholder="Display name"
+                  name="displayName"
+                  nzRequired
+                />
+                <ng-template #displayNameErrorTpl let-control>
+                  <ng-container *ngIf="control.errors.required">
+                    Please enter user tag's display name
+                  </ng-container>
+                  <ng-container *ngIf="control.errors.minLength">
+                    Display name must be at least 1 character long
+                  </ng-container>
+                  <ng-container *ngIf="control.errors.maxLength">
+                    Display name must not be longer than 256 character
+                  </ng-container>
+                </ng-template>
+              </nz-input-group>
+            </nz-form-control>
+          </nz-form-item>
 
-                    <nz-form-item>
-                        <nz-form-control [nzErrorTip]="descriptionErrorTpl">
-                            <nz-input-group nzPrefixIcon="info-circle">
-                                <input type="text" formControlName="description" nz-input placeholder="Description"
-                                    name="description" nzRequired />
-                                <ng-template #descriptionErrorTpl let-control>
-                                    <ng-container *ngIf="control.errors.required">
-                                        Please enter user tag's description
-                                    </ng-container>
-                                    <ng-container *ngIf="control.errors.minLength">
-                                        Description must be at least 1 character long
-                                    </ng-container>
-                                    <ng-container *ngIf="control.errors.maxLength">
-                                        Description must not be longer than 256 character
-                                    </ng-container>
-                                </ng-template>
-                            </nz-input-group>
-                        </nz-form-control>
-                    </nz-form-item>
-                </form>
-                <button nz-button [nzType]="'primary'" [disabled]="editUserTagModalFormGroup.invalid"
-                    (click)="onEditUserTagModalSubmitClicked()">
-                    Submit
-                </button>
-            </nz-collapse-panel>
-        </nz-collapse>
-    </ng-container>
+          <nz-form-item>
+            <nz-form-control [nzErrorTip]="descriptionErrorTpl">
+              <nz-input-group nzPrefixIcon="info-circle">
+                <input
+                  type="text"
+                  formControlName="description"
+                  nz-input
+                  placeholder="Description"
+                  name="description"
+                  nzRequired
+                />
+                <ng-template #descriptionErrorTpl let-control>
+                  <ng-container *ngIf="control.errors.required">
+                    Please enter user tag's description
+                  </ng-container>
+                  <ng-container *ngIf="control.errors.minLength">
+                    Description must be at least 1 character long
+                  </ng-container>
+                  <ng-container *ngIf="control.errors.maxLength">
+                    Description must not be longer than 256 character
+                  </ng-container>
+                </ng-template>
+              </nz-input-group>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+        <button
+          nz-button
+          [nzType]="'primary'"
+          [disabled]="editUserTagModalFormGroup.invalid"
+          (click)="onEditUserTagModalSubmitClicked()"
+        >
+          Submit
+        </button>
+      </nz-collapse-panel>
+    </nz-collapse>
+  </ng-container>
 </nz-modal>

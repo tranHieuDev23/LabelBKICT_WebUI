@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
+  ImageListFilterOptionsWithMetadata,
   ImageListSortOption,
   ImageStatus,
   ImageTag,
@@ -17,27 +18,6 @@ import {
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
 import { DateToTimeService } from 'src/app/services/utils/date-to-time/date-to-time.service';
 import { DelayedCallbackService } from 'src/app/services/utils/delayed-callback/delayed-callback.service';
-
-export class ImageListFilterOptionsWithMetadata {
-  public imageTypeList: (ImageType | null)[] = [];
-  public imageTagList: ImageTag[] = [];
-  public regionLabelList: RegionLabel[] = [];
-  public uploadedByUserList: User[] = [];
-  public publishedByUserList: User[] = [];
-  public verifiedByUserList: User[] = [];
-  public uploadTimeStart = 0;
-  public uploadTimeEnd = 0;
-  public publishTimeStart = 0;
-  public publishTimeEnd = 0;
-  public verifyTimeStart = 0;
-  public verifyTimeEnd = 0;
-  public originalFilenameQuery = '';
-  public imageStatusList: ImageStatus[] = [];
-  public mustMatchAllImageTags = false;
-  public mustMatchAllRegionLabels = false;
-  public mustBeBookmarked = false;
-  public mustHaveDescription = false;
-}
 
 export class ImageFilterOptionsSelectorConfig {
   public canFilterImageType = true;
@@ -57,14 +37,11 @@ export class ImageFilterOptionsSelectorConfig {
 
 const UPLOAD_BY_USER_SEARCH_CALLBACK_ID = 'UPLOAD_BY_USER_SEARCH_CALLBACK_ID';
 const UPLOAD_BY_USER_SEARCH_CALLBACK_DELAY = 1000;
-const PUBLISHED_BY_USER_SEARCH_CALLBACK_ID =
-  'PUBLISHED_BY_USER_SEARCH_CALLBACK_ID';
+const PUBLISHED_BY_USER_SEARCH_CALLBACK_ID = 'PUBLISHED_BY_USER_SEARCH_CALLBACK_ID';
 const PUBLISHED_BY_USER_SEARCH_CALLBACK_DELAY = 1000;
-const VERIFIED_BY_USER_SEARCH_CALLBACK_ID =
-  'VERIFIED_BY_USER_SEARCH_CALLBACK_ID';
+const VERIFIED_BY_USER_SEARCH_CALLBACK_ID = 'VERIFIED_BY_USER_SEARCH_CALLBACK_ID';
 const VERIFIED_BY_USER_SEARCH_CALLBACK_DELAY = 1000;
-const ORIGINAL_FILE_NAME_INPUT_CALLBACK_ID =
-  'ORIGINAL_FILE_NAME_INPUT_CALLBACK_ID';
+const ORIGINAL_FILE_NAME_INPUT_CALLBACK_ID = 'ORIGINAL_FILE_NAME_INPUT_CALLBACK_ID';
 const ORIGINAL_FILE_NAME_INPUT_CALLBACK_DELAY = 1000;
 
 @Component({
@@ -77,18 +54,9 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
 
   @Input() public set filterOptions(v: ImageListFilterOptionsWithMetadata) {
     this._filterOptions = v;
-    this.selectedUploadTimeRange = this.getTimeRange(
-      v.uploadTimeStart,
-      v.uploadTimeEnd
-    );
-    this.selectedPublishTimeRange = this.getTimeRange(
-      v.publishTimeStart,
-      v.publishTimeEnd
-    );
-    this.selectedVerifyTimeRange = this.getTimeRange(
-      v.verifyTimeStart,
-      v.verifyTimeEnd
-    );
+    this.selectedUploadTimeRange = this.getTimeRange(v.uploadTimeStart, v.uploadTimeEnd);
+    this.selectedPublishTimeRange = this.getTimeRange(v.publishTimeStart, v.publishTimeEnd);
+    this.selectedVerifyTimeRange = this.getTimeRange(v.verifyTimeStart, v.verifyTimeEnd);
   }
 
   private getTimeRange(startTime: number, endTime: number): Date[] {
@@ -112,8 +80,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
   @Output() public uploadedByUserSearch = new EventEmitter<string>();
   @Output() public publishedByUserSearch = new EventEmitter<string>();
   @Output() public verifiedByUserSearch = new EventEmitter<string>();
-  @Output() public filterOptionsUpdated =
-    new EventEmitter<ImageListFilterOptionsWithMetadata>();
+  @Output() public filterOptionsUpdated = new EventEmitter<ImageListFilterOptionsWithMetadata>();
   @Output() public sortOptionUpdated = new EventEmitter<ImageListSortOption>();
 
   public imageStatusList: ImageStatus[] = [
@@ -169,22 +136,13 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
         this.imageTagList = imageTagList || [];
       } catch (e) {
         if (e instanceof UnauthenticatedError) {
-          this.notificationService.error(
-            'Failed to load page',
-            'User is not logged in'
-          );
+          this.notificationService.error('Failed to load page', 'User is not logged in');
           this.router.navigateByUrl('/login');
         } else if (e instanceof UnauthorizedError) {
-          this.notificationService.error(
-            'Failed to load page',
-            'User does not have the required permission'
-          );
+          this.notificationService.error('Failed to load page', 'User does not have the required permission');
           this.router.navigateByUrl('/welcome');
         } else {
-          this.notificationService.error(
-            'Failed to load page',
-            'Unknown error'
-          );
+          this.notificationService.error('Failed to load page', 'Unknown error');
           this.router.navigateByUrl('/welcome');
         }
       }
@@ -260,10 +218,8 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
       this._filterOptions.uploadTimeStart = 0;
       this._filterOptions.uploadTimeEnd = 0;
     } else {
-      this._filterOptions.uploadTimeStart =
-        this.dateToTimeService.getUnixTimestampFromDate(range[0]);
-      this._filterOptions.uploadTimeEnd =
-        this.dateToTimeService.getUnixTimestampFromDate(range[1]);
+      this._filterOptions.uploadTimeStart = this.dateToTimeService.getUnixTimestampFromDate(range[0]);
+      this._filterOptions.uploadTimeEnd = this.dateToTimeService.getUnixTimestampFromDate(range[1]);
     }
     this.onFilterOptionsUpdated();
   }
@@ -273,10 +229,8 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
       this._filterOptions.publishTimeStart = 0;
       this._filterOptions.publishTimeEnd = 0;
     } else {
-      this._filterOptions.publishTimeStart =
-        this.dateToTimeService.getUnixTimestampFromDate(range[0]);
-      this._filterOptions.publishTimeEnd =
-        this.dateToTimeService.getUnixTimestampFromDate(range[1]);
+      this._filterOptions.publishTimeStart = this.dateToTimeService.getUnixTimestampFromDate(range[0]);
+      this._filterOptions.publishTimeEnd = this.dateToTimeService.getUnixTimestampFromDate(range[1]);
     }
     this.onFilterOptionsUpdated();
   }
@@ -286,10 +240,8 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
       this._filterOptions.verifyTimeStart = 0;
       this._filterOptions.verifyTimeEnd = 0;
     } else {
-      this._filterOptions.verifyTimeStart =
-        this.dateToTimeService.getUnixTimestampFromDate(range[0]);
-      this._filterOptions.verifyTimeEnd =
-        this.dateToTimeService.getUnixTimestampFromDate(range[1]);
+      this._filterOptions.verifyTimeStart = this.dateToTimeService.getUnixTimestampFromDate(range[0]);
+      this._filterOptions.verifyTimeEnd = this.dateToTimeService.getUnixTimestampFromDate(range[1]);
     }
     this.onFilterOptionsUpdated();
   }
@@ -304,9 +256,7 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     );
   }
 
-  public onSelectedImageListSortOptionChanged(
-    option: ImageListSortOption
-  ): void {
+  public onSelectedImageListSortOptionChanged(option: ImageListSortOption): void {
     this.sortOptionUpdated.emit(option);
   }
 }

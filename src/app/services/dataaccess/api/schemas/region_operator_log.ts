@@ -12,12 +12,8 @@ export class RegionOperationLogDrawMetadata {
 
   public static fromJSON(metadataJSON: any): RegionOperationLogDrawMetadata {
     return new RegionOperationLogDrawMetadata(
-      metadataJSON.old_border
-        ? Polygon.fromJSON(metadataJSON.old_border)
-        : null,
-      metadataJSON.old_holes
-        ? metadataJSON.old_holes.map(Polygon.fromJSON)
-        : null,
+      metadataJSON.old_border ? Polygon.fromJSON(metadataJSON.old_border) : null,
+      metadataJSON.old_holes ? metadataJSON.old_holes.map(Polygon.fromJSON) : null,
       Polygon.fromJSON(metadataJSON.new_border),
       metadataJSON.new_holes.map(Polygon.fromJSON)
     );
@@ -25,19 +21,12 @@ export class RegionOperationLogDrawMetadata {
 }
 
 export class RegionOperationLogLabelMetadata {
-  constructor(
-    public oldLabel: RegionLabel | null,
-    public newLabel: RegionLabel | null
-  ) {}
+  constructor(public oldLabel: RegionLabel | null, public newLabel: RegionLabel | null) {}
 
   public static fromJSON(metadataJSON: any): RegionOperationLogLabelMetadata {
     return new RegionOperationLogLabelMetadata(
-      metadataJSON.old_label
-        ? RegionLabel.fromJSON(metadataJSON.old_label)
-        : null,
-      metadataJSON.new_label
-        ? RegionLabel.fromJSON(metadataJSON.new_label)
-        : null
+      metadataJSON.old_label ? RegionLabel.fromJSON(metadataJSON.old_label) : null,
+      metadataJSON.new_label ? RegionLabel.fromJSON(metadataJSON.new_label) : null
     );
   }
 }
@@ -53,9 +42,7 @@ export class RegionOperationLog {
     public byUser: User | null,
     public operationTime: number,
     public operationType: OperationType,
-    public operationMetadata:
-      | RegionOperationLogDrawMetadata
-      | RegionOperationLogLabelMetadata
+    public operationMetadata: RegionOperationLogDrawMetadata | RegionOperationLogLabelMetadata
   ) {}
 
   public static fromJSON(logJSON: any): RegionOperationLog {
@@ -67,12 +54,6 @@ export class RegionOperationLog {
       operationType === OperationType.DRAW
         ? RegionOperationLogDrawMetadata.fromJSON(logJSON.operation_metadata)
         : RegionOperationLogLabelMetadata.fromJSON(logJSON.operation_metadata);
-    return new RegionOperationLog(
-      id,
-      byUser,
-      operationTime,
-      operationType,
-      operationMetadata
-    );
+    return new RegionOperationLog(id, byUser, operationTime, operationType, operationMetadata);
   }
 }

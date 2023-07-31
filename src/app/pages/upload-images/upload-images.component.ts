@@ -1,19 +1,8 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import {
-  NzNotificationData,
-  NzNotificationService,
-} from 'ng-zorro-antd/notification';
+import { NzNotificationData, NzNotificationService } from 'ng-zorro-antd/notification';
 import { NzUploadFile } from 'ng-zorro-antd/upload';
-import {
-  ImageTag,
-  ImageTagGroup,
-  ImageTagsService,
-  ImageType,
-  ImageTypesService,
-  UnauthenticatedError,
-  UnauthorizedError,
-} from 'src/app/services/dataaccess/api';
+import { ImageType, ImageTypesService, UnauthenticatedError, UnauthorizedError } from 'src/app/services/dataaccess/api';
 
 const NOTIFICATION_DURATION = 6000;
 const NOTIFICATION_SHOW_LIMIT = 8;
@@ -51,28 +40,17 @@ export class UploadImagesComponent implements OnInit {
   ngOnInit(): void {
     (async () => {
       try {
-        const { imageTypeList } = await this.imageTypesService.getImageTypeList(
-          false
-        );
+        const { imageTypeList } = await this.imageTypesService.getImageTypeList(false);
         this.allImageTypeList = imageTypeList;
       } catch (e) {
         if (e instanceof UnauthenticatedError) {
-          this.notificationService.error(
-            'Failed to load page',
-            'User is not logged in'
-          );
+          this.notificationService.error('Failed to load page', 'User is not logged in');
           this.router.navigateByUrl('/login');
         } else if (e instanceof UnauthorizedError) {
-          this.notificationService.error(
-            'Failed to load page',
-            'User does not have the required permission'
-          );
+          this.notificationService.error('Failed to load page', 'User does not have the required permission');
           this.router.navigateByUrl('/welcome');
         } else {
-          this.notificationService.error(
-            'Failed to load page',
-            'Unknown error'
-          );
+          this.notificationService.error('Failed to load page', 'Unknown error');
           this.router.navigateByUrl('/welcome');
         }
       }
@@ -116,10 +94,9 @@ export class UploadImagesComponent implements OnInit {
     if (!this.successNotificationRef) {
       this.exceedingSuccessCount++;
       this.notificationCount++;
-      this.successNotificationRef = this.notificationService.template(
-        this.successBriefNotificationTemplate,
-        { nzDuration: 0 }
-      );
+      this.successNotificationRef = this.notificationService.template(this.successBriefNotificationTemplate, {
+        nzDuration: 0,
+      });
       this.successNotificationRef?.onClose?.subscribe(() => {
         this.notificationCount--;
       });
@@ -145,10 +122,9 @@ export class UploadImagesComponent implements OnInit {
     if (!this.failureNotificationRef) {
       this.exceedingFailureCount++;
       this.notificationCount++;
-      this.failureNotificationRef = this.notificationService.template(
-        this.failureBriefNotificationTemplate,
-        { nzDuration: 0 }
-      );
+      this.failureNotificationRef = this.notificationService.template(this.failureBriefNotificationTemplate, {
+        nzDuration: 0,
+      });
       this.failureNotificationRef?.onClose?.subscribe(() => {
         this.notificationCount--;
       });

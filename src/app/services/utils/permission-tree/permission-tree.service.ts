@@ -10,9 +10,7 @@ export interface PermissionTreeNode extends NzTreeNodeOptions {
   providedIn: 'root',
 })
 export class PermissionTreeService {
-  public getPermissionTree(
-    userPermissionList: UserPermission[]
-  ): PermissionTreeNode[] {
+  public getPermissionTree(userPermissionList: UserPermission[]): PermissionTreeNode[] {
     const permissionTreeRootList: PermissionTreeNode[] = [];
 
     let currentPath: string[] = [];
@@ -22,10 +20,7 @@ export class PermissionTreeService {
       const { permissionName } = userPermission;
       const newPath = permissionName.split('.');
 
-      const commonPrefixLength = this.getCommonPrefixLength(
-        currentPath,
-        newPath
-      );
+      const commonPrefixLength = this.getCommonPrefixLength(currentPath, newPath);
 
       const newPathNodeList = currentPathNodeList.slice(0, commonPrefixLength);
       for (let i = commonPrefixLength; i < newPath.length; i++) {

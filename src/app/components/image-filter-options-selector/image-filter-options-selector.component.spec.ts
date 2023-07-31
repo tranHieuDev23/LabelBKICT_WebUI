@@ -8,9 +8,8 @@ describe('ImageFilterOptionsSelectorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ImageFilterOptionsSelectorComponent ]
-    })
-    .compileComponents();
+      declarations: [ImageFilterOptionsSelectorComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

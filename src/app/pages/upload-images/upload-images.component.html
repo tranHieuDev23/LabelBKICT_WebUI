@@ -1,47 +1,71 @@
 <div class="carded-content">
-    <h1 nz-typography>
-        Upload images
-    </h1>
+  <h1 nz-typography>Upload images</h1>
 
-    <div nz-row [nzGutter]="8">
-        <div class="image-upload-files" nz-col [nzSpan]="24" [nzMd]="12">
-            <p nz-typography>Upload file(s)</p>
-            <app-image-upload [isMultipleUpload]="true" [fileSizeLimit]="5120"
-                description="Click or drag file(s) to this area to upload" hint="Only image files are accepted."
-                [allImageTypeList]="allImageTypeList" (uploadSuccess)="onUploadSuccess($event)"
-                (uploadFailure)="onUploadFailure($event)">
-            </app-image-upload>
-        </div>
-        <div nz-col [nzSpan]="24" [nzMd]="12">
-            <p nz-typography>Upload folder</p>
-            <app-image-upload [isDirectoryUpload]="true" [fileSizeLimit]="1048576"
-                description="Click or drag a folder to this area to upload"
-                hint="Every files in the folder will be uploaded, only image files are accepted."
-                [allImageTypeList]="allImageTypeList" (uploadSuccess)="onUploadSuccess($event)"
-                (uploadFailure)="onUploadFailure($event)">
-            </app-image-upload>
-        </div>
+  <div nz-row [nzGutter]="8">
+    <div class="image-upload-files" nz-col [nzSpan]="24" [nzMd]="12">
+      <p nz-typography>Upload file(s)</p>
+      <app-image-upload
+        [isMultipleUpload]="true"
+        [fileSizeLimit]="5120"
+        description="Click or drag file(s) to this area to upload"
+        hint="Only image files are accepted."
+        [allImageTypeList]="allImageTypeList"
+        (uploadSuccess)="onUploadSuccess($event)"
+        (uploadFailure)="onUploadFailure($event)"
+      >
+      </app-image-upload>
     </div>
+    <div nz-col [nzSpan]="24" [nzMd]="12">
+      <p nz-typography>Upload folder</p>
+      <app-image-upload
+        [isDirectoryUpload]="true"
+        [fileSizeLimit]="1048576"
+        description="Click or drag a folder to this area to upload"
+        hint="Every files in the folder will be uploaded, only image files are accepted."
+        [allImageTypeList]="allImageTypeList"
+        (uploadSuccess)="onUploadSuccess($event)"
+        (uploadFailure)="onUploadFailure($event)"
+      >
+      </app-image-upload>
+    </div>
+  </div>
 </div>
 
 <ng-template #successFullNotification let-data="data">
-    <i nz-icon nzType="check-circle" nzTheme="outline" class="notification-icon notification-icon-success"></i>
-    <div nz-typography class="notification-title">
-        Image uploaded successfully
-    </div>
-    <div class="notification-image">
-        <img [src]="data.imgSrc" />
-    </div>
+  <i
+    nz-icon
+    nzType="check-circle"
+    nzTheme="outline"
+    class="notification-icon notification-icon-success"
+  ></i>
+  <div nz-typography class="notification-title">
+    Image uploaded successfully
+  </div>
+  <div class="notification-image">
+    <img [src]="data.imgSrc" />
+  </div>
 </ng-template>
 <ng-template #successBriefNotification>
-    <i nz-icon nzType="check-circle" nzTheme="outline" class="notification-icon notification-icon-success"></i>
-    <div nz-typography class="notification-title">
-        {{ successCount }} {{ successCount > 1 ? "images were" : "image was" }} successfully uploaded
-    </div>
+  <i
+    nz-icon
+    nzType="check-circle"
+    nzTheme="outline"
+    class="notification-icon notification-icon-success"
+  ></i>
+  <div nz-typography class="notification-title">
+    {{ successCount }}
+    {{ successCount > 1 ? "images were" : "image was" }} successfully uploaded
+  </div>
 </ng-template>
 <ng-template #failureBriefNotification>
-    <i nz-icon nzType="check-circle" nzTheme="outline" class="notification-icon notification-icon-failure"></i>
-    <div nz-typography class="notification-title">
-        Failed to upload {{ failureCount }} {{ failureCount > 1 ? "files" : "file" }}
-    </div>
+  <i
+    nz-icon
+    nzType="check-circle"
+    nzTheme="outline"
+    class="notification-icon notification-icon-failure"
+  ></i>
+  <div nz-typography class="notification-title">
+    Failed to upload {{ failureCount }}
+    {{ failureCount > 1 ? "files" : "file" }}
+  </div>
 </ng-template>

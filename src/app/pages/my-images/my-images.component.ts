@@ -8,11 +8,11 @@ import {
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import {
-  ImageFilterOptionsSelectorConfig,
-  ImageListFilterOptionsWithMetadata,
+  ImageFilterOptionsSelectorConfig
 } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
 import {
   Image,
+  ImageListFilterOptionsWithMetadata,
   ImageListSortOption,
   ImageTag,
   ImageTagGroup,

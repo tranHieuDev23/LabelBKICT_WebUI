@@ -32,9 +32,7 @@ export class EditableTagListComponent {
     if (!this.isImageTagInImageTagList(imageTag)) {
       return;
     }
-    this.imageTagList = this.imageTagList.filter(
-      (item) => item.id !== imageTag.id
-    );
+    this.imageTagList = this.imageTagList.filter((item) => item.id !== imageTag.id);
     this.imageTagDeleted.emit(imageTag);
   }
 

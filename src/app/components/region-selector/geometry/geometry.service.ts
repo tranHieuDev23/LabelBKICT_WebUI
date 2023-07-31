@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
-  Point as TurfPoint,
   Polygon as TurfPolygon,
   MultiPolygon as TurfMultiPolygon,
-  point as toTurfPoint,
   polygon as toTurfPolygon,
   multiPolygon as toTurfMultiPolygon,
   cleanCoords,
@@ -12,49 +10,19 @@ import {
   kinks,
   unkinkPolygon,
   area,
-  booleanPointInPolygon,
   Position,
 } from '@turf/turf';
-import { Rectangle } from '../models';
-
-export interface Coordinate {
-  x: number;
-  y: number;
-}
-
-export interface Polygon {
-  vertices: Coordinate[];
-}
+import { Coordinate, Shape, FreePolygon, Eclipse, Rectangle } from '../models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GeometryService {
-  public getPolygonBoundingBox(polygon: Polygon): Rectangle {
-    const { vertices } = polygon;
-    const minX: number = Math.min(...vertices.map((item) => item.x));
-    const maxX: number = Math.max(...vertices.map((item) => item.x));
-    const minY: number = Math.min(...vertices.map((item) => item.y));
-    const maxY: number = Math.max(...vertices.map((item) => item.y));
-    return {
-      dx: minX,
-      dy: minY,
-      dw: maxX - minX,
-      dh: maxY - minY,
-    };
-  }
-
   public getDistance(from: Coordinate, to: Coordinate): number {
-    return Math.sqrt(
-      (from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y)
-    );
+    return Math.sqrt((from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y));
   }
 
-  public getInBetweenPointList(
-    from: Coordinate,
-    to: Coordinate,
-    maxPointDistance: number
-  ): Coordinate[] {
+  public getInBetweenPointList(from: Coordinate, to: Coordinate, maxPointDistance: number): Coordinate[] {
     const fromToDistance = this.getDistance(from, to);
     if (fromToDistance <= maxPointDistance) {
       return [];
@@ -73,69 +41,64 @@ export class GeometryService {
   }
 
   public getOpenNeighborVertexID(
-    polygon: Polygon,
+    polygon: FreePolygon,
     vertexID: number,
     openThreshold: number
   ): { vertexID: number; isOpenVertexPrevious: boolean } | null {
-    const vertex = polygon.vertices[vertexID];
-    const prevIndex =
-      vertexID === 0 ? polygon.vertices.length - 1 : vertexID - 1;
-    const prevVertex = polygon.vertices[prevIndex];
+    const vertices = polygon.getVertices();
+    const vertex = vertices[vertexID];
+    const prevIndex = vertexID === 0 ? vertices.length - 1 : vertexID - 1;
+    const prevVertex = vertices[prevIndex];
     if (this.getDistance(vertex, prevVertex) > openThreshold) {
       return { vertexID: prevIndex, isOpenVertexPrevious: true };
     }
-    const nextIndex =
-      vertexID === polygon.vertices.length - 1 ? 0 : vertexID + 1;
-    const nextVertex = polygon.vertices[nextIndex];
+    const nextIndex = vertexID === vertices.length - 1 ? 0 : vertexID + 1;
+    const nextVertex = vertices[nextIndex];
     if (this.getDistance(vertex, nextVertex) > openThreshold) {
       return { vertexID: nextIndex, isOpenVertexPrevious: false };
     }
     return null;
   }
 
-  public densifyPolygon(
-    polygon: Polygon,
-    maxVerticesDistance: number
-  ): Polygon {
+  public densifyShape(polygon: Shape, maxVerticesDistance: number): Shape {
+    if (!(polygon instanceof FreePolygon)) {
+      return polygon;
+    }
+
+    const vertices = polygon.getVertices();
     const resultVertices: Coordinate[] = [];
-    let lastVertex = polygon.vertices[polygon.vertices.length - 1];
-    for (const vertex of polygon.vertices) {
-      resultVertices.push(
-        ...this.getInBetweenPointList(lastVertex, vertex, maxVerticesDistance),
-        vertex
-      );
+    let lastVertex = vertices[vertices.length - 1];
+    for (const vertex of vertices) {
+      resultVertices.push(...this.getInBetweenPointList(lastVertex, vertex, maxVerticesDistance), vertex);
       lastVertex = vertex;
     }
-    return {
-      vertices: resultVertices,
-    };
+    return new FreePolygon(resultVertices);
   }
 
-  public normalizePolygon(polygon: Polygon): Polygon {
-    const turfPolygon = this.convertPolygonToTurfPolygon(polygon);
+  public normalizeShape(polygon: Shape): Shape {
+    if (!(polygon instanceof FreePolygon)) {
+      return polygon;
+    }
+
+    const turfPolygon = this.convertShapeToTurfPolygon(polygon);
     const reducedPolygon = cleanCoords(turfPolygon);
     const fixedPolygon = this.fixSelfIntersectedTurfPolygon(reducedPolygon);
-    return this.convertTurfPolygonToPolygon(fixedPolygon);
-  }
-
-  public isPointInPolygon(point: Coordinate, polygon: Polygon): boolean {
-    if (polygon.vertices.length < 3) {
-      return false;
-    }
-    const turfPoint = this.convertCoordinateToTurfPoint(point);
-    const turfPolygon = this.convertPolygonToTurfPolygon(polygon);
-    return booleanPointInPolygon(turfPoint, turfPolygon);
+    return this.convertTurfPolygonToFreePolygon(fixedPolygon);
   }
 
   public normalizeRegionWithHoles(
-    border: Polygon,
-    holes: Polygon[]
+    border: Shape,
+    holeList: Shape[]
   ): {
-    border: Polygon;
-    holes: Polygon[];
+    border: Shape;
+    holeList: Shape[];
   } {
-    let turfBorder = this.convertPolygonToTurfPolygon(border);
-    let turfHoles = holes.map((hole) => this.convertPolygonToTurfPolygon(hole));
+    let turfBorder = this.convertShapeToTurfPolygon(border);
+    let turfHoles = holeList.map((hole) => this.convertShapeToTurfPolygon(hole));
+
+    // Fix out-of-bound vertices
+    turfBorder = this.fixTurfPolygonOutOfBound(turfBorder);
+    turfHoles = turfHoles.map((hole) => this.fixTurfPolygonOutOfBound(hole));
 
     // Remove redundant vertices
     turfBorder = cleanCoords(turfBorder);
@@ -143,45 +106,40 @@ export class GeometryService {
 
     // Fix self-intersection
     turfBorder = this.fixSelfIntersectedTurfPolygon(turfBorder);
-    turfHoles = turfHoles.map((hole) =>
-      this.fixSelfIntersectedTurfPolygon(hole)
-    );
+    turfHoles = turfHoles.map((hole) => this.fixSelfIntersectedTurfPolygon(hole));
 
     // Join all common area between holes
     if (turfHoles.length > 1) {
       let joinedTurfHoles = [turfHoles[0]];
       for (let i = 1; i < turfHoles.length; i++) {
-        joinedTurfHoles = this.calculateUnionOfTurfPolygonListAndTurfPolygon(
-          joinedTurfHoles,
-          turfHoles[i]
-        );
+        joinedTurfHoles = this.calculateUnionOfTurfPolygonListAndTurfPolygon(joinedTurfHoles, turfHoles[i]);
       }
       turfHoles = joinedTurfHoles;
     }
 
     // Take only the intersect between the holes and the border
     if (turfHoles.length > 0) {
-      turfHoles = this.calculateIntersectionOfTurfPolygonListAndTurfPolygon(
-        turfHoles,
-        turfBorder
-      );
+      turfHoles = this.calculateIntersectionOfTurfPolygonListAndTurfPolygon(turfHoles, turfBorder);
     }
 
-    const normalizedBorder = this.convertTurfPolygonToPolygon(turfBorder);
+    const normalizedBorder = this.convertTurfPolygonToFreePolygon(turfBorder);
     // Remove all holes with 0 vertex
     const normalizedHoles = turfHoles
-      .map((hole) => this.convertTurfPolygonToPolygon(hole))
-      .filter((hole) => hole.vertices.length > 0);
+      .map((hole) => this.convertTurfPolygonToFreePolygon(hole))
+      .filter((hole) => hole.getVertices().length > 0);
 
     return {
       border: normalizedBorder,
-      holes: normalizedHoles,
+      holeList: normalizedHoles,
     };
   }
 
-  public getArea(polygon: Polygon): number {
-    const turfPolygon = this.convertPolygonToTurfPolygon(polygon);
-    return area(turfPolygon);
+  private fixTurfPolygonOutOfBound(polygon: TurfPolygon): TurfPolygon {
+    const boundedPointList = polygon.coordinates[0].map((position) => {
+      const [x, y] = position;
+      return [Math.max(0, Math.min(1, x)), Math.max(0, Math.min(1, y))];
+    });
+    return toTurfPolygon([boundedPointList]).geometry;
   }
 
   private fixSelfIntersectedTurfPolygon(polygon: TurfPolygon): TurfPolygon {
@@ -199,9 +157,7 @@ export class GeometryService {
       });
     });
 
-    const unKinkedPolygonList = unkinkPolygon(
-      toTurfPolygon([this.ensureStartEndVertexEqual(verticesFarFromKinkList)])
-    );
+    const unKinkedPolygonList = unkinkPolygon(toTurfPolygon([this.ensureStartEndVertexEqual(verticesFarFromKinkList)]));
 
     // Only keep the polygon with the maximum area
     let maxArea = -1;
@@ -221,8 +177,7 @@ export class GeometryService {
     polygonList: TurfPolygon[],
     polygon: TurfPolygon
   ): TurfPolygon[] {
-    const turfMultiPolygon =
-      this.convertTuftPolygonListToTurfMultiPolygon(polygonList);
+    const turfMultiPolygon = this.convertTuftPolygonListToTurfMultiPolygon(polygonList);
     const unionTurfPolygon = union(turfMultiPolygon, polygon);
     if (unionTurfPolygon === null) {
       return [];
@@ -230,9 +185,7 @@ export class GeometryService {
     if (unionTurfPolygon.geometry.type === 'Polygon') {
       return [unionTurfPolygon.geometry];
     } else {
-      return this.convertTurfMultiPolygonToTurfPolygonList(
-        unionTurfPolygon.geometry
-      );
+      return this.convertTurfMultiPolygonToTurfPolygonList(unionTurfPolygon.geometry);
     }
   }
 
@@ -240,8 +193,7 @@ export class GeometryService {
     polygonList: TurfPolygon[],
     polygon: TurfPolygon
   ): TurfPolygon[] {
-    const turfMultiPolygon =
-      this.convertTuftPolygonListToTurfMultiPolygon(polygonList);
+    const turfMultiPolygon = this.convertTuftPolygonListToTurfMultiPolygon(polygonList);
     const unionTurfPolygon = intersect(turfMultiPolygon, polygon);
     if (unionTurfPolygon === null) {
       return [];
@@ -249,18 +201,12 @@ export class GeometryService {
     if (unionTurfPolygon.geometry.type === 'Polygon') {
       return [unionTurfPolygon.geometry];
     } else {
-      return this.convertTurfMultiPolygonToTurfPolygonList(
-        unionTurfPolygon.geometry
-      );
+      return this.convertTurfMultiPolygonToTurfPolygonList(unionTurfPolygon.geometry);
     }
   }
 
-  private convertCoordinateToTurfPoint(coordinate: Coordinate): TurfPoint {
-    return toTurfPoint([coordinate.x, coordinate.y]).geometry;
-  }
-
-  private convertPolygonToTurfPolygon(polygon: Polygon): TurfPolygon {
-    const vertices = polygon.vertices || [];
+  private convertShapeToTurfPolygon(polygon: Shape): TurfPolygon {
+    const vertices = polygon.getVertices();
     const coordinateList: number[][] = [];
     for (const vertex of vertices) {
       coordinateList.push([vertex.x, vertex.y]);
@@ -269,17 +215,14 @@ export class GeometryService {
     return toTurfPolygon([coordinateList]).geometry;
   }
 
-  private convertTurfPolygonToPolygon(polygon: TurfPolygon): Polygon {
-    return {
-      vertices: polygon.coordinates[0].map((position) => {
-        return { x: position[0], y: position[1] };
-      }),
-    };
+  private convertTurfPolygonToFreePolygon(polygon: TurfPolygon): FreePolygon {
+    const vertices = polygon.coordinates[0].map((position) => {
+      return { x: position[0], y: position[1] };
+    });
+    return new FreePolygon(vertices);
   }
 
-  private convertTuftPolygonListToTurfMultiPolygon(
-    polygonList: TurfPolygon[]
-  ): TurfMultiPolygon {
+  private convertTuftPolygonListToTurfMultiPolygon(polygonList: TurfPolygon[]): TurfMultiPolygon {
     const coordinateList = [];
     for (const item of polygonList) {
       coordinateList.push(item.coordinates);
@@ -287,9 +230,7 @@ export class GeometryService {
     return toTurfMultiPolygon(coordinateList).geometry;
   }
 
-  private convertTurfMultiPolygonToTurfPolygonList(
-    multiPolygon: TurfMultiPolygon
-  ): TurfPolygon[] {
+  private convertTurfMultiPolygonToTurfPolygonList(multiPolygon: TurfMultiPolygon): TurfPolygon[] {
     const polygonList: TurfPolygon[] = [];
     for (const coordinateList of multiPolygon.coordinates) {
       polygonList.push(toTurfPolygon(coordinateList).geometry);
@@ -299,10 +240,7 @@ export class GeometryService {
 
   private ensureStartEndVertexEqual(positionList: Position[]): Position[] {
     const lastIndex = positionList.length - 1;
-    if (
-      positionList[0][0] === positionList[lastIndex][0] &&
-      positionList[0][1] === positionList[lastIndex][1]
-    ) {
+    if (positionList[0][0] === positionList[lastIndex][0] && positionList[0][1] === positionList[lastIndex][1]) {
       return positionList;
     }
     return [...positionList, positionList[0]];
