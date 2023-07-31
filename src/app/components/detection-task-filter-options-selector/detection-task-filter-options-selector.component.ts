@@ -125,7 +125,7 @@ export class DetectionTaskFilterOptionsSelectorComponent implements OnInit {
     (async () => {
       try {
         const { imageTypeList, regionLabelList } = await this.imageTypesService.getImageTypeList(true);
-        const { imageTagGroupList, imageTagList } = await this.imageTagsService.getImageTagGroupList(true, false);
+        const { imageTagGroupList, imageTagList } = await this.imageTagsService.getImageTagGroupList(true, false, false);
         this.imageTypeList = imageTypeList;
         this.regionLabelList = regionLabelList || [];
         this.imageTagGroupList = imageTagGroupList;
