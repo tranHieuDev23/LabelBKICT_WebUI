@@ -70,6 +70,10 @@ export class MyImagesComponent implements OnInit {
   public imageTagList: ImageTag[][] = [];
   public isLoadingImageList: boolean = false;
 
+  public threeImageList: Image[] = [];
+  public threeImageTagList: ImageTag[][] = [];
+
+
   public imageListFilterOptionsSelectorConfig =
     new ImageFilterOptionsSelectorConfig();
 
@@ -411,7 +415,7 @@ export class MyImagesComponent implements OnInit {
         selectedImageIDList,
         addedImageTagIDList
       );
-      this.notificationService.success(
+      this.notificationService.success(  
         'Added image tags to selected image(s) successfully',
         ''
       );
