@@ -4,6 +4,8 @@ import axios, { Axios } from 'axios';
 import qs from 'qs';
 import { InvalidImageListFilterOptionsError, UnauthenticatedError, UnauthorizedError, UnknownAPIError } from './errors';
 import {
+  ClassificationTask,
+  ClassificationTaskListSortOption,
   DetectionTask,
   DetectionTaskListSortOption,
   Image,
@@ -160,6 +162,48 @@ export class ImageListService {
           throw new OneOrMoreImagesNotFoundError();
         case HttpStatusCode.Conflict:
           throw new DetectionTaskAlreadyExistsError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getImageClassificationTaskList(
+    offset: number,
+    limit: number,
+    sortOption: ClassificationTaskListSortOption,
+    filterOptions: ImageListFilterOptions
+  ): Promise<{
+    totalClassificationTaskCount: number;
+    classificationTaskList: ClassificationTask[];
+  }> {
+    try {
+      const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
+      const response = await this.axios.get(`/api/images/classification-task`, {
+        params: {
+          offset: offset,
+          limit: limit,
+          sort_order: sortOption,
+          ...filterOptionsQueryParams,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: 'repeat' });
+        },
+      });
+      
+      const totalClassificationTaskCount = +response.data.total_classification_task_count;
+      const classificationTaskList = response.data.classification_task_list.map(ClassificationTask.fromJSON);
+
+      return { totalClassificationTaskCount, classificationTaskList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
         default:
           throw new UnknownAPIError(e);
       }

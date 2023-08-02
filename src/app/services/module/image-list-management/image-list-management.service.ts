@@ -9,6 +9,8 @@ import {
   ImagesService,
   DetectionTaskListSortOption,
   DetectionTask,
+  ClassificationTaskListSortOption,
+  ClassificationTask,
 } from '../../dataaccess/api';
 
 @Injectable({
@@ -35,6 +37,18 @@ export class ImageListManagementService {
     detectionTaskList: DetectionTask[];
   }> {
     return this.imageListService.getImageDetectionTaskList(offset, limit, sortOption, filterOptions);
+  }
+
+  public async getImageClassificationTaskList(
+    offset: number,
+    limit: number,
+    sortOption: ClassificationTaskListSortOption,
+    filterOptions: ImageListFilterOptions
+  ): Promise<{
+    totalClassificationTaskCount: number;
+    classificationTaskList: ClassificationTask[];
+  }> {
+    return this.imageListService.getImageClassificationTaskList(offset, limit, sortOption, filterOptions);
   }
 
   public async createImageDetectionTaskList(imageIDList: number[]): Promise<void> {

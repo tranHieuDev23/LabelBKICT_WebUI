@@ -1,0 +1,74 @@
+<div class="carded-content">
+  <h1 nz-typography>Classification tasks</h1>
+
+  <app-classification-task-filter-options-selector
+    [filterOptions]="filterOptions"
+    [sortOption]="classificationTaskListSortOption"
+    [uploadedByUserOptionList]="uploadedByUserOptionList"
+    [publishedByUserOptionList]="publishedByUserOptionList"
+    [verifiedByUserOptionList]="verifiedByUserOptionList"
+    (uploadedByUserSearch)="onUploadedByUserSearch($event)"
+    (publishedByUserSearch)="onPublishedByUserSearch($event)"
+    (verifiedByUserSearch)="onVerifiedByUserSearch($event)"
+    (filterOptionsUpdated)="onImageListFilterOptionsUpdated($event)"
+    (sortOptionUpdated)="onImageListSortOptionUploaded($event)"
+  >
+  </app-classification-task-filter-options-selector>
+
+  <p *ngIf="fromClassificationTaskIndex !== 0" nz-typography>
+    Showing classification task {{ fromClassificationTaskIndex }} -
+    {{ toClassificationTaskIndex }} of
+    {{ totalClassificationTaskCount }}
+  </p>
+
+  <nz-table
+    #classificationTaskTable
+    [nzData]="classificationTaskList"
+    nzShowPagination="false"
+    [nzLoading]="isLoadingClassificationTaskList"
+  >
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Classification type</th>
+        <th>Status</th>
+        <th>Request time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let data of classificationTaskTable.data; index as i">
+        <td>
+          <img
+            class="thumbnail-image"
+            [src]="data.ofImage.thumbnailURL"
+            (dblclick)="onClassificationTaskImageDbClicked(i)"
+          />
+        </td>
+        <td>
+          {{ getClassificationTypeDisplayName(data.ofClassificationTypeId) }}
+        </td>
+        <td>
+          <nz-tag *ngIf="data.status === 0" nzColor="red">Requested</nz-tag>
+          <nz-tag *ngIf="data.status === 1" nzColor="green">Processing</nz-tag>
+        </td>
+        <td>
+          {{ data.requestTime | date : "short" }}
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+
+  <div *ngIf="!isLoadingClassificationTaskList" class="pagination">
+    <nz-pagination
+      [nzPageIndex]="pageIndex"
+      [nzPageSize]="pageSize"
+      [nzTotal]="totalClassificationTaskCount"
+      nzShowQuickJumper
+      nzShowSizeChanger
+      [nzPageSizeOptions]="[12, 24, 60, 120, 240]"
+      (nzPageIndexChange)="onPageIndexChanged($event)"
+      (nzPageSizeChange)="onPageSizeChanged($event)"
+    >
+    </nz-pagination>
+  </div>
+</div>

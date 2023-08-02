@@ -22,3 +22,5 @@ export * from './user_can_verify_user_image';
 export * from './classification_type';
 export * from './detection_task';
 export * from './detection_task_list_sort_option';
+export * from './classification_task';
+export * from './classification_task_list_sort_option';

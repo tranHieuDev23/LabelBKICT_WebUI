@@ -92,6 +92,11 @@ const routes: Routes = [
     loadChildren: () => import('./pages/detection-tasks/detection-tasks.module').then((m) => m.DetectionTasksModule),
     canActivate: [UserLoggedInGuard],
   },
+  {
+    path: 'classification-tasks',
+    loadChildren: () => import('./pages/classification-tasks/classification-tasks.module').then((m) => m.ClassificationTasksModule),
+    canActivate: [UserLoggedInGuard],
+  },
   { path: '**', pathMatch: 'full', redirectTo: '/welcome' },
 ];
 
