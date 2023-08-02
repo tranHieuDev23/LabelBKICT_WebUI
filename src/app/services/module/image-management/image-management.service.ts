@@ -115,4 +115,8 @@ export class ImageManagementService {
   public async deleteImageBookmark(id: number): Promise<void> {
     return await this.imagesService.deleteImageBookmark(id);
   }
+
+  public async getDuplicatedImageIdListOfImage(id: number): Promise<number[]> {
+    return await this.imagesService.getDuplicatedImageIdListOfImage(id);
+  }
 }
