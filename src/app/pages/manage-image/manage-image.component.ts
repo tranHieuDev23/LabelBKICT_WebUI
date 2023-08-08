@@ -765,6 +765,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
       return;
     }
     try {
+      this.isAddingSelectedRegion = true;
       const region = await this.regionManagementService.createRegion(
         this.image.id,
         { vertices: this.selectedRegionBorder.getVertices() },
@@ -780,6 +781,8 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
       this.regionSelector?.cancelDrawing();
     } catch (e) {
       this.handleError('Failed to add region', e);
+    } finally {
+      this.isAddingSelectedRegion = false;
     }
   }
 
