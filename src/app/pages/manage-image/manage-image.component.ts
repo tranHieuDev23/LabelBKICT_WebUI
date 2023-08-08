@@ -103,6 +103,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
 
   public selectedRegionBorder: Shape | undefined;
   public selectedRegionHoles: Shape[] = [];
+  public isAddingSelectedRegion = false;
 
   public isLabelRegionModalVisible = false;
 
@@ -751,12 +752,16 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
   }
 
   public async onLabelRegionModalItemClicked(regionLabel: RegionLabel): Promise<void> {
+    if (this.isAddingSelectedRegion) {
+      return;
+    }
+
     await this.addSelectedRegion(regionLabel);
     this.isLabelRegionModalVisible = false;
   }
 
   public async addSelectedRegion(regionLabel: RegionLabel): Promise<void> {
-    if (!this.image || !this.selectedRegionBorder) {
+    if (!this.image || !this.selectedRegionBorder || this.isAddingSelectedRegion) {
       return;
     }
     try {

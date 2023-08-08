@@ -97,6 +97,7 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
 
   public selectedRegionBorder: Shape | undefined;
   public selectedRegionHoles: Shape[] = [];
+  public isAddingSelectedRegion = false;
 
   public isLabelRegionModalVisible = false;
 
@@ -619,15 +620,21 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
   }
 
   public async onLabelRegionModalItemClicked(regionLabel: RegionLabel): Promise<void> {
+    if (this.isAddingSelectedRegion) {
+      return;
+    }
+
     await this.addSelectedRegion(regionLabel);
     this.isLabelRegionModalVisible = false;
   }
 
   public async addSelectedRegion(regionLabel: RegionLabel): Promise<void> {
-    if (!this.image || !this.selectedRegionBorder) {
+    if (!this.image || !this.selectedRegionBorder || this.isAddingSelectedRegion) {
       return;
     }
+
     try {
+      this.isAddingSelectedRegion = true;
       const region = await this.regionManagementService.createRegion(
         this.image.id,
         { vertices: this.selectedRegionBorder.getVertices() },
@@ -643,6 +650,8 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
       this.regionSelector?.cancelDrawing();
     } catch (e) {
       this.handleError('Failed to add region', e);
+    } finally {
+      this.isAddingSelectedRegion = false;
     }
   }
 

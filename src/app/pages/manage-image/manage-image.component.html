@@ -268,7 +268,9 @@
         class="label-region-modal-item"
         (click)="onLabelRegionModalItemClicked(regionLabel)"
       >
-        <span nz-typography>{{ regionLabel.displayName }}</span>
+        <span nz-typography [nzDisabled]="isAddingSelectedRegion">{{
+          regionLabel.displayName
+        }}</span>
       </nz-list-item>
     </nz-list>
   </div>
@@ -523,6 +525,7 @@
         <li
           *ngFor="let regionLabel of regionLabelList"
           nz-menu-item
+          [nzDisabled]="isAddingSelectedRegion"
           (click)="addSelectedRegion(regionLabel)"
         >
           {{ regionLabel.displayName }}
