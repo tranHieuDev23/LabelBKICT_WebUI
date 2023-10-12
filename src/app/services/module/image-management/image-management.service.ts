@@ -12,6 +12,11 @@ import {
   UploadImageInput,
 } from '../../dataaccess/api';
 import { DescriptionFileService } from './description-file.service';
+import { FreePolygon } from 'src/app/components/region-selector/models';
+import { ColorService } from 'src/app/components/region-selector/graphic/color.service';
+import { CanvasGraphicService } from 'src/app/components/region-selector/graphic/canvas-graphic.service';
+
+const DEFAULT_REGION_LABEL_COLOR = '#13c2c2';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +25,9 @@ export class ImageManagementService {
   constructor(
     private readonly imagesService: ImagesService,
     private readonly imageListService: ImageListService,
-    private readonly descriptionFileService: DescriptionFileService
+    private readonly descriptionFileService: DescriptionFileService,
+    private readonly canvasGraphicService: CanvasGraphicService,
+    private readonly colorService: ColorService
   ) {}
 
   public createImageBatch(
@@ -114,5 +121,46 @@ export class ImageManagementService {
 
   public async deleteImageBookmark(id: number): Promise<void> {
     return await this.imagesService.deleteImageBookmark(id);
+  }
+
+  public async generateImageWithRegions(image: Image, regionList: Region[]): Promise<string> {
+    return new Promise<string>((resolve) => {
+      const img = document.createElement('img');
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx === null) {
+          resolve('');
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0);
+        this.canvasGraphicService.clearContext(ctx);
+
+        for (const region of regionList) {
+          const regionLabelColor = region.label?.color || DEFAULT_REGION_LABEL_COLOR;
+          const borderShape = new FreePolygon(region.border.vertices);
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = regionLabelColor;
+          borderShape.draw(canvas.width, canvas.height, ctx);
+          this.canvasGraphicService.clearContext(ctx);
+
+          for (const hole of region.holes) {
+            const holeShape = new FreePolygon(hole.vertices);
+            ctx.lineWidth = 2;
+            ctx.fillStyle = this.colorService.getTransparentVersionOfColor(regionLabelColor);
+            holeShape.draw(canvas.width, canvas.height, ctx);
+          }
+          this.canvasGraphicService.clearContext(ctx);
+        }
+
+        resolve(canvas.toDataURL());
+      };
+
+      img.src = image.originalImageURL;
+    });
   }
 }

@@ -1,6 +1,7 @@
 import { Location } from '@angular/common';
 import { AfterContentInit, Component, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, NavigationStart, Params, Router } from '@angular/router';
+import saveAs from 'file-saver';
 import { NzContextMenuService, NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
@@ -504,6 +505,28 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
         this.regionList = [];
       },
     });
+  }
+
+  public async onDownloadImageOnlyClicked(): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+
+    const fileName = `${this.image.id}.jpeg`;
+    saveAs(this.image.originalImageURL, fileName);
+  }
+
+  public async onDownloadImageWithRegionsClicked(): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+
+    const imageWithRegionsData = await this.imageManagementService.generateImageWithRegions(
+      this.image,
+      this.regionList
+    );
+    const fileName = `${this.image.id}-with-regions.jpeg`;
+    saveAs(imageWithRegionsData, fileName);
   }
 
   public onExcludeImageClicked(): void {

@@ -154,16 +154,28 @@
             >
               Restore current state
             </button>
-          </nz-button-group>
-        </nz-collapse-panel>
-
-        <nz-collapse-panel *ngIf="isImageEditable" nzHeader="Mass edit regions">
+          </nz-button-group> </nz-collapse-panel
+        ><nz-collapse-panel
+          *ngIf="isImageEditable"
+          nzHeader="Mass edit regions"
+        >
           <nz-button-group>
             <button nz-button (click)="onMassDeleteRegionsClicked()">
               Mass delete regions
             </button>
             <button nz-button (click)="onDeleteAllRegionsClicked()" nzDanger>
               Delete all regions
+            </button>
+          </nz-button-group>
+        </nz-collapse-panel>
+
+        <nz-collapse-panel nzHeader="Download image">
+          <nz-button-group>
+            <button nz-button (click)="onDownloadImageOnlyClicked()">
+              Image only
+            </button>
+            <button nz-button (click)="onDownloadImageWithRegionsClicked()">
+              With regions
             </button>
           </nz-button-group>
         </nz-collapse-panel>
@@ -585,6 +597,14 @@
       (click)="onDeleteAllRegionsClicked()"
     >
       Delete all regions
+    </li>
+    <li nz-submenu nzTitle="Download image">
+      <ul>
+        <li nz-menu-item (click)="onDownloadImageOnlyClicked()">Image only</li>
+        <li nz-menu-item (click)="onDownloadImageWithRegionsClicked()">
+          With regions
+        </li>
+      </ul>
     </li>
   </ul>
 </nz-dropdown-menu>

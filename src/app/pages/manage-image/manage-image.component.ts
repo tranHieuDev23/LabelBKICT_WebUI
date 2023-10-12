@@ -51,6 +51,7 @@ import { RegionManagementService } from 'src/app/services/module/region-manageme
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import store from 'store2';
+import saveAs from 'file-saver';
 
 const DEFAULT_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
 const MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY = 'MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY';
@@ -561,6 +562,28 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
         this.regionList = [];
       },
     });
+  }
+
+  public async onDownloadImageOnlyClicked(): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+
+    const fileName = `${this.image.id}.jpeg`;
+    saveAs(this.image.originalImageURL, fileName);
+  }
+
+  public async onDownloadImageWithRegionsClicked(): Promise<void> {
+    if (!this.image) {
+      return;
+    }
+
+    const imageWithRegionsData = await this.imageManagementService.generateImageWithRegions(
+      this.image,
+      this.regionList
+    );
+    const fileName = `${this.image.id}-with-regions.jpeg`;
+    saveAs(imageWithRegionsData, fileName);
   }
 
   public onExcludeImageClicked(): void {
