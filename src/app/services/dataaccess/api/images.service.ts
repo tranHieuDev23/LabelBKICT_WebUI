@@ -53,6 +53,12 @@ export class ImageDoesNotHaveImageTagError extends Error {
   }
 }
 
+export class UserHasBookmarkedImageError extends Error {
+  constructor() {
+    super('User has bookmarked the image');
+  }
+}
+
 export class UserHasNotBookmarkedImageError extends Error {
   constructor() {
     super('User has not bookmarked the image');
@@ -330,6 +336,8 @@ export class ImagesService {
           throw new UnauthorizedError();
         case HttpStatusCode.NotFound:
           throw new ImageNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserHasBookmarkedImageError();
         default:
           throw new UnknownAPIError(e);
       }

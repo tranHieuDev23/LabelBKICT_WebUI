@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
+import { NzContextMenuService, NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { ImageFilterOptionsSelectorConfig } from 'src/app/components/image-filter-options-selector/image-filter-options-selector.component';
 import {
@@ -12,6 +13,7 @@ import {
   UnauthorizedError,
   ImageStatus,
   ImageListFilterOptionsWithMetadata,
+  ImageNotFoundError,
 } from 'src/app/services/dataaccess/api';
 import { ImageListManagementService, FilterOptionsService } from 'src/app/services/module/image-list-management';
 import { UserManagementService } from 'src/app/services/module/user-management';
@@ -29,6 +31,8 @@ const MAX_SEARCH_USER_RESULT = 10;
   styleUrls: ['./verify-images.component.scss'],
 })
 export class VerifyImagesComponent implements OnInit {
+  @ViewChild('contextMenu') public contextMenu: NzDropdownMenuComponent | undefined;
+
   public pageIndex: number = DEFAULT_PAGE_INDEX;
   public pageSize: number = DEFAULT_PAGE_SIZE;
   public filterOptions: ImageListFilterOptionsWithMetadata = this.getDefaultImageListFilterOptions();
@@ -43,7 +47,13 @@ export class VerifyImagesComponent implements OnInit {
   public totalImageCount: number = 0;
   public imageList: Image[] = [];
   public imageTagList: ImageTag[][] = [];
+  public isImageBookmarkedList: boolean[] = [];
   public isLoadingImageList: boolean = false;
+
+  private selectedIndexList: number[] = [];
+
+  public contextMenuIsBookmarkSelectedImagesVisible: boolean = false;
+  public contextMenuIsDeleteBookmarksOfSelectedImagesVisible: boolean = false;
 
   public imageListFilterOptionsSelectorConfig = new ImageFilterOptionsSelectorConfig();
 
@@ -61,7 +71,8 @@ export class VerifyImagesComponent implements OnInit {
     private readonly jsonCompressService: JSONCompressService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
-    private readonly notificationService: NzNotificationService
+    private readonly notificationService: NzNotificationService,
+    private readonly contextMenuService: NzContextMenuService
   ) {}
 
   ngOnInit(): void {
@@ -109,7 +120,7 @@ export class VerifyImagesComponent implements OnInit {
     const offset = this.paginationService.getPageOffset(this.pageIndex, this.pageSize);
     const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     try {
-      const { totalImageCount, imageList, imageTagList } =
+      const { totalImageCount, imageList, imageTagList, bookmarkedImageIdList } =
         await this.imageListManagementService.getUserVerifiableImageList(
           offset,
           this.pageSize,
@@ -119,8 +130,14 @@ export class VerifyImagesComponent implements OnInit {
       this.totalImageCount = totalImageCount;
       this.imageList = imageList;
       this.imageTagList = imageTagList;
+      this.isImageBookmarkedList = Array<boolean>(imageList.length);
       this.fromImageIndex = offset + 1;
       this.toImageIndex = offset + imageList.length;
+
+      const bookmarkedImageIdSet = new Set(bookmarkedImageIdList);
+      this.imageList.forEach((image, i) => {
+        this.isImageBookmarkedList[i] = bookmarkedImageIdSet.has(image.id);
+      });
     } catch (e) {
       if (e instanceof InvalidImageListFilterOptionsError) {
         this.notificationService.error('Failed to get image list', 'Invalid image filter options');
@@ -205,6 +222,10 @@ export class VerifyImagesComponent implements OnInit {
     this.router.navigate(['/verify-images'], { queryParams });
   }
 
+  public onImageGridImageListSelected(imageIndexList: number[]): void {
+    this.selectedIndexList = imageIndexList;
+  }
+
   public onImageDbClicked(imageIndex: number): void {
     const image = this.imageList[imageIndex];
     const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
@@ -214,5 +235,66 @@ export class VerifyImagesComponent implements OnInit {
         filter: this.jsonCompressService.compress(filterOptions),
       },
     });
+  }
+
+  public onImageGridContextMenu(event: MouseEvent): boolean {
+    if (this.selectedIndexList.length === 0) {
+      return false;
+    }
+
+    this.contextMenuIsBookmarkSelectedImagesVisible = false;
+    this.contextMenuIsDeleteBookmarksOfSelectedImagesVisible = false;
+    for (const index of this.selectedIndexList) {
+      if (this.isImageBookmarkedList[index]) {
+        this.contextMenuIsDeleteBookmarksOfSelectedImagesVisible = true;
+      } else {
+        this.contextMenuIsBookmarkSelectedImagesVisible = true;
+      }
+    }
+
+    if (this.contextMenu) {
+      this.contextMenuService.create(event, this.contextMenu);
+    }
+    return false;
+  }
+
+  public async onBookmarkSelectedImagesClicked(): Promise<void> {
+    const selectedImageIDList = this.selectedIndexList.map((index) => this.imageList[index].id);
+    try {
+      await this.imageListManagementService.createEmptyBookmarkForImageList(selectedImageIDList);
+      await this.getImageListFromPaginationInfo();
+      this.notificationService.success('Bookmarked selected image(s) successfully', '');
+    } catch (e) {
+      this.handleError('Failed to bookmark selected image(s)', e);
+    }
+  }
+
+  public async onDeleteBookmarksOfSelectedImagesClicked(): Promise<void> {
+    const selectedImageIDList = this.selectedIndexList.map((index) => this.imageList[index].id);
+    try {
+      await this.imageListManagementService.deleteBookmarkOfImageList(selectedImageIDList);
+      await this.getImageListFromPaginationInfo();
+      this.notificationService.success('Deleted bookmark(s) of selected image(s) successfully', '');
+    } catch (e) {
+      this.handleError('Failed to delete bookmark(s) of selected image(s)', e);
+    }
+  }
+
+  private handleError(notificationTitle: string, e: any): void {
+    if (e instanceof UnauthenticatedError) {
+      this.notificationService.error(notificationTitle, 'User is not logged in');
+      this.router.navigateByUrl('/login');
+      return;
+    }
+    if (e instanceof UnauthorizedError) {
+      this.notificationService.error(notificationTitle, 'User does not have the required permission');
+      this.router.navigateByUrl('/welcome');
+      return;
+    }
+    if (e instanceof ImageNotFoundError) {
+      this.notificationService.error(notificationTitle, 'One or more image not found');
+      return;
+    }
+    this.notificationService.error(notificationTitle, 'Unknown error');
   }
 }

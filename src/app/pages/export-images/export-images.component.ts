@@ -55,6 +55,7 @@ export class ExportImagesComponent implements OnInit {
   public totalImageCount: number = 0;
   public imageList: Image[] = [];
   public imageTagList: ImageTag[][] = [];
+  public isImageBookmarkedList: boolean[] = [];
   public isLoadingImageList: boolean = false;
 
   public exportPageIndex: number = DEFAULT_EXPORT_PAGE_INDEX;
@@ -121,7 +122,7 @@ export class ExportImagesComponent implements OnInit {
     const offset = this.paginationService.getPageOffset(this.imagePageIndex, this.imagePageSize);
     const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     try {
-      const { totalImageCount, imageList, imageTagList } =
+      const { totalImageCount, imageList, imageTagList, bookmarkedImageIdList } =
         await this.imageListManagementService.getUserExportableImageList(
           offset,
           this.imagePageSize,
@@ -131,8 +132,14 @@ export class ExportImagesComponent implements OnInit {
       this.totalImageCount = totalImageCount;
       this.imageList = imageList;
       this.imageTagList = imageTagList;
+      this.isImageBookmarkedList = Array<boolean>(imageList.length);
       this.fromImageIndex = offset + 1;
       this.toImageIndex = offset + imageList.length;
+
+      const bookmarkedImageIdSet = new Set(bookmarkedImageIdList);
+      this.imageList.forEach((image, i) => {
+        this.isImageBookmarkedList[i] = bookmarkedImageIdSet.has(image.id);
+      });
     } catch (e) {
       if (e instanceof InvalidImageListFilterOptionsError) {
         this.notificationService.error('Failed to get image list', 'Invalid image filter options');

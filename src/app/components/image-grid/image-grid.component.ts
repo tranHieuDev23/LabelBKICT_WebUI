@@ -14,6 +14,7 @@ export class ImageGridComponent {
 
   @Input() public imageList: Image[] = [];
   @Input() public imageTagList: ImageTag[][] = [];
+  @Input() public isImageBookmarkedList: boolean[] = [];
   @Input() public emptyText = 'There is no image';
   @Input() public loading = true;
 

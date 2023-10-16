@@ -5,6 +5,7 @@ import { RegionLabel } from './region_label';
 import { User } from './user';
 
 export class ImageListFilterOptions {
+  public imageIdList: number[] = [];
   public imageTypeIDList: number[] = [];
   public imageTagIDList: number[] = [];
   public regionLabelIDList: number[] = [];
@@ -25,6 +26,7 @@ export class ImageListFilterOptions {
   public mustHaveDescription = false;
 }
 export class ImageListFilterOptionsWithMetadata {
+  public imageIdList: number[] = [];
   public imageTypeList: (ImageType | null)[] = [];
   public imageTagList: ImageTag[] = [];
   public regionLabelList: RegionLabel[] = [];

@@ -9,6 +9,8 @@ import {
   ImagesService,
   DetectionTaskListSortOption,
   DetectionTask,
+  UserHasBookmarkedImageError,
+  UserHasNotBookmarkedImageError,
 } from '../../dataaccess/api';
 
 @Injectable({
@@ -50,6 +52,7 @@ export class ImageListManagementService {
     totalImageCount: number;
     imageList: Image[];
     imageTagList: ImageTag[][];
+    bookmarkedImageIdList: number[];
   }> {
     filterOptions.uploadedByUserIDList = [];
     filterOptions.originalFilenameQuery = filterOptions.originalFilenameQuery.trim();
@@ -69,6 +72,7 @@ export class ImageListManagementService {
     totalImageCount: number;
     imageList: Image[];
     imageTagList: ImageTag[][];
+    bookmarkedImageIdList: number[];
   }> {
     filterOptions.originalFilenameQuery = filterOptions.originalFilenameQuery.trim();
     return await this.imageListService.getUserManageableImageList(offset, limit, sortOption, filterOptions);
@@ -87,6 +91,7 @@ export class ImageListManagementService {
     totalImageCount: number;
     imageList: Image[];
     imageTagList: ImageTag[][];
+    bookmarkedImageIdList: number[];
   }> {
     filterOptions.originalFilenameQuery = filterOptions.originalFilenameQuery.trim();
     return await this.imageListService.getUserVerifiableImageList(offset, limit, sortOption, filterOptions);
@@ -105,6 +110,7 @@ export class ImageListManagementService {
     totalImageCount: number;
     imageList: Image[];
     imageTagList: ImageTag[][];
+    bookmarkedImageIdList: number[];
   }> {
     filterOptions.originalFilenameQuery = filterOptions.originalFilenameQuery.trim();
     return await this.imageListService.getUserExportableImageList(offset, limit, sortOption, filterOptions);
@@ -141,5 +147,37 @@ export class ImageListManagementService {
       return;
     }
     await this.imagesService.addImageTagListToImageList(imageIDList, imageTagIDList);
+  }
+
+  public async createEmptyBookmarkForImageList(idList: number[]): Promise<void> {
+    await Promise.all(
+      idList.map(async (id) => {
+        try {
+          this.imagesService.createImageBookmark(id, '');
+        } catch (error) {
+          if (error instanceof UserHasBookmarkedImageError) {
+            return;
+          }
+
+          throw error;
+        }
+      })
+    );
+  }
+
+  public async deleteBookmarkOfImageList(idList: number[]): Promise<void> {
+    await Promise.all(
+      idList.map(async (id) => {
+        try {
+          this.imagesService.deleteImageBookmark(id);
+        } catch (error) {
+          if (error instanceof UserHasNotBookmarkedImageError) {
+            return;
+          }
+
+          throw error;
+        }
+      })
+    );
   }
 }

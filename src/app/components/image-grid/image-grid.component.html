@@ -24,11 +24,21 @@
           [dtsSelectItem]="i + 1"
         >
           <p>
-            <nz-tag nzColor="magenta">
+            <nz-tag class="image-type" nzColor="magenta">
               {{ image.imageType ? image.imageType.displayName : "No type" }}
             </nz-tag>
-            <nz-tag [nzColor]="getImageStatusColor(image.status)">
+            <nz-tag
+              class="image-status"
+              [nzColor]="getImageStatusColor(image.status)"
+            >
               {{ getImageStatusString(image.status) }}
+            </nz-tag>
+            <nz-tag
+              *ngIf="isImageBookmarkedList[i]"
+              class="bookmark"
+              nzColor="geekblue"
+            >
+              <i nz-icon nzType="tag"></i> Bookmarked
             </nz-tag>
           </p>
           <p *ngIf="imageTagList[i].length > 0">

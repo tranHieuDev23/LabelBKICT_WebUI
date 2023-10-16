@@ -25,7 +25,10 @@
     emptyText="No image"
     [imageList]="imageList"
     [imageTagList]="imageTagList"
+    [isImageBookmarkedList]="isImageBookmarkedList"
     [loading]="isLoadingImageList"
+    (contextmenu)="onImageGridContextMenu($event)"
+    (imageListSelected)="onImageGridImageListSelected($event)"
     (imageDbClicked)="onImageDbClicked($event)"
   >
   </app-image-grid>
@@ -44,3 +47,23 @@
     </nz-pagination>
   </div>
 </div>
+
+<nz-dropdown-menu #contextMenu>
+  <ul nz-menu>
+    <li
+      *ngIf="contextMenuIsBookmarkSelectedImagesVisible"
+      nz-menu-item
+      (click)="onBookmarkSelectedImagesClicked()"
+    >
+      Bookmark selected image(s)
+    </li>
+    <li
+      *ngIf="contextMenuIsDeleteBookmarksOfSelectedImagesVisible"
+      nz-menu-item
+      nzDanger
+      (click)="onDeleteBookmarksOfSelectedImagesClicked()"
+    >
+      Delete bookmarks of selected image(s)
+    </li>
+  </ul>
+</nz-dropdown-menu>

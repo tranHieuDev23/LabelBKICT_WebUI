@@ -169,6 +169,7 @@ export class ImageListService {
     totalImageCount: number;
     imageList: Image[];
     imageTagList: ImageTag[][];
+    bookmarkedImageIdList: number[];
   }> {
     try {
       const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
@@ -189,8 +190,9 @@ export class ImageListService {
       const imageTagList = (response.data.image_tag_list || []).map((imageTagSublist: any[]) =>
         imageTagSublist.map(ImageTag.fromJSON)
       );
+      const bookmarkedImageIdList = (response.data.bookmarked_image_id_list || []).map((item: any) => +item);
 
-      return { totalImageCount, imageList, imageTagList };
+      return { totalImageCount, imageList, imageTagList, bookmarkedImageIdList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -242,6 +244,7 @@ export class ImageListService {
     totalImageCount: number;
     imageList: Image[];
     imageTagList: ImageTag[][];
+    bookmarkedImageIdList: number[];
   }> {
     try {
       const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
@@ -262,8 +265,9 @@ export class ImageListService {
       const imageTagList = (response.data.image_tag_list || []).map((imageTagSublist: any[]) =>
         imageTagSublist.map(ImageTag.fromJSON)
       );
+      const bookmarkedImageIdList = (response.data.bookmarked_image_id_list || []).map((item: any) => +item);
 
-      return { totalImageCount, imageList, imageTagList };
+      return { totalImageCount, imageList, imageTagList, bookmarkedImageIdList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -315,6 +319,7 @@ export class ImageListService {
     totalImageCount: number;
     imageList: Image[];
     imageTagList: ImageTag[][];
+    bookmarkedImageIdList: number[];
   }> {
     try {
       const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
@@ -335,8 +340,9 @@ export class ImageListService {
       const imageTagList = (response.data.image_tag_list || []).map((imageTagSublist: any[]) =>
         imageTagSublist.map(ImageTag.fromJSON)
       );
+      const bookmarkedImageIdList = (response.data.bookmarked_image_id_list || []).map((item: any) => +item);
 
-      return { totalImageCount, imageList, imageTagList };
+      return { totalImageCount, imageList, imageTagList, bookmarkedImageIdList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -388,6 +394,7 @@ export class ImageListService {
     totalImageCount: number;
     imageList: Image[];
     imageTagList: ImageTag[][];
+    bookmarkedImageIdList: number[];
   }> {
     try {
       const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
@@ -408,8 +415,9 @@ export class ImageListService {
       const imageTagList = (response.data.image_tag_list || []).map((imageTagSublist: any[]) =>
         imageTagSublist.map(ImageTag.fromJSON)
       );
+      const bookmarkedImageIdList = (response.data.bookmarked_image_id_list || []).map((item: any) => +item);
 
-      return { totalImageCount, imageList, imageTagList };
+      return { totalImageCount, imageList, imageTagList, bookmarkedImageIdList };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

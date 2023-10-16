@@ -9,6 +9,7 @@ import {
   Image,
   ImageListFilterOptionsWithMetadata,
   ImageListSortOption,
+  ImageNotFoundError,
   ImageTag,
   ImageTagGroup,
   ImageTagGroupAndTagList,
@@ -55,6 +56,7 @@ export class MyImagesComponent implements OnInit {
   public totalImageCount: number = 0;
   public imageList: Image[] = [];
   public imageTagList: ImageTag[][] = [];
+  public isImageBookmarkedList: boolean[] = [];
   public isLoadingImageList: boolean = false;
 
   public imageListFilterOptionsSelectorConfig = new ImageFilterOptionsSelectorConfig();
@@ -67,6 +69,9 @@ export class MyImagesComponent implements OnInit {
   public imageTypeList: ImageType[] = [];
 
   private selectedIndexList: number[] = [];
+
+  public contextMenuIsBookmarkSelectedImagesVisible: boolean = false;
+  public contextMenuIsDeleteBookmarksOfSelectedImagesVisible: boolean = false;
 
   public isAddImageTagToSelectedImageListModalVisible: boolean = false;
   public addImageTagToSelectedImageListModalImageTagGroupList: ImageTagGroup[] = [];
@@ -132,17 +137,24 @@ export class MyImagesComponent implements OnInit {
     const offset = this.paginationService.getPageOffset(this.pageIndex, this.pageSize);
     const filterOptions = this.filterOptionsService.getFilterOptionsFromFilterOptionsWithMetadata(this.filterOptions);
     try {
-      const { totalImageCount, imageList, imageTagList } = await this.imageListManagementService.getUserImageList(
-        offset,
-        this.pageSize,
-        this.imageListSortOption,
-        filterOptions
-      );
+      const { totalImageCount, imageList, imageTagList, bookmarkedImageIdList } =
+        await this.imageListManagementService.getUserImageList(
+          offset,
+          this.pageSize,
+          this.imageListSortOption,
+          filterOptions
+        );
       this.totalImageCount = totalImageCount;
       this.imageList = imageList;
       this.imageTagList = imageTagList;
+      this.isImageBookmarkedList = Array<boolean>(imageList.length);
       this.fromImageIndex = offset + 1;
       this.toImageIndex = offset + imageList.length;
+
+      const bookmarkedImageIdSet = new Set(bookmarkedImageIdList);
+      this.imageList.forEach((image, i) => {
+        this.isImageBookmarkedList[i] = bookmarkedImageIdSet.has(image.id);
+      });
     } catch (e) {
       this.handleError('Failed to get image list', e);
     } finally {
@@ -220,6 +232,16 @@ export class MyImagesComponent implements OnInit {
         } catch (e) {
           this.handleError('Failed to get image type list', e);
           return;
+        }
+      }
+
+      this.contextMenuIsBookmarkSelectedImagesVisible = false;
+      this.contextMenuIsDeleteBookmarksOfSelectedImagesVisible = false;
+      for (const index of this.selectedIndexList) {
+        if (this.isImageBookmarkedList[index]) {
+          this.contextMenuIsDeleteBookmarksOfSelectedImagesVisible = true;
+        } else {
+          this.contextMenuIsBookmarkSelectedImagesVisible = true;
         }
       }
 
@@ -323,6 +345,28 @@ export class MyImagesComponent implements OnInit {
     this.isAddImageTagToSelectedImageListModalVisible = false;
   }
 
+  public async onBookmarkSelectedImagesClicked(): Promise<void> {
+    const selectedImageIDList = this.selectedIndexList.map((index) => this.imageList[index].id);
+    try {
+      await this.imageListManagementService.createEmptyBookmarkForImageList(selectedImageIDList);
+      await this.getImageListFromPaginationInfo();
+      this.notificationService.success('Bookmarked selected image(s) successfully', '');
+    } catch (e) {
+      this.handleError('Failed to bookmark selected image(s)', e);
+    }
+  }
+
+  public async onDeleteBookmarksOfSelectedImagesClicked(): Promise<void> {
+    const selectedImageIDList = this.selectedIndexList.map((index) => this.imageList[index].id);
+    try {
+      await this.imageListManagementService.deleteBookmarkOfImageList(selectedImageIDList);
+      await this.getImageListFromPaginationInfo();
+      this.notificationService.success('Deleted bookmark(s) of selected image(s) successfully', '');
+    } catch (e) {
+      this.handleError('Failed to delete bookmark(s) of selected image(s)', e);
+    }
+  }
+
   public onDeleteSelectedImagesClicked(): void {
     const selectedImageIDList = this.selectedIndexList.map((index) => this.imageList[index].id);
     this.modalService.create({
@@ -400,6 +444,10 @@ export class MyImagesComponent implements OnInit {
     }
     if (e instanceof TooManyImagesError) {
       this.notificationService.error(notificationTitle, 'Too many images selected');
+      return;
+    }
+    if (e instanceof ImageNotFoundError) {
+      this.notificationService.error(notificationTitle, 'One or more image not found');
       return;
     }
     this.notificationService.error(notificationTitle, 'Unknown error');

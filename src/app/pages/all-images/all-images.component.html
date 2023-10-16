@@ -24,6 +24,7 @@
     emptyText="No image"
     [imageList]="imageList"
     [imageTagList]="imageTagList"
+    [isImageBookmarkedList]="isImageBookmarkedList"
     [loading]="isLoadingImageList"
     (contextmenu)="onImageGridContextMenu($event)"
     (imageListSelected)="onImageGridImageListSelected($event)"
@@ -67,6 +68,21 @@
       (click)="onRequestRegionDetectionForSelectedImagesClicked()"
     >
       Request for AI-based lesion suggestion for selected image(s)
+    </li>
+    <li
+      *ngIf="contextMenuIsBookmarkSelectedImagesVisible"
+      nz-menu-item
+      (click)="onBookmarkSelectedImagesClicked()"
+    >
+      Bookmark selected image(s)
+    </li>
+    <li
+      *ngIf="contextMenuIsDeleteBookmarksOfSelectedImagesVisible"
+      nz-menu-item
+      nzDanger
+      (click)="onDeleteBookmarksOfSelectedImagesClicked()"
+    >
+      Delete bookmarks of selected image(s)
     </li>
     <li nz-menu-item nzDanger (click)="onDeleteSelectedImagesClicked()">
       Delete selected image(s)
