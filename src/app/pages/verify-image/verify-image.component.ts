@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { AfterContentInit, Component, HostListener, OnDestroy, ViewChild } from '@angular/core';
+import { AfterContentInit, Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, NavigationStart, Params, Router } from '@angular/router';
 import saveAs from 'file-saver';
 import { NzContextMenuService, NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
@@ -46,6 +46,7 @@ import { ImageStatusService } from 'src/app/services/module/image-management/ima
 import { ImageTypeManagementService } from 'src/app/services/module/image-type-management';
 import { RegionImageService } from 'src/app/services/module/region-management/region-image.service';
 import { RegionManagementService } from 'src/app/services/module/region-management/region-management.service';
+import { SessionManagementService } from 'src/app/services/module/session-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import store from 'store2';
 
@@ -66,7 +67,7 @@ const VERIFY_IMAGE_DRAW_BOUNDARY_ENABLED_KEY = 'VERIFY_IMAGE_DRAW_BOUNDARY_ENABL
   templateUrl: './verify-image.component.html',
   styleUrls: ['./verify-image.component.scss'],
 })
-export class VerifyImageComponent implements AfterContentInit, OnDestroy {
+export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy {
   @ViewChild('regionSelector', { static: false })
   public regionSelector: RegionSelectorComponent | undefined;
   @ViewChild('descriptionEditableText', { static: false })
@@ -92,6 +93,8 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
 
   public isCreatingImageBookmark = false;
   public isDeletingImageBookmark = false;
+
+  public userHasImageExportPermission = false;
 
   public isShowingRegionSnapshot = false;
   public regionSnapshotList: Region[] = [];
@@ -132,11 +135,16 @@ export class VerifyImageComponent implements AfterContentInit, OnDestroy {
     private readonly notificationService: NzNotificationService,
     private readonly modalService: NzModalService,
     private readonly contextMenuService: NzContextMenuService,
-    private readonly jsonCompressService: JSONCompressService
+    private readonly jsonCompressService: JSONCompressService,
+    private readonly sessionManagementService: SessionManagementService
   ) {
     this.routerSubscription = router.events.subscribe((event) => {
       this.onRouterEvent(event);
     });
+  }
+
+  ngOnInit(): void {
+    this.userHasImageExportPermission = this.sessionManagementService.checkSessionUserHasPermission('images.export');
   }
 
   ngAfterContentInit(): void {

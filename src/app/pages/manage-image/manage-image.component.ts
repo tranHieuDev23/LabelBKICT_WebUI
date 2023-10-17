@@ -99,6 +99,8 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
   public isCreatingImageBookmark = false;
   public isDeletingImageBookmark = false;
 
+  public userHasImageExportPermission = false;
+
   public isShowingRegionSnapshot = false;
   public regionSnapshotList: Region[] = [];
 
@@ -151,6 +153,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
   }
 
   ngOnInit(): void {
+    this.userHasImageExportPermission = this.sessionManagementService.checkSessionUserHasPermission('images.export');
     (async () => {
       try {
         const { imageTypeList } = await this.imageTypeManagementService.getImageTypeList();

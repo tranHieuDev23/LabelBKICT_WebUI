@@ -157,8 +157,13 @@
             <button nz-button (click)="onDeleteAllRegionsClicked()" nzDanger>
               Delete all regions
             </button>
-          </nz-button-group> </nz-collapse-panel
-        ><nz-collapse-panel nzHeader="Download image">
+          </nz-button-group>
+        </nz-collapse-panel>
+
+        <nz-collapse-panel
+          *ngIf="userHasImageExportPermission"
+          nzHeader="Download image"
+        >
           <nz-button-group>
             <button nz-button (click)="onDownloadImageOnlyClicked()">
               Image only
@@ -499,7 +504,11 @@
     >
       Delete all regions
     </li>
-    <li nz-submenu nzTitle="Download image">
+    <li
+      *ngIf="userHasImageExportPermission"
+      nz-submenu
+      nzTitle="Download image"
+    >
       <ul>
         <li nz-menu-item (click)="onDownloadImageOnlyClicked()">Image only</li>
         <li nz-menu-item (click)="onDownloadImageWithRegionsClicked()">
