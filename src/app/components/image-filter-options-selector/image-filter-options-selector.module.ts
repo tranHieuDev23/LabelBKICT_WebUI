@@ -10,6 +10,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzNotificationModule } from 'ng-zorro-antd/notification';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTypographyModule } from 'ng-zorro-antd/typography';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 @NgModule({
   declarations: [ImageFilterOptionsSelectorComponent],
@@ -24,6 +25,7 @@ import { NzTypographyModule } from 'ng-zorro-antd/typography';
     NzDatePickerModule,
     NzCheckboxModule,
     NzInputModule,
+    NzToolTipModule,
   ],
   exports: [ImageFilterOptionsSelectorComponent],
 })
