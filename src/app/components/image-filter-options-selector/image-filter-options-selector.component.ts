@@ -18,6 +18,7 @@ import {
 import { ImageStatusService } from 'src/app/services/module/image-management/image-status.service';
 import { DateToTimeService } from 'src/app/services/utils/date-to-time/date-to-time.service';
 import { DelayedCallbackService } from 'src/app/services/utils/delayed-callback/delayed-callback.service';
+import { ListFileService } from 'src/app/services/utils/list-file/list-file.service';
 
 export class ImageFilterOptionsSelectorConfig {
   public canFilterImageType = true;
@@ -33,6 +34,7 @@ export class ImageFilterOptionsSelectorConfig {
   public canFilterOriginalFilename = true;
   public canFilterBookmarked = true;
   public canFilterDescription = true;
+  public canFilterOriginalFilenameList = true;
 }
 
 const UPLOAD_BY_USER_SEARCH_CALLBACK_ID = 'UPLOAD_BY_USER_SEARCH_CALLBACK_ID';
@@ -120,7 +122,8 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
     private readonly notificationService: NzNotificationService,
     private readonly delayedCallbackService: DelayedCallbackService,
     private readonly dateToTimeService: DateToTimeService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly listFileService: ListFileService
   ) {}
 
   ngOnInit(): void {
@@ -252,6 +255,24 @@ export class ImageFilterOptionsSelectorComponent implements OnInit {
       },
       ORIGINAL_FILE_NAME_INPUT_CALLBACK_DELAY
     );
+  }
+
+  public async onOriginalFileNameFileChange(event: Event): Promise<void> {
+    const targetElement = event.currentTarget as HTMLInputElement;
+    if (targetElement === null || targetElement.files === null) {
+      return;
+    }
+
+    const file = targetElement.files.item(0);
+    if (!file) {
+      this._filterOptions.originalFilenameList = [];
+      this.onFilterOptionsUpdated();
+      return;
+    }
+
+    const rows = await this.listFileService.parseListFile(file);
+    this._filterOptions.originalFilenameList = rows.map((item) => `${item.Filename}`);
+    this.onFilterOptionsUpdated();
   }
 
   public onSelectedImageListSortOptionChanged(option: ImageListSortOption): void {

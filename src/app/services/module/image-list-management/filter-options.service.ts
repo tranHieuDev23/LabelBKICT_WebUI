@@ -24,6 +24,7 @@ export class FilterOptionsService {
     filterOptions.verifyTimeEnd = filterOptionsWithMetadata.verifyTimeEnd;
     filterOptions.imageStatusList = filterOptionsWithMetadata.imageStatusList;
     filterOptions.originalFilenameQuery = filterOptionsWithMetadata.originalFilenameQuery;
+    filterOptions.originalFilenameList = filterOptionsWithMetadata.originalFilenameList;
     filterOptions.mustMatchAllImageTags = filterOptionsWithMetadata.mustMatchAllImageTags;
     filterOptions.mustMatchAllRegionLabels = filterOptionsWithMetadata.mustMatchAllRegionLabels;
     filterOptions.mustBeBookmarked = filterOptionsWithMetadata.mustBeBookmarked;

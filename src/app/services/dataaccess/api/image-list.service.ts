@@ -538,6 +538,7 @@ export class ImageListService {
       filter_verify_time_start: filterOptions.verifyTimeStart,
       filter_verify_time_end: filterOptions.verifyTimeEnd,
       original_filename_query: filterOptions.originalFilenameQuery,
+      filter_original_filename_list: filterOptions.originalFilenameList,
       filter_image_statuses: filterOptions.imageStatusList,
       must_match_all_image_tags: filterOptions.mustMatchAllImageTags ? 1 : 0,
       must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels ? 1 : 0,

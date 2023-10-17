@@ -1,390 +1,181 @@
 <nz-row class="filter-options" nzJustify="start" [nzGutter]="{ md: 8 }">
-  <nz-col
-    *ngIf="selectorConfig.canFilterImageType"
-    nzSpan="24"
-    [nzMd]="12"
-    [nzLg]="8"
-  >
+  <nz-col *ngIf="selectorConfig.canFilterImageType" nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Filter image type</span> <br />
-    <nz-select
-      [nzMaxTagCount]="1"
-      [nzMaxTagPlaceholder]="maxTagPlaceHolder"
-      nzMode="multiple"
-      nzPlaceHolder="Filter image type"
-      [compareWith]="sameIDCompareFunc"
-      [(ngModel)]="filterOptions.imageTypeList"
-      class="filter-options-select"
-      (ngModelChange)="onFilterOptionsUpdated()"
-    >
+    <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple"
+      nzPlaceHolder="Filter image type" [compareWith]="sameIDCompareFunc" [(ngModel)]="filterOptions.imageTypeList"
+      class="filter-options-select" (ngModelChange)="onFilterOptionsUpdated()">
       <nz-option nzLabel="No type" [nzValue]="null"> </nz-option>
-      <nz-option
-        *ngFor="let imageType of imageTypeList"
-        [nzLabel]="imageType.displayName"
-        [nzValue]="imageType"
-      >
+      <nz-option *ngFor="let imageType of imageTypeList" [nzLabel]="imageType.displayName" [nzValue]="imageType">
       </nz-option>
-      <nz-option
-        *ngFor="let imageType of filterOptions.imageTypeList"
-        nzHide="true"
-        [nzLabel]="imageType?.displayName || 'No type'"
-        [nzValue]="imageType"
-      >
+      <nz-option *ngFor="let imageType of filterOptions.imageTypeList" nzHide="true"
+        [nzLabel]="imageType?.displayName || 'No type'" [nzValue]="imageType">
       </nz-option>
     </nz-select>
   </nz-col>
 
-  <nz-col
-    *ngIf="selectorConfig.canFilterImageStatus"
-    nzSpan="24"
-    [nzMd]="12"
-    [nzLg]="8"
-  >
+  <nz-col *ngIf="selectorConfig.canFilterImageStatus" nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Filter image status</span> <br />
-    <nz-select
-      [nzMaxTagCount]="1"
-      [nzMaxTagPlaceholder]="maxTagPlaceHolder"
-      nzMode="multiple"
-      nzPlaceHolder="Filter image status"
-      [(ngModel)]="filterOptions.imageStatusList"
-      class="filter-options-select"
-      (ngModelChange)="onFilterOptionsUpdated()"
-    >
-      <nz-option
-        *ngFor="let imageStatus of imageStatusList"
-        [nzLabel]="getImageStatusString(imageStatus)"
-        [nzValue]="imageStatus"
-      >
+    <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple"
+      nzPlaceHolder="Filter image status" [(ngModel)]="filterOptions.imageStatusList" class="filter-options-select"
+      (ngModelChange)="onFilterOptionsUpdated()">
+      <nz-option *ngFor="let imageStatus of imageStatusList" [nzLabel]="getImageStatusString(imageStatus)"
+        [nzValue]="imageStatus">
       </nz-option>
     </nz-select>
   </nz-col>
 
-  <nz-col
-    *ngIf="selectorConfig.canFilterUploadedByUser"
-    nzSpan="24"
-    [nzMd]="12"
-    [nzLg]="8"
-  >
+  <nz-col *ngIf="selectorConfig.canFilterUploadedByUser" nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Filter uploader</span> <br />
-    <nz-select
-      [nzMaxTagCount]="1"
-      [nzMaxTagPlaceholder]="maxTagPlaceHolder"
-      nzMode="multiple"
-      [nzServerSearch]="true"
-      nzPlaceHolder="Filter uploader"
-      [compareWith]="sameIDCompareFunc"
-      [(ngModel)]="filterOptions.uploadedByUserList"
-      class="filter-options-select"
-      (nzOnSearch)="onUploadedByUserSearch($event)"
-      (ngModelChange)="onFilterOptionsUpdated()"
-    >
-      <nz-option
-        *ngIf="uploadedByUserOptionList.length === 0"
-        nzDisabled
-        nzCustomContent
-      >
+    <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple" [nzServerSearch]="true"
+      nzPlaceHolder="Filter uploader" [compareWith]="sameIDCompareFunc" [(ngModel)]="filterOptions.uploadedByUserList"
+      class="filter-options-select" (nzOnSearch)="onUploadedByUserSearch($event)"
+      (ngModelChange)="onFilterOptionsUpdated()">
+      <nz-option *ngIf="uploadedByUserOptionList.length === 0" nzDisabled nzCustomContent>
         Search by username or display name...
       </nz-option>
-      <nz-option
-        *ngFor="let user of uploadedByUserOptionList"
-        [nzLabel]="user.displayName"
-        [nzValue]="user"
-      >
+      <nz-option *ngFor="let user of uploadedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
       </nz-option>
-      <nz-option
-        *ngFor="let user of filterOptions.uploadedByUserList"
-        nzHide="true"
-        [nzLabel]="user.displayName"
-        [nzValue]="user"
-      >
+      <nz-option *ngFor="let user of filterOptions.uploadedByUserList" nzHide="true" [nzLabel]="user.displayName"
+        [nzValue]="user">
       </nz-option>
     </nz-select>
   </nz-col>
 
-  <nz-col
-    *ngIf="selectorConfig.canFilterPublishedByUser"
-    nzSpan="24"
-    [nzMd]="12"
-    [nzLg]="8"
-  >
+  <nz-col *ngIf="selectorConfig.canFilterPublishedByUser" nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Filter publisher</span> <br />
-    <nz-select
-      [nzMaxTagCount]="1"
-      [nzMaxTagPlaceholder]="maxTagPlaceHolder"
-      nzMode="multiple"
-      [nzServerSearch]="true"
-      nzPlaceHolder="Filter publisher"
-      [compareWith]="sameIDCompareFunc"
-      [(ngModel)]="filterOptions.publishedByUserList"
-      class="filter-options-select"
-      (nzOnSearch)="onPublishedByUserSearch($event)"
-      (ngModelChange)="onFilterOptionsUpdated()"
-    >
-      <nz-option
-        *ngIf="publishedByUserOptionList.length === 0"
-        nzDisabled
-        nzCustomContent
-      >
+    <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple" [nzServerSearch]="true"
+      nzPlaceHolder="Filter publisher" [compareWith]="sameIDCompareFunc" [(ngModel)]="filterOptions.publishedByUserList"
+      class="filter-options-select" (nzOnSearch)="onPublishedByUserSearch($event)"
+      (ngModelChange)="onFilterOptionsUpdated()">
+      <nz-option *ngIf="publishedByUserOptionList.length === 0" nzDisabled nzCustomContent>
         Search by username or display name...
       </nz-option>
-      <nz-option
-        *ngFor="let user of publishedByUserOptionList"
-        [nzLabel]="user.displayName"
-        [nzValue]="user"
-      >
+      <nz-option *ngFor="let user of publishedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
       </nz-option>
-      <nz-option
-        *ngFor="let user of filterOptions.publishedByUserList"
-        nzHide="true"
-        [nzLabel]="user.displayName"
-        [nzValue]="user"
-      >
+      <nz-option *ngFor="let user of filterOptions.publishedByUserList" nzHide="true" [nzLabel]="user.displayName"
+        [nzValue]="user">
       </nz-option>
     </nz-select>
   </nz-col>
 
-  <nz-col
-    *ngIf="selectorConfig.canFilterVerifiedByUser"
-    nzSpan="24"
-    [nzMd]="12"
-    [nzLg]="8"
-  >
+  <nz-col *ngIf="selectorConfig.canFilterVerifiedByUser" nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Filter verifier</span> <br />
-    <nz-select
-      [nzMaxTagCount]="1"
-      [nzMaxTagPlaceholder]="maxTagPlaceHolder"
-      nzMode="multiple"
-      [nzServerSearch]="true"
-      nzPlaceHolder="Filter verifier"
-      [compareWith]="sameIDCompareFunc"
-      [(ngModel)]="filterOptions.verifiedByUserList"
-      class="filter-options-select"
-      (nzOnSearch)="onVerifiedByUserSearch($event)"
-      (ngModelChange)="onFilterOptionsUpdated()"
-    >
-      <nz-option
-        *ngIf="verifiedByUserOptionList.length === 0"
-        nzDisabled
-        nzCustomContent
-      >
+    <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple" [nzServerSearch]="true"
+      nzPlaceHolder="Filter verifier" [compareWith]="sameIDCompareFunc" [(ngModel)]="filterOptions.verifiedByUserList"
+      class="filter-options-select" (nzOnSearch)="onVerifiedByUserSearch($event)"
+      (ngModelChange)="onFilterOptionsUpdated()">
+      <nz-option *ngIf="verifiedByUserOptionList.length === 0" nzDisabled nzCustomContent>
         Search by username or display name...
       </nz-option>
-      <nz-option
-        *ngFor="let user of verifiedByUserOptionList"
-        [nzLabel]="user.displayName"
-        [nzValue]="user"
-      >
+      <nz-option *ngFor="let user of verifiedByUserOptionList" [nzLabel]="user.displayName" [nzValue]="user">
       </nz-option>
-      <nz-option
-        *ngFor="let user of filterOptions.verifiedByUserList"
-        nzHide="true"
-        [nzLabel]="user.displayName"
-        [nzValue]="user"
-      >
+      <nz-option *ngFor="let user of filterOptions.verifiedByUserList" nzHide="true" [nzLabel]="user.displayName"
+        [nzValue]="user">
       </nz-option>
     </nz-select>
   </nz-col>
 
-  <nz-col
-    *ngIf="selectorConfig.canFilterUploadTime"
-    nzSpan="24"
-    [nzMd]="12"
-    [nzLg]="8"
-  >
+  <nz-col *ngIf="selectorConfig.canFilterUploadTime" nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Filter upload time</span> <br />
-    <nz-range-picker
-      [nzShowTime]="true"
-      [(ngModel)]="selectedUploadTimeRange"
-      (ngModelChange)="onSelectedUploadTimeRangeUpdated($event)"
-    >
+    <nz-range-picker [nzShowTime]="true" [(ngModel)]="selectedUploadTimeRange"
+      (ngModelChange)="onSelectedUploadTimeRangeUpdated($event)">
     </nz-range-picker>
   </nz-col>
 
-  <nz-col
-    *ngIf="selectorConfig.canFilterVerifyTime"
-    nzSpan="24"
-    [nzMd]="12"
-    [nzLg]="8"
-  >
+  <nz-col *ngIf="selectorConfig.canFilterVerifyTime" nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Filter publish time</span> <br />
-    <nz-range-picker
-      [nzShowTime]="true"
-      [(ngModel)]="selectedPublishTimeRange"
-      (ngModelChange)="onSelectedPublishTimeRangeUpdated($event)"
-    >
+    <nz-range-picker [nzShowTime]="true" [(ngModel)]="selectedPublishTimeRange"
+      (ngModelChange)="onSelectedPublishTimeRangeUpdated($event)">
     </nz-range-picker>
   </nz-col>
 
-  <nz-col
-    *ngIf="selectorConfig.canFilterUploadTime"
-    nzSpan="24"
-    [nzMd]="12"
-    [nzLg]="8"
-  >
+  <nz-col *ngIf="selectorConfig.canFilterUploadTime" nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Filter verify time</span> <br />
-    <nz-range-picker
-      [nzShowTime]="true"
-      [(ngModel)]="selectedVerifyTimeRange"
-      (ngModelChange)="onSelectedVerifyTimeRangeUpdated($event)"
-    >
+    <nz-range-picker [nzShowTime]="true" [(ngModel)]="selectedVerifyTimeRange"
+      (ngModelChange)="onSelectedVerifyTimeRangeUpdated($event)">
     </nz-range-picker>
   </nz-col>
 
-  <nz-col
-    *ngIf="selectorConfig.canFilterImageTag"
-    nzSpan="24"
-    [nzMd]="12"
-    [nzLg]="8"
-  >
+  <nz-col *ngIf="selectorConfig.canFilterImageTag" nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Filter image tags</span> <br />
-    <nz-select
-      [nzMaxTagCount]="1"
-      [nzMaxTagPlaceholder]="maxTagPlaceHolder"
-      nzMode="multiple"
-      nzPlaceHolder="Filter image tags"
-      [compareWith]="sameIDCompareFunc"
-      [(ngModel)]="filterOptions.imageTagList"
-      class="filter-options-select"
-      (ngModelChange)="onFilterOptionsUpdated()"
-    >
-      <ng-template
-        ngFor
-        let-imageTagGroup
-        [ngForOf]="imageTagGroupList"
-        let-i="index"
-      >
+    <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple"
+      nzPlaceHolder="Filter image tags" [compareWith]="sameIDCompareFunc" [(ngModel)]="filterOptions.imageTagList"
+      class="filter-options-select" (ngModelChange)="onFilterOptionsUpdated()">
+      <ng-template ngFor let-imageTagGroup [ngForOf]="imageTagGroupList" let-i="index">
         <nz-option nzDisabled="true" nzCustomContent="true">
           <span nz-typography nzType="secondary">{{
             imageTagGroup.displayName
-          }}</span>
+            }}</span>
         </nz-option>
-        <nz-option
-          *ngFor="let imageTag of imageTagList[i]"
-          [nzValue]="imageTag"
-          [nzLabel]="imageTag.displayName"
-        >
+        <nz-option *ngFor="let imageTag of imageTagList[i]" [nzValue]="imageTag" [nzLabel]="imageTag.displayName">
         </nz-option>
-        <nz-option
-          *ngFor="let imageTag of filterOptions.imageTagList"
-          nzHide="true"
-          [nzValue]="imageTag"
-          [nzLabel]="imageTag.displayName"
-        >
+        <nz-option *ngFor="let imageTag of filterOptions.imageTagList" nzHide="true" [nzValue]="imageTag"
+          [nzLabel]="imageTag.displayName">
         </nz-option>
       </ng-template>
     </nz-select>
   </nz-col>
 
-  <nz-col
-    *ngIf="selectorConfig.canFilterRegionLabel"
-    nzSpan="24"
-    [nzMd]="12"
-    [nzLg]="8"
-  >
+  <nz-col *ngIf="selectorConfig.canFilterRegionLabel" nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Filter region labels</span> <br />
-    <nz-select
-      [nzMaxTagCount]="1"
-      [nzMaxTagPlaceholder]="maxTagPlaceHolder"
-      nzMode="multiple"
-      nzPlaceHolder="Filter region labels"
-      [compareWith]="sameIDCompareFunc"
-      [(ngModel)]="filterOptions.regionLabelList"
-      class="filter-options-select"
-      (ngModelChange)="onFilterOptionsUpdated()"
-    >
+    <nz-select [nzMaxTagCount]="1" [nzMaxTagPlaceholder]="maxTagPlaceHolder" nzMode="multiple"
+      nzPlaceHolder="Filter region labels" [compareWith]="sameIDCompareFunc" [(ngModel)]="filterOptions.regionLabelList"
+      class="filter-options-select" (ngModelChange)="onFilterOptionsUpdated()">
       <ng-template ngFor let-imageType [ngForOf]="imageTypeList" let-i="index">
         <nz-option nzDisabled="true" nzCustomContent="true">
           <span nz-typography nzType="secondary">{{
             imageType.displayName
-          }}</span>
+            }}</span>
         </nz-option>
-        <nz-option
-          *ngFor="let regionLabel of regionLabelList[i]"
-          [nzValue]="regionLabel"
-          [nzLabel]="regionLabel.displayName"
-        >
+        <nz-option *ngFor="let regionLabel of regionLabelList[i]" [nzValue]="regionLabel"
+          [nzLabel]="regionLabel.displayName">
         </nz-option>
-        <nz-option
-          *ngFor="let regionLabel of filterOptions.regionLabelList"
-          nzHide="true"
-          [nzValue]="regionLabel"
-          [nzLabel]="regionLabel.displayName"
-        >
+        <nz-option *ngFor="let regionLabel of filterOptions.regionLabelList" nzHide="true" [nzValue]="regionLabel"
+          [nzLabel]="regionLabel.displayName">
         </nz-option>
       </ng-template>
     </nz-select>
   </nz-col>
 
-  <nz-col
-    *ngIf="selectorConfig.canFilterOriginalFilename"
-    nzSpan="24"
-    [nzMd]="12"
-    [nzLg]="8"
-  >
+  <nz-col *ngIf="selectorConfig.canFilterOriginalFilename" nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Filter original filename</span> <br />
-    <input
-      nz-input
-      placeholder="Original filename"
-      [(ngModel)]="filterOptions.originalFilenameQuery"
-      (keyup)="onOriginalFileNameInputChanged()"
-    />
+    <input nz-input placeholder="Original filename" [(ngModel)]="filterOptions.originalFilenameQuery"
+      (keyup)="onOriginalFileNameInputChanged()" />
+  </nz-col>
+
+  <nz-col *ngIf="selectorConfig.canFilterOriginalFilenameList" nzSpan="24" [nzMd]="12" [nzLg]="8">
+    <span nz-typography>Filter original filename list</span> <br />
+    <input nz-input type="file"
+      accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+      placeholder="CSV or XLSX file with one column Filename" (change)="onOriginalFileNameFileChange($event)" />
   </nz-col>
 
   <nz-col nzSpan="24" [nzMd]="12" [nzLg]="8">
     <span nz-typography>Sort by</span> <br />
-    <nz-select
-      class="filter-options-select"
-      [(ngModel)]="sortOption"
-      (ngModelChange)="onSelectedImageListSortOptionChanged($event)"
-    >
-      <nz-option
-        *ngFor="let sortOption of imageListSortOptionList"
-        [nzLabel]="getImageListSortOptionString(sortOption)"
-        [nzValue]="sortOption"
-      >
+    <nz-select class="filter-options-select" [(ngModel)]="sortOption"
+      (ngModelChange)="onSelectedImageListSortOptionChanged($event)">
+      <nz-option *ngFor="let sortOption of imageListSortOptionList" [nzLabel]="getImageListSortOptionString(sortOption)"
+        [nzValue]="sortOption">
       </nz-option>
     </nz-select>
   </nz-col>
 </nz-row>
 
-<label
-  *ngIf="selectorConfig.canFilterImageTag"
-  nz-checkbox
-  class="and-mode-checkbox"
-  [(ngModel)]="filterOptions.mustMatchAllImageTags"
-  (ngModelChange)="onFilterOptionsUpdated()"
->
-  Image must have all selected tags </label
-><br />
+<label *ngIf="selectorConfig.canFilterImageTag" nz-checkbox class="and-mode-checkbox"
+  [(ngModel)]="filterOptions.mustMatchAllImageTags" (ngModelChange)="onFilterOptionsUpdated()">
+  Image must have all selected tags </label><br />
 
-<label
-  *ngIf="selectorConfig.canFilterRegionLabel"
-  nz-checkbox
-  class="and-mode-checkbox"
-  [(ngModel)]="filterOptions.mustMatchAllRegionLabels"
-  (ngModelChange)="onFilterOptionsUpdated()"
->
-  Image must have all selected region labels </label
-><br />
+<label *ngIf="selectorConfig.canFilterRegionLabel" nz-checkbox class="and-mode-checkbox"
+  [(ngModel)]="filterOptions.mustMatchAllRegionLabels" (ngModelChange)="onFilterOptionsUpdated()">
+  Image must have all selected region labels </label><br />
 
-<label
-  *ngIf="selectorConfig.canFilterBookmarked"
-  nz-checkbox
-  class="and-mode-checkbox"
-  [(ngModel)]="filterOptions.mustBeBookmarked"
-  (ngModelChange)="onFilterOptionsUpdated()"
->
-  Image must be bookmarked by me </label
-><br />
+<label *ngIf="selectorConfig.canFilterBookmarked" nz-checkbox class="and-mode-checkbox"
+  [(ngModel)]="filterOptions.mustBeBookmarked" (ngModelChange)="onFilterOptionsUpdated()">
+  Image must be bookmarked by me </label><br />
 
-<label
-  *ngIf="selectorConfig.canFilterDescription"
-  nz-checkbox
-  class="and-mode-checkbox"
-  [(ngModel)]="filterOptions.mustHaveDescription"
-  (ngModelChange)="onFilterOptionsUpdated()"
->
-  Image must have description </label
-><br />
+<label *ngIf="selectorConfig.canFilterDescription" nz-checkbox class="and-mode-checkbox"
+  [(ngModel)]="filterOptions.mustHaveDescription" (ngModelChange)="onFilterOptionsUpdated()">
+  Image must have description </label><br />
 
 <button class="reset-filter-button" nz-button (click)="resetFilterOptions()">
   Reset filter options

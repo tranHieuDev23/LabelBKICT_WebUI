@@ -19,6 +19,7 @@ export class ImageListFilterOptions {
   public verifyTimeStart = 0;
   public verifyTimeEnd = 0;
   public originalFilenameQuery = '';
+  public originalFilenameList: string[] = [];
   public imageStatusList: ImageStatus[] = [];
   public mustMatchAllImageTags = false;
   public mustMatchAllRegionLabels = false;
@@ -40,6 +41,7 @@ export class ImageListFilterOptionsWithMetadata {
   public verifyTimeStart = 0;
   public verifyTimeEnd = 0;
   public originalFilenameQuery = '';
+  public originalFilenameList: string[] = [];
   public imageStatusList: ImageStatus[] = [];
   public mustMatchAllImageTags = false;
   public mustMatchAllRegionLabels = false;
