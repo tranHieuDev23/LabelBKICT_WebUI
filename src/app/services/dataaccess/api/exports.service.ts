@@ -27,6 +27,7 @@ export class ExportsService {
       const response = await this.axios.post('/api/exports', {
         type: type,
         filter_options: {
+          image_id_list: filterOptions.imageIdList,
           image_type_id_list: filterOptions.imageTypeIDList,
           image_tag_id_list: filterOptions.imageTagIDList,
           region_label_id_list: filterOptions.regionLabelIDList,
@@ -40,6 +41,7 @@ export class ExportsService {
           verify_time_start: filterOptions.verifyTimeStart,
           verify_time_end: filterOptions.verifyTimeEnd,
           original_filename_query: filterOptions.originalFilenameQuery,
+          original_filename_list: filterOptions.originalFilenameList,
           image_status_list: filterOptions.imageStatusList,
           must_match_all_image_tags: filterOptions.mustMatchAllImageTags,
           must_match_all_region_labels: filterOptions.mustMatchAllRegionLabels,
