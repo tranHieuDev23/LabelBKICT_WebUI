@@ -3,7 +3,9 @@
     <app-region-selector
       #regionSelector
       *ngIf="image"
-      [editable]="isImageEditable && !isShowingRegionSnapshot"
+      [editable]="
+        (isImageEditable || isImageVerifiable) && !isShowingRegionSnapshot
+      "
       [imageSrc]="image.originalImageURL"
       [regionList]="isShowingRegionSnapshot ? regionSnapshotList : regionList"
       (regionSelected)="onRegionSelected($event)"
@@ -29,7 +31,7 @@
 
       <p>
         <app-editable-tag-list
-          [editable]="isImageEditable"
+          [editable]="isImageEditable || isImageVerifiable"
           [allImageTagGroupList]="allowedImageTagGroupListForImageType"
           [allImageTagList]="allowedImageTagListForImageType"
           [imageTagList]="imageTagList"
@@ -60,9 +62,11 @@
           <app-editable-rich-text
             #descriptionEditableText
             [text]="image.description"
-            [editable]="isImageEditable"
+            [editable]="isImageEditable || isImageVerifiable"
             [placeholder]="
-              isImageEditable ? 'Add image description...' : 'No description'
+              isImageEditable || isImageVerifiable
+                ? 'Add image description...'
+                : 'No description'
             "
             (textEdited)="onImageDescriptionUpdated($event)"
           >
@@ -140,7 +144,7 @@
             </button>
           </nz-button-group> </nz-collapse-panel
         ><nz-collapse-panel
-          *ngIf="isImageEditable"
+          *ngIf="isImageEditable || isImageVerifiable"
           nzHeader="Mass edit regions"
         >
           <nz-button-group>
@@ -164,16 +168,121 @@
             <button nz-button (click)="onDownloadImageWithRegionsClicked()">
               With regions
             </button>
-          </nz-button-group>
+          </nz-button-group> </nz-collapse-panel
+        ><nz-collapse-panel
+          *ngIf="isImageEditable"
+          nzHeader="Manageable users"
+          (nzActiveChange)="onManageableUsersPanelActiveChange($event)"
+        >
+          <nz-list [nzDataSource]="manageableUserList" nzBordered>
+            <nz-list-item *ngFor="let item of manageableUserList; index as i">
+              <nz-list-item-meta>
+                <nz-list-item-meta-title>
+                  {{ item.user.displayName }}
+                </nz-list-item-meta-title>
+                <nz-list-item-meta-description>
+                  <label
+                    nz-checkbox
+                    [(ngModel)]="item.canEdit"
+                    (ngModelChange)="
+                      onManageableUserPanelCanEditChanged(i, $event)
+                    "
+                  >
+                    Can edit image?
+                  </label>
+                </nz-list-item-meta-description>
+              </nz-list-item-meta>
+              <ul nz-list-item-actions>
+                <nz-list-item-action>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzDanger
+                    (click)="onManageableUserPanelDeleteClicked(i)"
+                  >
+                    <i nz-icon nzType="delete" nzTheme="outline"></i>
+                  </button>
+                </nz-list-item-action>
+              </ul>
+            </nz-list-item>
+            <nz-list-pagination>
+              <nz-pagination
+                [nzPageIndex]="manageableUserPageIndex"
+                [nzPageSize]="manageableUserPageSize"
+                [nzTotal]="manageableUserCount"
+                (nzPageIndexChange)="
+                  onManageableUserPanelPageIndexChanged($event)
+                "
+              >
+              </nz-pagination>
+            </nz-list-pagination>
+          </nz-list>
+          <button
+            nz-button
+            class="add-user-btn"
+            (click)="onManageableUserPanelAddUserClicked()"
+          >
+            <i nz-icon nzType="user-add" nzTheme="outline"></i> Add user
+          </button>
+        </nz-collapse-panel>
+
+        <nz-collapse-panel
+          *ngIf="isImageEditable"
+          nzHeader="Verifiable users"
+          (nzActiveChange)="onVerifiableUsersPanelActiveChange($event)"
+        >
+          <nz-list [nzDataSource]="verifiableUserList" nzBordered>
+            <nz-list-item *ngFor="let item of verifiableUserList; index as i">
+              <nz-list-item-meta>
+                <nz-list-item-meta-title>
+                  {{ item.displayName }}
+                </nz-list-item-meta-title>
+              </nz-list-item-meta>
+              <ul nz-list-item-actions>
+                <nz-list-item-action>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzDanger
+                    (click)="onVerifiableUserPanelDeleteClicked(i)"
+                  >
+                    <i nz-icon nzType="delete" nzTheme="outline"></i>
+                  </button>
+                </nz-list-item-action>
+              </ul>
+            </nz-list-item>
+            <nz-list-pagination>
+              <nz-pagination
+                [nzPageIndex]="verifiableUserPageIndex"
+                [nzPageSize]="verifiableUserPageSize"
+                [nzTotal]="verifiableUserCount"
+                (nzPageIndexChange)="
+                  onVerifiableUserPanelPageIndexChanged($event)
+                "
+              >
+              </nz-pagination>
+            </nz-list-pagination>
+          </nz-list>
+          <button
+            nz-button
+            class="add-user-btn"
+            (click)="onVerifiableUserPanelAddUserClicked()"
+          >
+            <i nz-icon nzType="user-add" nzTheme="outline"></i> Add user
+          </button>
         </nz-collapse-panel>
 
         <nz-collapse-panel nzHeader="Shortcuts">
           <ul>
-            <li *ngIf="isImageEditable">
+            <li *ngIf="isImageEditable || isImageVerifiable">
               Ctrl + Z/Ctrl + Shift + Z: Undo/Redo
             </li>
-            <li *ngIf="isImageEditable">Ctrl + Enter: Finish drawing</li>
-            <li *ngIf="isImageEditable">Escape: Clear selection</li>
+            <li *ngIf="isImageEditable || isImageVerifiable">
+              Ctrl + Enter: Finish drawing
+            </li>
+            <li *ngIf="isImageEditable || isImageVerifiable">
+              Escape: Clear selection
+            </li>
             <li>Ctrl + Middle mouse scroll: Zoom</li>
             <li>Ctrl + Left mouse drag: Move image</li>
             <li>Ctrl + Shift + P: Publish image</li>
@@ -183,7 +292,7 @@
         </nz-collapse-panel>
       </nz-collapse>
 
-      <div *ngIf="isImageEditable" class="action-buttons">
+      <div *ngIf="isImageEditable || isImageVerifiable" class="action-buttons">
         <button
           *ngIf="!isImageExcluded() && !isImageVerified()"
           nz-button
@@ -305,7 +414,7 @@
       </nz-collapse-panel>
     </nz-collapse>
     <button
-      *ngIf="isImageEditable"
+      *ngIf="isImageEditable || isImageVerifiable"
       nz-button
       nzDanger
       nzType="primary"
@@ -509,7 +618,7 @@
       Edit drawn region
     </li>
     <li
-      *ngIf="contextMenuRegion && isImageEditable"
+      *ngIf="contextMenuRegion && (isImageEditable || isImageVerifiable)"
       nz-menu-item
       (click)="onContextMenuEditRegionBoundaryClicked()"
     >
@@ -532,7 +641,7 @@
       </ul>
     </li>
     <li
-      *ngIf="contextMenuRegion && isImageEditable"
+      *ngIf="contextMenuRegion && (isImageEditable || isImageVerifiable)"
       nz-submenu
       nzTitle="Relabel region as..."
     >
@@ -562,7 +671,7 @@
       Show region info
     </li>
     <li
-      *ngIf="contextMenuRegion && isImageEditable"
+      *ngIf="contextMenuRegion && (isImageEditable || isImageVerifiable)"
       nz-menu-item
       nzDanger
       (click)="onContextMenuDeleteRegionClicked()"
@@ -570,7 +679,7 @@
       Delete region
     </li>
     <li
-      *ngIf="isImageEditable"
+      *ngIf="isImageEditable || isImageVerifiable"
       nz-menu-item
       nzDanger
       (click)="onMassDeleteRegionsClicked()"
@@ -578,7 +687,7 @@
       Mass delete regions
     </li>
     <li
-      *ngIf="isImageEditable"
+      *ngIf="isImageEditable || isImageVerifiable"
       nz-menu-item
       nzDanger
       (click)="onDeleteAllRegionsClicked()"
@@ -599,3 +708,39 @@
     </li>
   </ul>
 </nz-dropdown-menu>
+
+<nz-modal
+  [(nzVisible)]="isAddUserCanMangeImageModalVisible"
+  nzTitle="Add user"
+  [nzOkDisabled]="!addUserCanMangeImageUser"
+  (nzOnOk)="onUserCanManageImageAddUserModalOk()"
+  (nzOnCancel)="onUserCanManageImageAddUserModalCancel()"
+>
+  <ng-container *nzModalContent>
+    <app-user-search-box
+      (userSelected)="onUserCanManageImageAddUserModalUserSelected($event)"
+    >
+    </app-user-search-box>
+    <label
+      style="margin-top: 8px"
+      nz-checkbox
+      [(ngModel)]="addUserCanMangeImageCanEdit"
+      >Can edit image?</label
+    >
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [(nzVisible)]="isAddUserCanVerifyImageModalVisible"
+  nzTitle="Add user"
+  [nzOkDisabled]="!addUserCanVerifyImageUser"
+  (nzOnOk)="onUserCanVerifyImageAddUserModalOk()"
+  (nzOnCancel)="onUserCanVerifyImageAddUserModalCancel()"
+>
+  <ng-container *nzModalContent>
+    <app-user-search-box
+      (userSelected)="onUserCanVerifyImageAddUserModalUserSelected($event)"
+    >
+    </app-user-search-box>
+  </ng-container>
+</nz-modal>

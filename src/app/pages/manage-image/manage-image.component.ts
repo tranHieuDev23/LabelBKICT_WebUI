@@ -40,7 +40,10 @@ import {
   RegionOperationLog,
   UnauthenticatedError,
   UnauthorizedError,
+  User,
+  UserAlreadyInListError,
   UserHasNotBookmarkedImageError,
+  UserNotInListError,
 } from 'src/app/services/dataaccess/api';
 import { ImageListManagementService } from 'src/app/services/module/image-list-management';
 import { ImageManagementService } from 'src/app/services/module/image-management';
@@ -52,6 +55,7 @@ import { SessionManagementService } from 'src/app/services/module/session-manage
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import store from 'store2';
 import saveAs from 'file-saver';
+import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
 
 const DEFAULT_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
 const MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY = 'MANAGE_IMAGE_DRAW_MARGINS_ENABLED_KEY';
@@ -90,6 +94,7 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
   public regionLabelList: RegionLabel[] = [];
   public imageBookmark: ImageBookmark | undefined;
   public isImageEditable = true;
+  public isImageVerifiable = true;
 
   public position: number | undefined;
   public totalImageCount: number | undefined;
@@ -103,6 +108,23 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
 
   public isShowingRegionSnapshot = false;
   public regionSnapshotList: Region[] = [];
+
+  public manageableUserList: { user: User; canEdit: boolean }[] = [];
+  public manageableUserCount = 0;
+  public manageableUserPageIndex = 1;
+  public manageableUserPageSize = 5;
+
+  public isAddUserCanMangeImageModalVisible = false;
+  public addUserCanMangeImageUser: User | undefined = undefined;
+  public addUserCanMangeImageCanEdit = false;
+
+  public verifiableUserList: User[] = [];
+  public verifiableUserCount = 0;
+  public verifiableUserPageIndex = 1;
+  public verifiableUserPageSize = 5;
+
+  public isAddUserCanVerifyImageModalVisible = false;
+  public addUserCanVerifyImageUser: User | undefined = undefined;
 
   public selectedRegionBorder: Shape | undefined;
   public selectedRegionHoles: Shape[] = [];
@@ -145,7 +167,8 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
     private readonly notificationService: NzNotificationService,
     private readonly modalService: NzModalService,
     private readonly contextMenuService: NzContextMenuService,
-    private readonly jsonCompressService: JSONCompressService
+    private readonly jsonCompressService: JSONCompressService,
+    private readonly paginationService: PaginationService
   ) {
     this.routerSubscription = router.events.subscribe((event) => {
       this.onRouterEvent(event);
@@ -226,11 +249,14 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
     this.allowedImageTagListForImageType = [];
 
     try {
-      const { image, imageTagList, regionList, canEdit } = await this.imageManagementService.getImage(imageID);
+      const { image, imageTagList, regionList, canEdit, canVerify } = await this.imageManagementService.getImage(
+        imageID
+      );
       this.image = image;
       this.imageTagList = imageTagList;
       this.regionList = regionList;
       this.isImageEditable = canEdit;
+      this.isImageVerifiable = canVerify;
 
       if (image.imageType) {
         const { regionLabelList } = await this.imageTypeManagementService.getImageType(image.imageType.id);
@@ -587,6 +613,190 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
     );
     const fileName = `${this.image.id}-with-regions.jpeg`;
     saveAs(imageWithRegionsData, fileName);
+  }
+
+  private async loadManageableUserList(pageIndex: number, pageSize: number): Promise<void> {
+    if (this.imageID === undefined) {
+      return;
+    }
+
+    try {
+      const { totalUserCount, userList } = await this.imageManagementService.getManageableUsersOfImage(
+        this.imageID,
+        this.paginationService.getPageOffset(pageIndex, pageSize),
+        pageSize
+      );
+      this.manageableUserCount = totalUserCount;
+      this.manageableUserList = userList;
+      this.manageableUserPageIndex = pageIndex;
+      this.manageableUserPageSize = pageSize;
+    } catch (e) {
+      this.handleError('Failed to load manageable user list of image', e);
+      this.location.back();
+    }
+  }
+
+  public async onManageableUsersPanelActiveChange(isActive: boolean): Promise<void> {
+    if (!isActive) {
+      return;
+    }
+    await this.loadManageableUserList(this.manageableUserPageIndex, this.manageableUserPageSize);
+  }
+
+  public async onManageableUserPanelCanEditChanged(itemIndex: number, newCanEdit: boolean): Promise<void> {
+    if (this.imageID === undefined) {
+      return;
+    }
+    const userId = this.manageableUserList[itemIndex].user.id;
+    try {
+      const updatedManageableUser = await this.imageManagementService.updateManageableUserOfImage(
+        this.imageID,
+        userId,
+        newCanEdit
+      );
+      this.notificationService.success('Updated manageable user of image successfully', '');
+      this.manageableUserList[itemIndex] = updatedManageableUser;
+      console.log(updatedManageableUser);
+      this.manageableUserList = [...this.manageableUserList];
+    } catch (e) {
+      this.handleError('Failed to update manageable user of image', e);
+    }
+  }
+
+  public async onManageableUserPanelDeleteClicked(itemIndex: number): Promise<void> {
+    if (this.imageID === undefined) {
+      return;
+    }
+
+    const userId = this.manageableUserList[itemIndex].user.id;
+    try {
+      await this.imageManagementService.removeManageableUserOfImage(this.imageID, userId);
+      this.notificationService.success('Deleted manageable user of image successfully', '');
+    } catch (e) {
+      this.handleError('Failed to delete manageable user of image', e);
+      return;
+    }
+
+    await this.loadManageableUserList(this.manageableUserPageIndex, this.manageableUserPageSize);
+  }
+
+  public async onManageableUserPanelPageIndexChanged(index: number): Promise<void> {
+    await this.loadManageableUserList(index, this.manageableUserPageSize);
+  }
+
+  public async onManageableUserPanelAddUserClicked(): Promise<void> {
+    this.isAddUserCanMangeImageModalVisible = true;
+    this.addUserCanMangeImageUser = undefined;
+    this.addUserCanMangeImageCanEdit = false;
+  }
+
+  public async onUserCanManageImageAddUserModalOk(): Promise<void> {
+    if (this.imageID === undefined || this.addUserCanMangeImageUser === undefined) {
+      return;
+    }
+
+    try {
+      await this.imageManagementService.addManageableUserToImage(
+        this.imageID,
+        this.addUserCanMangeImageUser.id,
+        this.addUserCanMangeImageCanEdit
+      );
+      this.notificationService.success('Added manageable user of image successfully', '');
+    } catch (e) {
+      this.handleError('Failed to add manageable user of image', e);
+      return;
+    }
+
+    this.isAddUserCanMangeImageModalVisible = false;
+    await this.loadManageableUserList(this.manageableUserPageIndex, this.manageableUserPageSize);
+  }
+
+  public async onUserCanManageImageAddUserModalCancel(): Promise<void> {
+    this.isAddUserCanMangeImageModalVisible = false;
+  }
+
+  public async onUserCanManageImageAddUserModalUserSelected(user: User | undefined): Promise<void> {
+    this.addUserCanMangeImageUser = user;
+  }
+
+  private async loadVerifiableUserList(pageIndex: number, pageSize: number): Promise<void> {
+    if (this.imageID === undefined) {
+      return;
+    }
+
+    try {
+      const { totalUserCount, userList } = await this.imageManagementService.getVerifiableUsersOfImage(
+        this.imageID,
+        this.paginationService.getPageOffset(pageIndex, pageSize),
+        pageSize
+      );
+      this.verifiableUserCount = totalUserCount;
+      this.verifiableUserList = userList;
+      this.verifiableUserPageIndex = pageIndex;
+      this.verifiableUserPageSize = pageSize;
+    } catch (e) {
+      this.handleError('Failed to load verifiable user list of image', e);
+      this.location.back();
+    }
+  }
+
+  public async onVerifiableUsersPanelActiveChange(isActive: boolean): Promise<void> {
+    if (!isActive) {
+      return;
+    }
+    await this.loadVerifiableUserList(this.verifiableUserPageIndex, this.verifiableUserPageSize);
+  }
+
+  public async onVerifiableUserPanelDeleteClicked(itemIndex: number): Promise<void> {
+    if (this.imageID === undefined) {
+      return;
+    }
+
+    const userId = this.verifiableUserList[itemIndex].id;
+    try {
+      await this.imageManagementService.removeVerifiableUserOfImage(this.imageID, userId);
+      this.notificationService.success('Deleted verifiable user of image successfully', '');
+    } catch (e) {
+      this.handleError('Failed to delete verifiable user of image', e);
+      return;
+    }
+
+    await this.loadVerifiableUserList(this.verifiableUserPageIndex, this.verifiableUserPageSize);
+  }
+
+  public async onVerifiableUserPanelPageIndexChanged(index: number): Promise<void> {
+    await this.loadVerifiableUserList(index, this.verifiableUserPageSize);
+  }
+
+  public async onVerifiableUserPanelAddUserClicked(): Promise<void> {
+    this.isAddUserCanVerifyImageModalVisible = true;
+    this.addUserCanVerifyImageUser = undefined;
+  }
+
+  public async onUserCanVerifyImageAddUserModalOk(): Promise<void> {
+    if (this.imageID === undefined || this.addUserCanVerifyImageUser === undefined) {
+      return;
+    }
+
+    try {
+      await this.imageManagementService.addVerifiableUserToImage(this.imageID, this.addUserCanVerifyImageUser.id);
+      this.notificationService.success('Added verifiable user of image successfully', '');
+    } catch (e) {
+      console.log(e);
+      this.handleError('Failed to add verifiable user of image', e);
+      return;
+    }
+
+    this.isAddUserCanVerifyImageModalVisible = false;
+    await this.loadVerifiableUserList(this.verifiableUserPageIndex, this.verifiableUserPageSize);
+  }
+
+  public async onUserCanVerifyImageAddUserModalCancel(): Promise<void> {
+    this.isAddUserCanVerifyImageModalVisible = false;
+  }
+
+  public async onUserCanVerifyImageAddUserModalUserSelected(user: User | undefined): Promise<void> {
+    this.addUserCanVerifyImageUser = user;
   }
 
   public onExcludeImageClicked(): void {
@@ -1162,6 +1372,14 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
     }
     if (e instanceof ImageHasUnlabeledRegionError) {
       this.notificationService.error(notificationTitle, 'Image has at least one unlabeled region');
+      return;
+    }
+    if (e instanceof UserAlreadyInListError) {
+      this.notificationService.error(notificationTitle, 'User is already in the list');
+      return;
+    }
+    if (e instanceof UserNotInListError) {
+      this.notificationService.error(notificationTitle, 'User is not in the list');
       return;
     }
     this.notificationService.error(notificationTitle, 'Unknown error');

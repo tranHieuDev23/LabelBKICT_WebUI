@@ -84,7 +84,6 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
   public regionList: Region[] = [];
   public regionLabelList: RegionLabel[] = [];
   public imageBookmark: ImageBookmark | undefined;
-  public isImageEditable = true;
 
   public position: number | undefined;
   public totalImageCount: number | undefined;
@@ -205,11 +204,10 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
     this.allowedImageTagListForImageType = [];
 
     try {
-      const { image, imageTagList, regionList, canEdit } = await this.imageManagementService.getImage(imageID);
+      const { image, imageTagList, regionList } = await this.imageManagementService.getImage(imageID);
       this.image = image;
       this.imageTagList = imageTagList;
       this.regionList = regionList;
-      this.isImageEditable = canEdit;
 
       if (image.imageType) {
         const { regionLabelList } = await this.imageTypeManagementService.getImageType(image.imageType.id);

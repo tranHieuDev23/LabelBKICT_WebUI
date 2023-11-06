@@ -2,22 +2,20 @@
   margin-bottom: 8px;
 }
 
-.add-user-role-btn, .add-user-btn, .add-user-tag-btn{
+.add-user-role-btn,
+.add-user-btn,
+.add-user-tag-btn {
   margin-top: 8px;
 }
 
-.add-user-role-list-item, .add-user-tag-list-item {
+.add-user-role-list-item,
+.add-user-tag-list-item {
   cursor: pointer;
   transition: background-color 0.3s ease;
 
   &:hover {
     background-color: #f5f5f5;
   }
-}
-
-.active-user-btn, .disable-user-btn {
-  float: right;
-  margin-top: -60px;
 }
 
 nz-select {

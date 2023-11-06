@@ -13,7 +13,6 @@ export class DescriptionFileService {
 
   public async parseDescriptionFile(file: File): Promise<FilenameWithDescription[]> {
     const rows = await this.listFileService.parseListFile(file);
-    console.log(rows);
     return rows.map((row) => new FilenameWithDescription(row.Filename, row.Description));
   }
 }

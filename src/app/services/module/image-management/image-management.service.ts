@@ -10,6 +10,7 @@ import {
   Region,
   UploadImageBatchMessage,
   UploadImageInput,
+  User,
 } from '../../dataaccess/api';
 import { DescriptionFileService } from './description-file.service';
 import { FreePolygon } from 'src/app/components/region-selector/models';
@@ -68,6 +69,7 @@ export class ImageManagementService {
     imageTagList: ImageTag[];
     regionList: Region[];
     canEdit: boolean;
+    canVerify: boolean;
   }> {
     return this.imagesService.getImage(id);
   }
@@ -162,5 +164,55 @@ export class ImageManagementService {
 
       img.src = image.originalImageURL;
     });
+  }
+
+  public async getManageableUsersOfImage(
+    imageId: number,
+    offset: number = 0,
+    limit: number = 10
+  ): Promise<{
+    totalUserCount: number;
+    userList: { user: User; canEdit: boolean }[];
+  }> {
+    return this.imagesService.getManageableUsersOfImage(imageId, offset, limit);
+  }
+
+  public async addManageableUserToImage(
+    imageId: number,
+    userId: number,
+    canEdit: boolean
+  ): Promise<{ user: User; canEdit: boolean }> {
+    return this.imagesService.addManageableUserToImage(imageId, userId, canEdit);
+  }
+
+  public async updateManageableUserOfImage(
+    imageId: number,
+    userId: number,
+    canEdit: boolean
+  ): Promise<{ user: User; canEdit: boolean }> {
+    return this.imagesService.updateManageableUserOfImage(imageId, userId, canEdit);
+  }
+
+  public async removeManageableUserOfImage(imageId: number, userId: number): Promise<void> {
+    await this.imagesService.removeManageableUserOfImage(imageId, userId);
+  }
+
+  public async getVerifiableUsersOfImage(
+    imageId: number,
+    offset: number,
+    limit: number
+  ): Promise<{
+    totalUserCount: number;
+    userList: User[];
+  }> {
+    return this.imagesService.getVerifiableUsersOfImage(imageId, offset, limit);
+  }
+
+  public async addVerifiableUserToImage(imageId: number, userId: number): Promise<User> {
+    return this.imagesService.addVerifiableUserToImage(imageId, userId);
+  }
+
+  public async removeVerifiableUserOfImage(imageId: number, userId: number): Promise<void> {
+    await this.imagesService.removeVerifiableUserOfImage(imageId, userId);
   }
 }

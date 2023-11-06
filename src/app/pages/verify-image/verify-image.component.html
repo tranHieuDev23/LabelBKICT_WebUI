@@ -3,7 +3,7 @@
     <app-region-selector
       #regionSelector
       *ngIf="image"
-      [editable]="isImageEditable && !isShowingRegionSnapshot"
+      [editable]="!isShowingRegionSnapshot"
       [imageSrc]="image.originalImageURL"
       [regionList]="isShowingRegionSnapshot ? regionSnapshotList : regionList"
       (regionSelected)="onRegionSelected($event)"
@@ -29,7 +29,6 @@
 
       <p>
         <app-editable-tag-list
-          [editable]="isImageEditable"
           [allImageTagGroupList]="allowedImageTagGroupListForImageType"
           [allImageTagList]="allowedImageTagListForImageType"
           [imageTagList]="imageTagList"
@@ -60,10 +59,7 @@
           <app-editable-rich-text
             #descriptionEditableText
             [text]="image.description"
-            [editable]="isImageEditable"
-            [placeholder]="
-              isImageEditable ? 'Add image description...' : 'No description'
-            "
+            [placeholder]="'Add image description...'"
             (textEdited)="onImageDescriptionUpdated($event)"
           >
           </app-editable-rich-text>
@@ -149,7 +145,7 @@
           </nz-button-group>
         </nz-collapse-panel>
 
-        <nz-collapse-panel *ngIf="isImageEditable" nzHeader="Mass edit regions">
+        <nz-collapse-panel *ngIf="" nzHeader="Mass edit regions">
           <nz-button-group>
             <button nz-button (click)="onMassDeleteRegionsClicked()">
               Mass delete regions
@@ -176,11 +172,9 @@
 
         <nz-collapse-panel nzHeader="Shortcuts">
           <ul>
-            <li *ngIf="isImageEditable">
-              Ctrl + Z/Ctrl + Shift + Z: Undo/Redo
-            </li>
-            <li *ngIf="isImageEditable">Ctrl + Enter: Finish drawing</li>
-            <li *ngIf="isImageEditable">Escape: Clear selection</li>
+            <li *ngIf="">Ctrl + Z/Ctrl + Shift + Z: Undo/Redo</li>
+            <li *ngIf="">Ctrl + Enter: Finish drawing</li>
+            <li *ngIf="">Escape: Clear selection</li>
             <li>Ctrl + Middle mouse scroll: Zoom</li>
             <li>Ctrl + Left mouse drag: Move image</li>
             <li>Ctrl + Shift + P: Publish image</li>
@@ -190,7 +184,7 @@
         </nz-collapse-panel>
       </nz-collapse>
 
-      <div *ngIf="isImageEditable" class="action-buttons">
+      <div *ngIf="" class="action-buttons">
         <button
           nz-button
           nzType="primary"
@@ -285,7 +279,7 @@
       </nz-collapse-panel>
     </nz-collapse>
     <button
-      *ngIf="isImageEditable"
+      *ngIf=""
       nz-button
       nzDanger
       nzType="primary"
@@ -428,7 +422,7 @@
       Edit drawn region
     </li>
     <li
-      *ngIf="contextMenuRegion && isImageEditable"
+      *ngIf="contextMenuRegion"
       nz-menu-item
       (click)="onContextMenuEditRegionBoundaryClicked()"
     >
@@ -450,11 +444,7 @@
         </li>
       </ul>
     </li>
-    <li
-      *ngIf="contextMenuRegion && isImageEditable"
-      nz-submenu
-      nzTitle="Relabel region as..."
-    >
+    <li *ngIf="contextMenuRegion" nz-submenu nzTitle="Relabel region as...">
       <ul>
         <li
           *ngFor="let regionLabel of regionLabelList"
@@ -481,27 +471,17 @@
       Show region info
     </li>
     <li
-      *ngIf="contextMenuRegion && isImageEditable"
+      *ngIf="contextMenuRegion"
       nz-menu-item
       nzDanger
       (click)="onContextMenuDeleteRegionClicked()"
     >
       Delete region
     </li>
-    <li
-      *ngIf="isImageEditable"
-      nz-menu-item
-      nzDanger
-      (click)="onMassDeleteRegionsClicked()"
-    >
+    <li *ngIf="" nz-menu-item nzDanger (click)="onMassDeleteRegionsClicked()">
       Mass delete regions
     </li>
-    <li
-      *ngIf="isImageEditable"
-      nz-menu-item
-      nzDanger
-      (click)="onDeleteAllRegionsClicked()"
-    >
+    <li *ngIf="" nz-menu-item nzDanger (click)="onDeleteAllRegionsClicked()">
       Delete all regions
     </li>
     <li

@@ -21,6 +21,9 @@ import { EditableTagListModule } from 'src/app/components/editable-tag-list/edit
 import { RegionOperationLogListModule } from 'src/app/components/region-operation-log-list/region-operation-log-list.module';
 import { RegionListModule } from 'src/app/components/region-list/region-list.module';
 import { EditableRichTextModule } from 'src/app/components/editable-rich-text/editable-rich-text.module';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { UserSearchBoxModule } from 'src/app/components/user-search-box/user-search-box.module';
 
 @NgModule({
   declarations: [ManageImageComponent],
@@ -46,6 +49,9 @@ import { EditableRichTextModule } from 'src/app/components/editable-rich-text/ed
     NzListModule,
     RegionOperationLogListModule,
     RegionListModule,
+    NzPaginationModule,
+    NzCheckboxModule,
+    UserSearchBoxModule,
   ],
   exports: [ManageImageComponent],
 })

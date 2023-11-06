@@ -9,7 +9,8 @@ import {
   UploadImageBatchMessageType,
   UploadImageInput,
 } from './images.helper';
-import { Image, ImageBookmark, ImageStatus, ImageTag, Region } from './schemas';
+import { Image, ImageBookmark, ImageStatus, ImageTag, Region, User } from './schemas';
+import { UserAlreadyInListError, UserNotInListError } from './users.service';
 
 export class ImageNotFoundError extends Error {
   constructor() {
@@ -99,6 +100,7 @@ export class ImagesService {
     imageTagList: ImageTag[];
     regionList: Region[];
     canEdit: boolean;
+    canVerify: boolean;
   }> {
     try {
       const response = await this.axios.get(`/api/images/${id}`);
@@ -106,7 +108,8 @@ export class ImagesService {
       const imageTagList = response.data.image_tag_list.map(ImageTag.fromJSON);
       const regionList = response.data.region_list.map(Region.fromJSON);
       const canEdit = response.data.can_edit || false;
-      return { image, imageTagList, regionList, canEdit };
+      const canVerify = response.data.can_verify || false;
+      return { image, imageTagList, regionList, canEdit, canVerify };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -408,6 +411,208 @@ export class ImagesService {
           throw new ImageNotFoundError();
         case HttpStatusCode.Conflict:
           throw new UserHasNotBookmarkedImageError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getManageableUsersOfImage(
+    imageId: number,
+    offset: number,
+    limit: number
+  ): Promise<{
+    totalUserCount: number;
+    userList: { user: User; canEdit: boolean }[];
+  }> {
+    try {
+      const response = await this.axios.get(`/api/images/${imageId}/manageable-users`, {
+        params: { offset, limit },
+      });
+
+      const totalUserCount = +response.data.total_user_count;
+      const userList = response.data.user_list.map((item: any) => {
+        return {
+          user: User.fromJSON(item.user),
+          canEdit: item.can_edit || false,
+        };
+      });
+      return { totalUserCount, userList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async addManageableUserToImage(
+    imageId: number,
+    userId: number,
+    canEdit: boolean
+  ): Promise<{ user: User; canEdit: boolean }> {
+    try {
+      const response = await this.axios.post(`/api/images/${imageId}/manageable-users`, {
+        user_id: userId,
+        can_edit: canEdit,
+      });
+      return {
+        user: User.fromJSON(response.data.user),
+        canEdit: response.data.can_edit || false,
+      };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserAlreadyInListError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async updateManageableUserOfImage(
+    imageId: number,
+    userId: number,
+    canEdit: boolean
+  ): Promise<{ user: User; canEdit: boolean }> {
+    try {
+      const response = await this.axios.patch(`/api/images/${imageId}/manageable-users/${userId}`, {
+        can_edit: canEdit,
+      });
+      return {
+        user: User.fromJSON(response.data.user),
+        canEdit: response.data.can_edit || false,
+      };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async removeManageableUserOfImage(imageId: number, userId: number): Promise<void> {
+    try {
+      await this.axios.delete(`/api/images/${imageId}/manageable-users/${userId}`);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserNotInListError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async getVerifiableUsersOfImage(
+    imageId: number,
+    offset: number,
+    limit: number
+  ): Promise<{
+    totalUserCount: number;
+    userList: User[];
+  }> {
+    try {
+      const response = await this.axios.get(`/api/images/${imageId}/verifiable-users`, {
+        params: { offset, limit },
+      });
+      const totalUserCount = +response.data.total_user_count;
+      const userList = response.data.user_list.map((item: any) => User.fromJSON(item.user));
+      return { totalUserCount, userList };
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async addVerifiableUserToImage(imageId: number, userId: number): Promise<User> {
+    try {
+      const response = await this.axios.post(`/api/images/${imageId}/verifiable-users`, {
+        user_id: userId,
+      });
+      return User.fromJSON(response.data.user);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserAlreadyInListError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async removeVerifiableUserOfImage(imageId: number, userId: number): Promise<void> {
+    try {
+      await this.axios.delete(`/api/images/${imageId}/verifiable-users/${userId}`);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserNotInListError();
         default:
           throw new UnknownAPIError(e);
       }
