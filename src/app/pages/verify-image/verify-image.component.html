@@ -145,7 +145,7 @@
           </nz-button-group>
         </nz-collapse-panel>
 
-        <nz-collapse-panel *ngIf="" nzHeader="Mass edit regions">
+        <nz-collapse-panel nzHeader="Mass edit regions">
           <nz-button-group>
             <button nz-button (click)="onMassDeleteRegionsClicked()">
               Mass delete regions
@@ -172,9 +172,9 @@
 
         <nz-collapse-panel nzHeader="Shortcuts">
           <ul>
-            <li *ngIf="">Ctrl + Z/Ctrl + Shift + Z: Undo/Redo</li>
-            <li *ngIf="">Ctrl + Enter: Finish drawing</li>
-            <li *ngIf="">Escape: Clear selection</li>
+            <li>Ctrl + Z/Ctrl + Shift + Z: Undo/Redo</li>
+            <li>Ctrl + Enter: Finish drawing</li>
+            <li>Escape: Clear selection</li>
             <li>Ctrl + Middle mouse scroll: Zoom</li>
             <li>Ctrl + Left mouse drag: Move image</li>
             <li>Ctrl + Shift + P: Publish image</li>
@@ -184,7 +184,7 @@
         </nz-collapse-panel>
       </nz-collapse>
 
-      <div *ngIf="" class="action-buttons">
+      <div class="action-buttons">
         <button
           nz-button
           nzType="primary"
@@ -279,7 +279,6 @@
       </nz-collapse-panel>
     </nz-collapse>
     <button
-      *ngIf=""
       nz-button
       nzDanger
       nzType="primary"
@@ -478,10 +477,10 @@
     >
       Delete region
     </li>
-    <li *ngIf="" nz-menu-item nzDanger (click)="onMassDeleteRegionsClicked()">
+    <li nz-menu-item nzDanger (click)="onMassDeleteRegionsClicked()">
       Mass delete regions
     </li>
-    <li *ngIf="" nz-menu-item nzDanger (click)="onDeleteAllRegionsClicked()">
+    <li nz-menu-item nzDanger (click)="onDeleteAllRegionsClicked()">
       Delete all regions
     </li>
     <li
