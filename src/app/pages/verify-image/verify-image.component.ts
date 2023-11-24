@@ -429,11 +429,11 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
   }
 
   public async onBookmarkImageClicked(): Promise<void> {
-    if (!this.imageID) {
+    if (!this.image) {
       return;
     }
     try {
-      this.imageBookmark = await this.imageManagementService.createImageBookmark(this.imageID, '');
+      this.imageBookmark = await this.imageManagementService.createImageBookmark(this.image.id, '');
     } catch (e) {
       this.handleError('Failed to bookmark image', e);
       return;
@@ -442,11 +442,11 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
   }
 
   public async onImageBookmarkDescriptionEdited(newDescription: string): Promise<void> {
-    if (!this.imageID) {
+    if (!this.image) {
       return;
     }
     try {
-      this.imageBookmark = await this.imageManagementService.updateImageBookmark(this.imageID, newDescription);
+      this.imageBookmark = await this.imageManagementService.updateImageBookmark(this.image.id, newDescription);
     } catch (e) {
       this.handleError('Failed to update image bookmark', e);
       return;
@@ -455,11 +455,11 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
   }
 
   public async onDeleteBookmarkClicked(): Promise<void> {
-    if (!this.imageID) {
+    if (!this.image) {
       return;
     }
     try {
-      await this.imageManagementService.deleteImageBookmark(this.imageID);
+      await this.imageManagementService.deleteImageBookmark(this.image.id);
     } catch (e) {
       this.handleError('Failed to delete image bookmark', e);
       return;
