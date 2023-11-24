@@ -20,9 +20,22 @@ import { EditableTagListModule } from 'src/app/components/editable-tag-list/edit
 import { RegionOperationLogListModule } from 'src/app/components/region-operation-log-list/region-operation-log-list.module';
 import { RegionListModule } from 'src/app/components/region-list/region-list.module';
 import { EditableRichTextModule } from 'src/app/components/editable-rich-text/editable-rich-text.module';
+import { AddPoiModalComponent } from './add-poi-modal/add-poi-modal.component';
+import { UpdatePoiModalComponent } from './update-poi-modal/update-poi-modal.component';
+import { LabelRegionModalComponent } from './label-region-modal/label-region-modal.component';
+import { MassDeleteRegionModalComponent } from './mass-delete-region-modal/mass-delete-region-modal.component';
+import { RegionInformationComponent } from './region-information/region-information.component';
+import { QuillModule } from 'ngx-quill';
 
 @NgModule({
-  declarations: [VerifyImageComponent],
+  declarations: [
+    VerifyImageComponent,
+    AddPoiModalComponent,
+    UpdatePoiModalComponent,
+    LabelRegionModalComponent,
+    MassDeleteRegionModalComponent,
+    RegionInformationComponent,
+  ],
   imports: [
     CommonModule,
     VerifyImageRoutingModule,
@@ -45,6 +58,7 @@ import { EditableRichTextModule } from 'src/app/components/editable-rich-text/ed
     NzListModule,
     RegionOperationLogListModule,
     RegionListModule,
+    QuillModule,
   ],
   exports: [VerifyImageComponent],
 })

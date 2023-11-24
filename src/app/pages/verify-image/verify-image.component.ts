@@ -7,9 +7,8 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { Subscription } from 'rxjs';
 import { EditableTextComponent } from 'src/app/components/editable-text/editable-text.component';
-import { RegionListCheckedChangeEvent } from 'src/app/components/region-list/region-list.component';
 import { RegionSelectorElement } from 'src/app/components/region-selector/common/constants';
-import { Rectangle, Shape } from 'src/app/components/region-selector/models';
+import { Coordinate, Rectangle, Shape } from 'src/app/components/region-selector/models';
 import {
   RegionSelectorClickedEvent,
   RegionEditedEvent,
@@ -37,7 +36,6 @@ import {
   RegionLabel,
   RegionLabelCannotBeAssignedToImageError,
   RegionNotFoundError,
-  RegionOperationLog,
   UnauthenticatedError,
   UnauthorizedError,
   UserHasNotBookmarkedImageError,
@@ -51,6 +49,11 @@ import { RegionManagementService } from 'src/app/services/module/region-manageme
 import { SessionManagementService } from 'src/app/services/module/session-management';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import store from 'store2';
+import { AddPoiModalComponent } from './add-poi-modal/add-poi-modal.component';
+import { LabelRegionModalComponent } from './label-region-modal/label-region-modal.component';
+import { MassDeleteRegionModalComponent } from './mass-delete-region-modal/mass-delete-region-modal.component';
+import { RegionInformationComponent } from './region-information/region-information.component';
+import { UpdatePoiModalComponent } from './update-poi-modal/update-poi-modal.component';
 
 const DEFAULT_SORT_OPTION = ImageListSortOption.UPLOAD_TIME_DESCENDING;
 const VERIFY_IMAGE_DRAW_MARGINS_ENABLED_KEY = 'VERIFY_IMAGE_DRAW_MARGINS_ENABLED_KEY';
@@ -76,6 +79,16 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
   public descriptionEditableText: EditableTextComponent | undefined;
   @ViewChild('contextMenu', { static: false })
   public contextMenu: NzDropdownMenuComponent | undefined;
+  @ViewChild('labelRegionModal', { static: false })
+  public labelRegionModal: LabelRegionModalComponent | undefined;
+  @ViewChild('regionInformationModal', { static: false })
+  public regionInformationModal: RegionInformationComponent | undefined;
+  @ViewChild('massDeleteRegionModal', { static: false })
+  public massDeleteRegionModal: MassDeleteRegionModalComponent | undefined;
+  @ViewChild('addPoiModal', { static: false })
+  public addPoiModal: AddPoiModalComponent | undefined;
+  @ViewChild('updatePoiModal', { static: false })
+  public updatePoiModal: UpdatePoiModalComponent | undefined;
 
   private imageID: number | undefined;
   private imageListSortOption: number | undefined;
@@ -102,21 +115,12 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
   public regionSnapshotList: Region[] = [];
 
   public selectedRegionBorder: Shape | undefined;
-  public selectedRegionHoles: Shape[] = [];
+  public selectedRegionHoleList: Shape[] = [];
   public isAddingSelectedRegion = false;
 
-  public isLabelRegionModalVisible = false;
-
-  public isRegionInformationModalVisible = false;
-  public regionInformationModalRegion: Region | undefined;
-  public regionInformationModalImage: string = '';
-  public regionInformationModalOperationLogList: RegionOperationLog[] = [];
-
-  public isMassDeleteImageModalVisible = false;
-  public massDeleteImageModalCheckedRegionList: Region[] = [];
-
-  public contextMenuRegion: Region | undefined;
   public contextMenuRegionID: number | undefined;
+  public contextMenuPointOfInterestID: number | undefined;
+  public contextMenuMouseImagePos: Coordinate | undefined;
 
   public allowedImageTagGroupListForImageType: ImageTagGroup[] = [];
   public allowedImageTagListForImageType: ImageTag[][] = [];
@@ -130,7 +134,6 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
     private readonly regionManagementService: RegionManagementService,
     private readonly imageTypeManagementService: ImageTypeManagementService,
     private readonly imageStatusService: ImageStatusService,
-    private readonly regionImageService: RegionImageService,
     private readonly route: ActivatedRoute,
     private readonly location: Location,
     private readonly router: Router,
@@ -307,9 +310,20 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
     return filterOptions;
   }
 
+  private isModalVisible(): boolean {
+    return (
+      this.regionInformationModal?.visible ||
+      this.labelRegionModal?.visible ||
+      this.massDeleteRegionModal?.visible ||
+      this.addPoiModal?.visible ||
+      this.updatePoiModal?.visible ||
+      false
+    );
+  }
+
   @HostListener('document: keydown', ['$event'])
   public onKeyDown(event: KeyboardEvent): void {
-    if (this.isRegionInformationModalVisible || this.isLabelRegionModalVisible || this.isMassDeleteImageModalVisible) {
+    if (this.isModalVisible()) {
       return;
     }
     if (this.descriptionEditableText?.isEditing) {
@@ -498,6 +512,11 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
     this.openMassDeleteRegionModal();
   }
 
+  public onMassRegionDeleted(deletedRegionList: Region[]): void {
+    const deletedRegionIDSet = new Set(deletedRegionList.map((item) => item.id));
+    this.regionList = this.regionList.filter((item) => !deletedRegionIDSet.has(item.id));
+  }
+
   public onDeleteAllRegionsClicked(): void {
     this.modalService.create({
       nzTitle: 'Delete all regions of image',
@@ -583,47 +602,29 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
     });
   }
 
-  public onMassDeleteRegionModalRegionListCheckedChange(event: RegionListCheckedChangeEvent): void {
-    this.massDeleteImageModalCheckedRegionList = event.checkedRegionList;
-  }
-
-  public onMassDeleteRegionModalDeleteClicked(): void {
-    this.modalService.create({
-      nzTitle: 'Delete selected regions of image',
-      nzContent: '<p>Are you sure? This action is <b>IRREVERSIBLE</b>.</p>',
-      nzOkDanger: true,
-      nzOnOk: async () => {
-        if (!this.image) {
-          return;
-        }
-        const deletedRegionIDList = this.massDeleteImageModalCheckedRegionList.map((region) => region.id);
-        try {
-          await this.regionManagementService.deleteRegionList(this.image.id, deletedRegionIDList);
-        } catch (e) {
-          this.handleError('Failed to delete selected regions of image', e);
-          return;
-        }
-        this.notificationService.success('Deleted selected regions of image successfully', '');
-        const deletedRegionIDSet = new Set(deletedRegionIDList);
-        this.regionList = this.regionList.filter((region) => !deletedRegionIDSet.has(region.id));
-        this.onMassDeleteRegionModalClose();
-      },
-    });
-  }
-
   private openMassDeleteRegionModal(): void {
-    this.massDeleteImageModalCheckedRegionList = [];
-    this.isMassDeleteImageModalVisible = true;
-  }
+    if (!this.image) {
+      return;
+    }
 
-  public onMassDeleteRegionModalClose(): void {
-    this.isMassDeleteImageModalVisible = false;
+    this.massDeleteRegionModal?.open(this.image, this.regionList);
   }
 
   public onRegionSelected(event: RegionSelectedEvent): void {
+    if (!this.image) {
+      return;
+    }
+
     this.selectedRegionBorder = event.border;
-    this.selectedRegionHoles = event.holeList;
-    this.isLabelRegionModalVisible = true;
+    this.selectedRegionHoleList = event.holeList;
+    this.labelRegionModal?.open(this.image.id, event.border, event.holeList, this.regionLabelList);
+  }
+
+  public onRegionAdded(region: Region): void {
+    this.regionSelector?.cancelDrawing();
+    this.selectedRegionBorder = undefined;
+    this.selectedRegionHoleList = [];
+    this.regionList = [...this.regionList, region];
   }
 
   public async onRegionEdited(event: RegionEditedEvent): Promise<void> {
@@ -650,8 +651,8 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
     this.notificationService.success('Updated region boundary successfully', '');
   }
 
-  public onCloseLabelRegionModal(): void {
-    this.isLabelRegionModalVisible = false;
+  public onRegionDeleted(deletedRegion: Region): void {
+    this.regionList = this.regionList.filter((region) => region.id !== deletedRegion.id);
   }
 
   public async onLabelRegionModalItemClicked(regionLabel: RegionLabel): Promise<void> {
@@ -660,7 +661,6 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
     }
 
     await this.addSelectedRegion(regionLabel);
-    this.isLabelRegionModalVisible = false;
   }
 
   public async addSelectedRegion(regionLabel: RegionLabel): Promise<void> {
@@ -673,7 +673,7 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
       const region = await this.regionManagementService.createRegion(
         this.image.id,
         { vertices: this.selectedRegionBorder.getVertices() },
-        this.selectedRegionHoles.map((hole) => {
+        this.selectedRegionHoleList.map((hole) => {
           return { vertices: hole.getVertices() };
         }),
         regionLabel.id
@@ -681,7 +681,7 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
       this.notificationService.success('Region added successfully', '');
       this.regionList = [...this.regionList, region];
       this.selectedRegionBorder = undefined;
-      this.selectedRegionHoles = [];
+      this.selectedRegionHoleList = [];
       this.regionSelector?.cancelDrawing();
     } catch (e) {
       this.handleError('Failed to add region', e);
@@ -698,34 +698,73 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
     await this.openRegionInfoModal(region);
   }
 
-  public async onRegionInformationModalDeleteRegionClicked(): Promise<void> {
-    if (!this.image || !this.regionInformationModalRegion) {
-      return;
-    }
-    await this.handleDeleteRegion(this.regionInformationModalRegion);
-    this.isRegionInformationModalVisible = false;
-  }
-
-  public onRegionInformationModalClose(): void {
-    this.isRegionInformationModalVisible = false;
-  }
-
   public async onContextMenu(event: RegionSelectorClickedEvent): Promise<void> {
     if (!this.image || !this.contextMenu || this.isShowingRegionSnapshot) {
       return;
     }
+
+    this.contextMenuRegionID = undefined;
+    this.contextMenuPointOfInterestID = undefined;
+
     if (event.element === RegionSelectorElement.REGION_LIST && event.elementID !== null) {
-      this.contextMenuRegion = this.regionList[event.elementID];
       this.contextMenuRegionID = event.elementID;
-    } else {
-      this.contextMenuRegion = undefined;
-      this.contextMenuRegionID = undefined;
     }
+
+    if (event.element === RegionSelectorElement.POINT_OF_INTEREST_LIST && event.elementID !== null) {
+      this.contextMenuPointOfInterestID = event.elementID;
+    }
+
+    this.contextMenuMouseImagePos = event.mouseImagePos;
     this.contextMenuService.create(event.event, this.contextMenu);
   }
 
   public onContextMenuResetZoomClicked(): void {
     this.regionSelector?.resetZoom();
+  }
+
+  public onContextMenuAddPointOfInterestClicked(): void {
+    if (!this.image || this.contextMenuMouseImagePos === undefined) {
+      return;
+    }
+
+    this.addPoiModal?.open(this.image.id, this.contextMenuMouseImagePos);
+  }
+
+  public onPoiAdded(poi: PointOfInterest): void {
+    this.pointOfInterestList = [...this.pointOfInterestList, poi];
+  }
+
+  public onContextMenuUpdatePointOfInterestClicked(): void {
+    if (!this.image || this.contextMenuPointOfInterestID === undefined) {
+      return;
+    }
+
+    this.updatePoiModal?.open(this.image.id, this.pointOfInterestList[this.contextMenuPointOfInterestID]);
+  }
+
+  public onPoiUpdated(poi: PointOfInterest): void {
+    this.pointOfInterestList = this.pointOfInterestList.map((item) => {
+      if (item.id !== poi.id) {
+        return item;
+      }
+
+      return poi;
+    });
+  }
+
+  public async onContextMenuDeletePointOfInterestClicked(): Promise<void> {
+    if (!this.image || this.contextMenuPointOfInterestID === undefined) {
+      return;
+    }
+
+    const poiID = this.pointOfInterestList[this.contextMenuPointOfInterestID].id;
+    try {
+      await this.imageManagementService.deletePointOfInterestOfImage(this.image.id, poiID);
+      this.notificationService.success('Deleted point of interest successfully', '');
+      this.pointOfInterestList = this.pointOfInterestList.filter((item) => item.id !== poiID);
+    } catch (e) {
+      this.handleError('Failed to delete point of interest', e);
+    }
   }
 
   public isRegionListVisible(): boolean {
@@ -815,13 +854,14 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
   }
 
   public async onContextMenuRelabelRegionLabelClicked(regionLabel: RegionLabel): Promise<void> {
-    if (!this.image || !this.contextMenuRegion || this.contextMenuRegionID === undefined) {
+    if (!this.image || this.contextMenuRegionID === undefined) {
       return;
     }
+    const region = this.regionList[this.contextMenuRegionID];
     try {
       const updatedRegion = await this.regionManagementService.updateRegionRegionLabel(
         this.image.id,
-        this.contextMenuRegion.id,
+        region.id,
         regionLabel.id
       );
       this.regionList = [...this.regionList];
@@ -834,40 +874,26 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
   }
 
   public async onContextMenuShowRegionInfoClicked(): Promise<void> {
-    if (!this.contextMenuRegion) {
+    if (this.contextMenuRegionID === undefined) {
       return;
     }
-    await this.openRegionInfoModal(this.contextMenuRegion);
+    const region = this.regionList[this.contextMenuRegionID];
+    await this.openRegionInfoModal(region);
   }
 
   public async onContextMenuDeleteRegionClicked(): Promise<void> {
-    if (!this.contextMenuRegion) {
+    if (this.contextMenuRegionID === undefined) {
       return;
     }
-    await this.handleDeleteRegion(this.contextMenuRegion);
+    const region = this.regionList[this.contextMenuRegionID];
+    await this.handleDeleteRegion(region);
   }
 
   private async openRegionInfoModal(region: Region): Promise<void> {
     if (!this.image) {
       return;
     }
-    this.regionInformationModalImage = await this.regionImageService.generateRegionImage(
-      this.image.originalImageURL,
-      region.border
-    );
-    this.regionInformationModalRegion = region;
-
-    try {
-      this.regionInformationModalOperationLogList = await this.regionManagementService.getRegionOperationLogList(
-        this.image.id,
-        region.id
-      );
-    } catch (e) {
-      this.handleError('Failed to get region operation log list', e);
-      return;
-    }
-
-    this.isRegionInformationModalVisible = true;
+    this.regionInformationModal?.open(this.image, region, false);
   }
 
   private async handleDeleteRegion(deletedRegion: Region): Promise<void> {

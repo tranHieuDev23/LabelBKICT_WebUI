@@ -6,6 +6,7 @@
       [editable]="!isShowingRegionSnapshot"
       [imageSrc]="image.originalImageURL"
       [regionList]="isShowingRegionSnapshot ? regionSnapshotList : regionList"
+      [pointOfInterestList]="pointOfInterestList"
       (regionSelected)="onRegionSelected($event)"
       (regionEdited)="onRegionEdited($event)"
       (regionDbClicked)="onRegionDbClicked($event)"
@@ -225,99 +226,33 @@
   </div>
 </div>
 
-<nz-modal
-  *ngIf="isLabelRegionModalVisible"
-  nzTitle="Label region"
-  [nzVisible]="isLabelRegionModalVisible"
-  [nzClosable]="false"
-  nzCancelText="Close"
-  (nzOnCancel)="onCloseLabelRegionModal()"
-  [nzOkText]="null"
->
-  <div *nzModalContent>
-    <nz-list [nzDataSource]="regionLabelList" nzBordered>
-      <nz-list-item
-        *ngFor="let regionLabel of regionLabelList"
-        class="label-region-modal-item"
-        (click)="onLabelRegionModalItemClicked(regionLabel)"
-      >
-        <span nz-typography [nzDisabled]="isAddingSelectedRegion">{{
-          regionLabel.displayName
-        }}</span>
-      </nz-list-item>
-    </nz-list>
-  </div>
-</nz-modal>
-
-<nz-modal
-  *ngIf="isRegionInformationModalVisible"
-  nzTitle="Region information"
-  [nzVisible]="isRegionInformationModalVisible"
-  [nzClosable]="false"
-  nzCancelText="Close"
-  (nzOnCancel)="onRegionInformationModalClose()"
-  [nzOkText]="null"
->
-  <div *nzModalContent>
-    <nz-collapse nzAccordion>
-      <nz-collapse-panel nzHeader="Region information" nzActive="true">
-        <img class="modal-image" [src]="regionInformationModalImage" />
-        <p *ngIf="regionInformationModalRegion?.label" nz-typography>
-          Labeled by
-          <b>{{ regionInformationModalRegion?.labeledByUser?.displayName }}</b>
-          as <b>{{ regionInformationModalRegion?.label?.displayName }}</b>
-        </p>
-        <p *ngIf="!regionInformationModalRegion?.label" nz-typography>
-          Not yet labeled
-        </p>
-      </nz-collapse-panel>
-      <nz-collapse-panel nzHeader="Operation history">
-        <app-region-operation-log-list
-          [operationLogList]="regionInformationModalOperationLogList"
-        >
-        </app-region-operation-log-list>
-      </nz-collapse-panel>
-    </nz-collapse>
-    <button
-      nz-button
-      nzDanger
-      nzType="primary"
-      (click)="onRegionInformationModalDeleteRegionClicked()"
-      style="margin-top: 8px"
-    >
-      <i nz-icon nzType="delete"></i> Delete region
-    </button>
-  </div>
-</nz-modal>
-
-<nz-modal
-  *ngIf="image && isMassDeleteImageModalVisible"
-  nzTitle="Mass delete image regions"
-  [nzVisible]="isMassDeleteImageModalVisible"
-  [nzClosable]="false"
-  nzWidth="720px"
-  nzCancelText="Close"
-  (nzOnCancel)="onMassDeleteRegionModalClose()"
-  [nzOkDisabled]="massDeleteImageModalCheckedRegionList.length === 0"
-  nzOkText="Delete"
-  nzOkDanger="true"
-  (nzOnOk)="onMassDeleteRegionModalDeleteClicked()"
->
-  <div *nzModalContent>
-    <app-region-list
-      [imageSrc]="image.originalImageURL"
-      [regionList]="regionList"
-      (regionListCheckedChange)="
-        onMassDeleteRegionModalRegionListCheckedChange($event)
-      "
-    >
-    </app-region-list>
-  </div>
-</nz-modal>
-
 <nz-dropdown-menu #contextMenu>
   <ul nz-menu oncontextmenu="() => false;">
     <li nz-menu-item (click)="onContextMenuResetZoomClicked()">Reset zoom</li>
+    <li nz-menu-divider></li>
+    <li
+      nz-menu-item
+      *ngIf="contextMenuPointOfInterestID === undefined"
+      (click)="onContextMenuAddPointOfInterestClicked()"
+    >
+      Add point of interest
+    </li>
+    <li
+      *ngIf="contextMenuPointOfInterestID !== undefined"
+      nz-menu-item
+      (click)="onContextMenuUpdatePointOfInterestClicked()"
+    >
+      Update point of interest
+    </li>
+    <li
+      *ngIf="contextMenuPointOfInterestID !== undefined"
+      nz-menu-item
+      nzDanger
+      (click)="onContextMenuDeletePointOfInterestClicked()"
+    >
+      Delete point of interest
+    </li>
+    <li nz-menu-divider></li>
     <li
       *ngIf="isRegionListVisible()"
       nz-menu-item
@@ -421,7 +356,7 @@
       Edit drawn region
     </li>
     <li
-      *ngIf="contextMenuRegion"
+      *ngIf="contextMenuRegionID !== undefined"
       nz-menu-item
       (click)="onContextMenuEditRegionBoundaryClicked()"
     >
@@ -443,12 +378,18 @@
         </li>
       </ul>
     </li>
-    <li *ngIf="contextMenuRegion" nz-submenu nzTitle="Relabel region as...">
+    <li
+      *ngIf="contextMenuRegionID !== undefined"
+      nz-submenu
+      nzTitle="Relabel region as..."
+    >
       <ul>
         <li
           *ngFor="let regionLabel of regionLabelList"
           nz-menu-item
-          [nzDisabled]="regionLabel.id === contextMenuRegion.label?.id"
+          [nzDisabled]="
+            regionLabel.id === regionList[contextMenuRegionID].label?.id
+          "
           (click)="onContextMenuRelabelRegionLabelClicked(regionLabel)"
         >
           {{ regionLabel.displayName }}
@@ -463,14 +404,14 @@
       Clear selection
     </li>
     <li
-      *ngIf="contextMenuRegion"
+      *ngIf="contextMenuRegionID !== undefined"
       nz-menu-item
       (click)="onContextMenuShowRegionInfoClicked()"
     >
       Show region info
     </li>
     <li
-      *ngIf="contextMenuRegion"
+      *ngIf="contextMenuRegionID !== undefined"
       nz-menu-item
       nzDanger
       (click)="onContextMenuDeleteRegionClicked()"
@@ -497,3 +438,24 @@
     </li>
   </ul>
 </nz-dropdown-menu>
+
+<app-label-region-modal
+  #labelRegionModal
+  (regionAdded)="onRegionAdded($event)"
+></app-label-region-modal>
+<app-mass-delete-region-modal
+  #massDeleteRegionModal
+  (massRegionDeleted)="onMassRegionDeleted($event)"
+></app-mass-delete-region-modal>
+<app-region-information
+  #regionInformationModal
+  (regionDeleted)="onRegionDeleted($event)"
+></app-region-information>
+<app-add-poi-modal
+  #addPoiModal
+  (poiAdded)="onPoiAdded($event)"
+></app-add-poi-modal>
+<app-update-poi-modal
+  #updatePoiModal
+  (poiUpdated)="onPoiUpdated($event)"
+></app-update-poi-modal>

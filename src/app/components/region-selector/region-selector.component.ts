@@ -31,7 +31,7 @@ const DEFAULT_ZOOM_LEVEL = 0.9;
 const ZOOM_LEVEL_CHANGE = 1.2;
 const SCROLL_ZOOM_RATE = 0.025;
 const MIN_MARGIN_DISTANCE = 0.05;
-const POINT_OF_INTEREST_RADIUS = 5;
+const POINT_OF_INTEREST_RADIUS = 7;
 
 enum RegionSelectorMouseMoveOperation {
   TRANSLATE = 1,
