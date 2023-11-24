@@ -21,3 +21,4 @@ export * from './user_can_manage_user_image';
 export * from './user_can_verify_user_image';
 export * from './detection_task';
 export * from './detection_task_list_sort_option';
+export * from './point_of_interest';

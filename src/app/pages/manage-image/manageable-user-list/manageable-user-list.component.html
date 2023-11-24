@@ -1,0 +1,34 @@
+<nz-list [nzDataSource]="manageableUserList" nzBordered>
+  <nz-list-item *ngFor="let item of manageableUserList; index as i">
+    <nz-list-item-meta>
+      <nz-list-item-meta-title>
+        {{ item.user.displayName }}
+      </nz-list-item-meta-title>
+      <nz-list-item-meta-description>
+        <label
+          nz-checkbox
+          [(ngModel)]="item.canEdit"
+          (ngModelChange)="onUserCanEditChanged(i, $event)"
+        >
+          Can edit image?
+        </label>
+      </nz-list-item-meta-description>
+    </nz-list-item-meta>
+    <ul nz-list-item-actions>
+      <nz-list-item-action>
+        <button nz-button nzType="text" nzDanger (click)="onDeleteClicked(i)">
+          <i nz-icon nzType="delete" nzTheme="outline"></i>
+        </button>
+      </nz-list-item-action>
+    </ul>
+  </nz-list-item>
+  <nz-list-pagination>
+    <nz-pagination
+      [nzPageIndex]="pageIndex"
+      [nzPageSize]="pageSize"
+      [nzTotal]="manageableUserCount"
+      (nzPageIndexChange)="onPageIndexChanged($event)"
+    >
+    </nz-pagination>
+  </nz-list-pagination>
+</nz-list>

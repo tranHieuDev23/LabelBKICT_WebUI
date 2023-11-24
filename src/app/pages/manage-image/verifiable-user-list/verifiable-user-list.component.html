@@ -1,0 +1,25 @@
+<nz-list [nzDataSource]="verifiableUserList" nzBordered>
+  <nz-list-item *ngFor="let item of verifiableUserList; index as i">
+    <nz-list-item-meta>
+      <nz-list-item-meta-title>
+        {{ item.displayName }}
+      </nz-list-item-meta-title>
+    </nz-list-item-meta>
+    <ul nz-list-item-actions>
+      <nz-list-item-action>
+        <button nz-button nzType="text" nzDanger (click)="onDeleteClicked(i)">
+          <i nz-icon nzType="delete" nzTheme="outline"></i>
+        </button>
+      </nz-list-item-action>
+    </ul>
+  </nz-list-item>
+  <nz-list-pagination>
+    <nz-pagination
+      [nzPageIndex]="pageIndex"
+      [nzPageSize]="pageSize"
+      [nzTotal]="verifiableUserCount"
+      (nzPageIndexChange)="onPageIndexChanged($event)"
+    >
+    </nz-pagination>
+  </nz-list-pagination>
+</nz-list>

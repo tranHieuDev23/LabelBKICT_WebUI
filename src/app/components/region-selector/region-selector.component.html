@@ -205,3 +205,13 @@
   >
   </canvas>
 </div>
+
+<app-mouse-tooltip [title]="tooltipTitle"></app-mouse-tooltip>
+
+<ng-template #tooltipTitle>
+  <div *ngIf="mouseOverPointOfInterest">
+    <b>{{ mouseOverPointOfInterest.createdByUser.displayName }}</b
+    >, {{ mouseOverPointOfInterest.createdTime | date : "short" }}<br />
+    <div [innerHTML]="mouseOverPointOfInterest.description"></div>
+  </div>
+</ng-template>

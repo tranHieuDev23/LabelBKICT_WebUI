@@ -8,6 +8,7 @@
       "
       [imageSrc]="image.originalImageURL"
       [regionList]="isShowingRegionSnapshot ? regionSnapshotList : regionList"
+      [pointOfInterestList]="pointOfInterestList"
       (regionSelected)="onRegionSelected($event)"
       (regionEdited)="onRegionEdited($event)"
       (regionDbClicked)="onRegionDbClicked($event)"
@@ -174,49 +175,9 @@
           nzHeader="Manageable users"
           (nzActiveChange)="onManageableUsersPanelActiveChange($event)"
         >
-          <nz-list [nzDataSource]="manageableUserList" nzBordered>
-            <nz-list-item *ngFor="let item of manageableUserList; index as i">
-              <nz-list-item-meta>
-                <nz-list-item-meta-title>
-                  {{ item.user.displayName }}
-                </nz-list-item-meta-title>
-                <nz-list-item-meta-description>
-                  <label
-                    nz-checkbox
-                    [(ngModel)]="item.canEdit"
-                    (ngModelChange)="
-                      onManageableUserPanelCanEditChanged(i, $event)
-                    "
-                  >
-                    Can edit image?
-                  </label>
-                </nz-list-item-meta-description>
-              </nz-list-item-meta>
-              <ul nz-list-item-actions>
-                <nz-list-item-action>
-                  <button
-                    nz-button
-                    nzType="text"
-                    nzDanger
-                    (click)="onManageableUserPanelDeleteClicked(i)"
-                  >
-                    <i nz-icon nzType="delete" nzTheme="outline"></i>
-                  </button>
-                </nz-list-item-action>
-              </ul>
-            </nz-list-item>
-            <nz-list-pagination>
-              <nz-pagination
-                [nzPageIndex]="manageableUserPageIndex"
-                [nzPageSize]="manageableUserPageSize"
-                [nzTotal]="manageableUserCount"
-                (nzPageIndexChange)="
-                  onManageableUserPanelPageIndexChanged($event)
-                "
-              >
-              </nz-pagination>
-            </nz-list-pagination>
-          </nz-list>
+          <app-manageable-user-list
+            #manageableUserList
+          ></app-manageable-user-list>
           <button
             nz-button
             class="add-user-btn"
@@ -231,38 +192,9 @@
           nzHeader="Verifiable users"
           (nzActiveChange)="onVerifiableUsersPanelActiveChange($event)"
         >
-          <nz-list [nzDataSource]="verifiableUserList" nzBordered>
-            <nz-list-item *ngFor="let item of verifiableUserList; index as i">
-              <nz-list-item-meta>
-                <nz-list-item-meta-title>
-                  {{ item.displayName }}
-                </nz-list-item-meta-title>
-              </nz-list-item-meta>
-              <ul nz-list-item-actions>
-                <nz-list-item-action>
-                  <button
-                    nz-button
-                    nzType="text"
-                    nzDanger
-                    (click)="onVerifiableUserPanelDeleteClicked(i)"
-                  >
-                    <i nz-icon nzType="delete" nzTheme="outline"></i>
-                  </button>
-                </nz-list-item-action>
-              </ul>
-            </nz-list-item>
-            <nz-list-pagination>
-              <nz-pagination
-                [nzPageIndex]="verifiableUserPageIndex"
-                [nzPageSize]="verifiableUserPageSize"
-                [nzTotal]="verifiableUserCount"
-                (nzPageIndexChange)="
-                  onVerifiableUserPanelPageIndexChanged($event)
-                "
-              >
-              </nz-pagination>
-            </nz-list-pagination>
-          </nz-list>
+          <app-verifiable-user-list
+            #verifiableUserList
+          ></app-verifiable-user-list>
           <button
             nz-button
             class="add-user-btn"
@@ -360,161 +292,33 @@
   </div>
 </div>
 
-<nz-modal
-  *ngIf="isLabelRegionModalVisible"
-  nzTitle="Label region"
-  [nzVisible]="isLabelRegionModalVisible"
-  [nzClosable]="false"
-  nzCancelText="Close"
-  (nzOnCancel)="onCloseLabelRegionModal()"
-  [nzOkText]="null"
->
-  <div *nzModalContent>
-    <nz-list [nzDataSource]="regionLabelList" nzBordered>
-      <nz-list-item
-        *ngFor="let regionLabel of regionLabelList"
-        class="label-region-modal-item"
-        (click)="onLabelRegionModalItemClicked(regionLabel)"
-      >
-        <span nz-typography [nzDisabled]="isAddingSelectedRegion">{{
-          regionLabel.displayName
-        }}</span>
-      </nz-list-item>
-    </nz-list>
-  </div>
-</nz-modal>
-
-<nz-modal
-  *ngIf="isRegionInformationModalVisible"
-  nzTitle="Region information"
-  [nzVisible]="isRegionInformationModalVisible"
-  [nzClosable]="false"
-  nzCancelText="Close"
-  (nzOnCancel)="onRegionInformationModalClose()"
-  [nzOkText]="null"
->
-  <div *nzModalContent>
-    <nz-collapse nzAccordion>
-      <nz-collapse-panel nzHeader="Region information" nzActive="true">
-        <img class="modal-image" [src]="regionInformationModalImage" />
-        <p *ngIf="regionInformationModalRegion?.label" nz-typography>
-          Labeled by
-          <b>{{ regionInformationModalRegion?.labeledByUser?.displayName }}</b>
-          as <b>{{ regionInformationModalRegion?.label?.displayName }}</b>
-        </p>
-        <p *ngIf="!regionInformationModalRegion?.label" nz-typography>
-          Not yet labeled
-        </p>
-      </nz-collapse-panel>
-      <nz-collapse-panel nzHeader="Operation history">
-        <app-region-operation-log-list
-          [operationLogList]="regionInformationModalOperationLogList"
-        >
-        </app-region-operation-log-list>
-      </nz-collapse-panel>
-    </nz-collapse>
-    <button
-      *ngIf="isImageEditable || isImageVerifiable"
-      nz-button
-      nzDanger
-      nzType="primary"
-      (click)="onRegionInformationModalDeleteRegionClicked()"
-      style="margin-top: 8px"
-    >
-      <i nz-icon nzType="delete"></i> Delete region
-    </button>
-  </div>
-</nz-modal>
-
-<nz-modal
-  *ngIf="isImageSettingsModalVisible"
-  nzTitle="Image settings"
-  [nzVisible]="isImageSettingsModalVisible"
-  [nzClosable]="false"
-  nzCancelText="Close"
-  (nzOnCancel)="onImageSettingsModalClose()"
-  [nzOkText]="null"
->
-  <div *nzModalContent>
-    <h4 nz-typography>Change image type</h4>
-    <p nz-typography>
-      This will remove all tags from this image, and mark all regions extracted
-      from it as not labeled.
-    </p>
-    <div>
-      <nz-select
-        class="image-type-select"
-        nzPlaceHolder="Select image type"
-        [(ngModel)]="imageSettingsModalSelectedImageType"
-        (ngModelChange)="onImageSettingsModalImageTypeClicked($event)"
-      >
-        <nz-option
-          *ngFor="let imageType of imageSettingsModalImageTypeList"
-          [nzValue]="imageType"
-          [nzLabel]="imageType.displayName"
-          [nzDisabled]="
-            image?.imageType && imageType.id === image?.imageType?.id
-          "
-        >
-        </nz-option>
-      </nz-select>
-    </div>
-    <span *ngIf="image?.imageType?.hasPredictiveModel">
-      <h4 nz-typography style="margin-top: 8px">
-        Request for AI-based lesion suggestion
-      </h4>
-      <p nz-typography>
-        The image will be sent to AI model for automatic lesion segmentation.
-      </p>
-      <button
-        nz-button
-        nzType="primary"
-        (click)="onImageSettingsModalRequestDetectionClicked()"
-      >
-        <i nz-icon nzType="reload"></i> Request
-      </button>
-    </span>
-    <h4 nz-typography style="margin-top: 8px">Delete this image</h4>
-    <p nz-typography>This will also delete all regions extracted from it.</p>
-    <button
-      nz-button
-      nzType="primary"
-      nzDanger
-      (click)="onImageSettingsModalDeleteImageClicked()"
-    >
-      <i nz-icon nzType="delete"></i> Delete
-    </button>
-  </div>
-</nz-modal>
-
-<nz-modal
-  *ngIf="image && isMassDeleteImageModalVisible"
-  nzTitle="Mass delete image regions"
-  [nzVisible]="isMassDeleteImageModalVisible"
-  [nzClosable]="false"
-  nzWidth="720px"
-  nzCancelText="Close"
-  (nzOnCancel)="onMassDeleteRegionModalClose()"
-  [nzOkDisabled]="massDeleteImageModalCheckedRegionList.length === 0"
-  nzOkText="Delete"
-  nzOkDanger="true"
-  (nzOnOk)="onMassDeleteRegionModalDeleteClicked()"
->
-  <div *nzModalContent>
-    <app-region-list
-      [imageSrc]="image.originalImageURL"
-      [regionList]="regionList"
-      (regionListCheckedChange)="
-        onMassDeleteRegionModalRegionListCheckedChange($event)
-      "
-    >
-    </app-region-list>
-  </div>
-</nz-modal>
-
 <nz-dropdown-menu #contextMenu>
   <ul nz-menu oncontextmenu="() => false;">
     <li nz-menu-item (click)="onContextMenuResetZoomClicked()">Reset zoom</li>
+    <li nz-menu-divider></li>
+    <li
+      nz-menu-item
+      *ngIf="contextMenuPointOfInterestID === undefined"
+      (click)="onContextMenuAddPointOfInterestClicked()"
+    >
+      Add point of interest
+    </li>
+    <li
+      *ngIf="contextMenuPointOfInterestID !== undefined"
+      nz-menu-item
+      (click)="onContextMenuUpdatePointOfInterestClicked()"
+    >
+      Update point of interest
+    </li>
+    <li
+      *ngIf="contextMenuPointOfInterestID !== undefined"
+      nz-menu-item
+      nzDanger
+      (click)="onContextMenuDeletePointOfInterestClicked()"
+    >
+      Delete point of interest
+    </li>
+    <li nz-menu-divider></li>
     <li
       *ngIf="isRegionListVisible()"
       nz-menu-item
@@ -618,7 +422,10 @@
       Edit drawn region
     </li>
     <li
-      *ngIf="contextMenuRegion && (isImageEditable || isImageVerifiable)"
+      *ngIf="
+        contextMenuRegionID !== undefined &&
+        (isImageEditable || isImageVerifiable)
+      "
       nz-menu-item
       (click)="onContextMenuEditRegionBoundaryClicked()"
     >
@@ -641,7 +448,10 @@
       </ul>
     </li>
     <li
-      *ngIf="contextMenuRegion && (isImageEditable || isImageVerifiable)"
+      *ngIf="
+        contextMenuRegionID !== undefined &&
+        (isImageEditable || isImageVerifiable)
+      "
       nz-submenu
       nzTitle="Relabel region as..."
     >
@@ -649,7 +459,9 @@
         <li
           *ngFor="let regionLabel of regionLabelList"
           nz-menu-item
-          [nzDisabled]="regionLabel.id === contextMenuRegion.label?.id"
+          [nzDisabled]="
+            regionLabel.id === regionList[contextMenuRegionID].label?.id
+          "
           (click)="onContextMenuRelabelRegionLabelClicked(regionLabel)"
         >
           {{ regionLabel.displayName }}
@@ -664,14 +476,17 @@
       Clear selection
     </li>
     <li
-      *ngIf="contextMenuRegion"
+      *ngIf="contextMenuRegionID !== undefined"
       nz-menu-item
       (click)="onContextMenuShowRegionInfoClicked()"
     >
       Show region info
     </li>
     <li
-      *ngIf="contextMenuRegion && (isImageEditable || isImageVerifiable)"
+      *ngIf="
+        contextMenuRegionID !== undefined &&
+        (isImageEditable || isImageVerifiable)
+      "
       nz-menu-item
       nzDanger
       (click)="onContextMenuDeleteRegionClicked()"
@@ -709,38 +524,35 @@
   </ul>
 </nz-dropdown-menu>
 
-<nz-modal
-  [(nzVisible)]="isAddUserCanMangeImageModalVisible"
-  nzTitle="Add user"
-  [nzOkDisabled]="!addUserCanMangeImageUser"
-  (nzOnOk)="onUserCanManageImageAddUserModalOk()"
-  (nzOnCancel)="onUserCanManageImageAddUserModalCancel()"
->
-  <ng-container *nzModalContent>
-    <app-user-search-box
-      (userSelected)="onUserCanManageImageAddUserModalUserSelected($event)"
-    >
-    </app-user-search-box>
-    <label
-      style="margin-top: 8px"
-      nz-checkbox
-      [(ngModel)]="addUserCanMangeImageCanEdit"
-      >Can edit image?</label
-    >
-  </ng-container>
-</nz-modal>
-
-<nz-modal
-  [(nzVisible)]="isAddUserCanVerifyImageModalVisible"
-  nzTitle="Add user"
-  [nzOkDisabled]="!addUserCanVerifyImageUser"
-  (nzOnOk)="onUserCanVerifyImageAddUserModalOk()"
-  (nzOnCancel)="onUserCanVerifyImageAddUserModalCancel()"
->
-  <ng-container *nzModalContent>
-    <app-user-search-box
-      (userSelected)="onUserCanVerifyImageAddUserModalUserSelected($event)"
-    >
-    </app-user-search-box>
-  </ng-container>
-</nz-modal>
+<app-label-region-modal
+  #labelRegionModal
+  (regionAdded)="onRegionAdded($event)"
+></app-label-region-modal>
+<app-image-settings-modal
+  #imageSettingsModal
+  (imageTypeUpdated)="onImageTypeUpdated($event)"
+></app-image-settings-modal>
+<app-mass-delete-region-modal
+  #massDeleteRegionModal
+  (massRegionDeleted)="onMassRegionDeleted($event)"
+></app-mass-delete-region-modal>
+<app-region-information
+  #regionInformationModal
+  (regionDeleted)="onRegionDeleted($event)"
+></app-region-information>
+<app-add-poi-modal
+  #addPoiModal
+  (poiAdded)="onPoiAdded($event)"
+></app-add-poi-modal>
+<app-update-poi-modal
+  #updatePoiModal
+  (poiUpdated)="onPoiUpdated($event)"
+></app-update-poi-modal>
+<app-add-manageable-user-modal
+  #addManageableUserModal
+  (manageableUserAdded)="onManageableUserAdded()"
+></app-add-manageable-user-modal>
+<app-add-verifiable-user-modal
+  #addVerifiableUserModal
+  (verifiableUserAdded)="onVerifiableUserAdded()"
+></app-add-verifiable-user-modal>

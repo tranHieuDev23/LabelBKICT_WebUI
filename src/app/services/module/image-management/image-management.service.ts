@@ -7,10 +7,12 @@ import {
   ImagesService,
   ImageStatus,
   ImageTag,
+  PointOfInterest,
   Region,
   UploadImageBatchMessage,
   UploadImageInput,
   User,
+  Vertex,
 } from '../../dataaccess/api';
 import { DescriptionFileService } from './description-file.service';
 import { FreePolygon } from 'src/app/components/region-selector/models';
@@ -68,6 +70,7 @@ export class ImageManagementService {
     image: Image;
     imageTagList: ImageTag[];
     regionList: Region[];
+    pointOfInterestList: PointOfInterest[];
     canEdit: boolean;
     canVerify: boolean;
   }> {
@@ -214,5 +217,26 @@ export class ImageManagementService {
 
   public async removeVerifiableUserOfImage(imageId: number, userId: number): Promise<void> {
     await this.imagesService.removeVerifiableUserOfImage(imageId, userId);
+  }
+
+  public async addPointOfInterestToImage(
+    imageId: number,
+    coordinate: Vertex,
+    description: string
+  ): Promise<PointOfInterest> {
+    return await this.imagesService.addPointOfInterestToImage(imageId, coordinate, description);
+  }
+
+  public async updatePointOfInterestOfImage(
+    imageId: number,
+    poiId: number,
+    coordinate: Vertex,
+    description: string
+  ): Promise<PointOfInterest> {
+    return await this.imagesService.updatePointOfInterestOfImage(imageId, poiId, coordinate, description);
+  }
+
+  public async deletePointOfInterestOfImage(imageId: number, poiId: number): Promise<void> {
+    await this.imagesService.deletePointOfInterestOfImage(imageId, poiId);
   }
 }

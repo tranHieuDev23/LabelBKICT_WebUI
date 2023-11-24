@@ -12,6 +12,10 @@ const DRAW_MARGIN_BOUNDARY_SEGMENT_LIST = [12, 3, 3];
 const DRAW_MARGIN_BOUNDARY_MOUSE_NOT_OVER_COLOR = '#2196f3';
 const DRAW_MARGIN_BOUNDARY_MOUSE_OVER_COLOR = '#f5222d';
 const DRAW_MARGIN_BOUNDARY_MASK_COLOR = '#00000077';
+const POINT_OF_INTEREST_RADIUS = 5;
+const POINT_OF_INTEREST_LINE_WIDTH = 2;
+const POINT_OF_INTEREST_STROKE_STYLE = '#f44336';
+const POINT_OF_INTEREST_FILL_STYLE = 'white';
 
 @Injectable({
   providedIn: 'root',
@@ -39,7 +43,7 @@ export class RegionSelectorGraphicService {
     content: RegionSelectorContent,
     regionIndex: number
   ): void {
-    if (regionIndex < 0 || regionIndex > content.regionList.length) {
+    if (regionIndex < 0 || regionIndex >= content.regionList.length) {
       return;
     }
     const canvasWidth = canvas.width;
@@ -294,5 +298,52 @@ export class RegionSelectorGraphicService {
 
       this.canvasGraphicService.clearContext(ctx);
     }
+  }
+
+  public drawPointOfInterestList(
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
+    content: RegionSelectorContent
+  ): void {
+    for (let i = 0; i < content.pointOfInterestList.length; i++) {
+      this.drawPointOfInterest(canvas, ctx, content, i);
+    }
+  }
+
+  private drawPointOfInterest(
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
+    content: RegionSelectorContent,
+    poiIndex: number
+  ): void {
+    if (poiIndex < 0 || poiIndex >= content.pointOfInterestList.length) {
+      return;
+    }
+
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    const poi = content.pointOfInterestList[poiIndex];
+
+    const poiCanvasCoordinate = this.regionSelectorGeometryService.imageToCanvasPosition(
+      canvas,
+      content,
+      poi.coordinate
+    );
+    ctx.lineWidth = POINT_OF_INTEREST_LINE_WIDTH;
+    ctx.strokeStyle = POINT_OF_INTEREST_STROKE_STYLE;
+    ctx.fillStyle = POINT_OF_INTEREST_FILL_STYLE;
+    ctx.beginPath();
+    ctx.arc(
+      poiCanvasCoordinate.x * canvasWidth,
+      poiCanvasCoordinate.y * canvasHeight,
+      POINT_OF_INTEREST_RADIUS,
+      0,
+      2 * Math.PI,
+      false
+    );
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
+    this.canvasGraphicService.clearContext(ctx);
   }
 }

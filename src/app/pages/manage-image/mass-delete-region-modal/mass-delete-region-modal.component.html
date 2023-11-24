@@ -1,0 +1,22 @@
+<nz-modal
+  *ngIf="image && visible"
+  nzTitle="Mass delete image regions"
+  [nzVisible]="visible"
+  [nzClosable]="false"
+  nzWidth="720px"
+  nzCancelText="Close"
+  (nzOnCancel)="close()"
+  [nzOkDisabled]="deletedRegionList.length === 0"
+  nzOkText="Delete"
+  nzOkDanger="true"
+  (nzOnOk)="onDeleteClicked()"
+>
+  <div *nzModalContent>
+    <app-region-list
+      [imageSrc]="image.originalImageURL"
+      [regionList]="regionList"
+      (regionListCheckedChange)="onRegionListCheckedChange($event)"
+    >
+    </app-region-list>
+  </div>
+</nz-modal>

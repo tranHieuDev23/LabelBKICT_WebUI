@@ -8,9 +8,10 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { Subscription } from 'rxjs';
 import { EditableTextComponent } from 'src/app/components/editable-text/editable-text.component';
 import { RegionListCheckedChangeEvent } from 'src/app/components/region-list/region-list.component';
+import { RegionSelectorElement } from 'src/app/components/region-selector/common/constants';
 import { Rectangle, Shape } from 'src/app/components/region-selector/models';
 import {
-  RegionClickedEvent,
+  RegionSelectorClickedEvent,
   RegionEditedEvent,
   RegionSelectedEvent,
 } from 'src/app/components/region-selector/region-selector-events';
@@ -31,6 +32,7 @@ import {
   InvalidImageInformationError,
   InvalidImageStatusError,
   InvalidRegionInformation,
+  PointOfInterest,
   Region,
   RegionLabel,
   RegionLabelCannotBeAssignedToImageError,
@@ -81,6 +83,7 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
 
   public image: Image | undefined;
   public imageTagList: ImageTag[] = [];
+  public pointOfInterestList: PointOfInterest[] = [];
   public regionList: Region[] = [];
   public regionLabelList: RegionLabel[] = [];
   public imageBookmark: ImageBookmark | undefined;
@@ -204,10 +207,13 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
     this.allowedImageTagListForImageType = [];
 
     try {
-      const { image, imageTagList, regionList } = await this.imageManagementService.getImage(imageID);
+      const { image, imageTagList, regionList, pointOfInterestList } = await this.imageManagementService.getImage(
+        imageID
+      );
       this.image = image;
       this.imageTagList = imageTagList;
       this.regionList = regionList;
+      this.pointOfInterestList = pointOfInterestList;
 
       if (image.imageType) {
         const { regionLabelList } = await this.imageTypeManagementService.getImageType(image.imageType.id);
@@ -684,11 +690,11 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
     }
   }
 
-  public async onRegionDbClicked(event: RegionClickedEvent): Promise<void> {
-    if (event.regionID === null || this.isShowingRegionSnapshot) {
+  public async onRegionDbClicked(event: RegionSelectorClickedEvent): Promise<void> {
+    if (event.elementID === null || this.isShowingRegionSnapshot) {
       return;
     }
-    const region = this.regionList[event.regionID];
+    const region = this.regionList[event.elementID];
     await this.openRegionInfoModal(region);
   }
 
@@ -704,13 +710,13 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
     this.isRegionInformationModalVisible = false;
   }
 
-  public async onContextMenu(event: RegionClickedEvent): Promise<void> {
+  public async onContextMenu(event: RegionSelectorClickedEvent): Promise<void> {
     if (!this.image || !this.contextMenu || this.isShowingRegionSnapshot) {
       return;
     }
-    if (event.regionID !== null) {
-      this.contextMenuRegion = this.regionList[event.regionID];
-      this.contextMenuRegionID = event.regionID;
+    if (event.element === RegionSelectorElement.REGION_LIST && event.elementID !== null) {
+      this.contextMenuRegion = this.regionList[event.elementID];
+      this.contextMenuRegionID = event.elementID;
     } else {
       this.contextMenuRegion = undefined;
       this.contextMenuRegionID = undefined;

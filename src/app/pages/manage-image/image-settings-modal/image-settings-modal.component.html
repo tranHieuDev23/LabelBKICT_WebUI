@@ -1,0 +1,56 @@
+<nz-modal
+  *ngIf="visible"
+  nzTitle="Image settings"
+  [nzVisible]="visible"
+  [nzClosable]="false"
+  nzCancelText="Close"
+  (nzOnCancel)="close()"
+  [nzOkText]="null"
+>
+  <div *nzModalContent>
+    <h4 nz-typography>Change image type</h4>
+    <p nz-typography>
+      This will remove all tags from this image, and mark all regions extracted
+      from it as not labeled.
+    </p>
+    <div>
+      <nz-select
+        class="image-type-select"
+        nzPlaceHolder="Select image type"
+        [(ngModel)]="selectedImageType"
+        (ngModelChange)="onImageTypeClicked($event)"
+      >
+        <nz-option
+          *ngFor="let imageType of imageTypeList"
+          [nzValue]="imageType"
+          [nzLabel]="imageType.displayName"
+          [nzDisabled]="
+            image?.imageType && imageType.id === image?.imageType?.id
+          "
+        >
+        </nz-option>
+      </nz-select>
+    </div>
+    <span *ngIf="image?.imageType?.hasPredictiveModel">
+      <h4 nz-typography style="margin-top: 8px">
+        Request for AI-based lesion suggestion
+      </h4>
+      <p nz-typography>
+        The image will be sent to AI model for automatic lesion segmentation.
+      </p>
+      <button nz-button nzType="primary" (click)="onRequestDetectionClicked()">
+        <i nz-icon nzType="reload"></i> Request
+      </button>
+    </span>
+    <h4 nz-typography style="margin-top: 8px">Delete this image</h4>
+    <p nz-typography>This will also delete all regions extracted from it.</p>
+    <button
+      nz-button
+      nzType="primary"
+      nzDanger
+      (click)="onDeleteImageClicked()"
+    >
+      <i nz-icon nzType="delete"></i> Delete
+    </button>
+  </div>
+</nz-modal>

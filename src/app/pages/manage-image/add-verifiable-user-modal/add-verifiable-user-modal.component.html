@@ -1,0 +1,13 @@
+<nz-modal
+  *ngIf="visible"
+  [(nzVisible)]="visible"
+  nzTitle="Add verifiable user"
+  [nzOkDisabled]="!selectedUser"
+  (nzOnOk)="onOk()"
+  (nzOnCancel)="close()"
+>
+  <ng-container *nzModalContent>
+    <app-user-search-box (userSelected)="onUserSelected($event)">
+    </app-user-search-box>
+  </ng-container>
+</nz-modal>

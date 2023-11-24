@@ -1,12 +1,12 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { Region } from 'src/app/services/dataaccess/api';
+import { PointOfInterest, Region } from 'src/app/services/dataaccess/api';
 import { GeometryService } from './geometry/geometry.service';
 import { RegionSelectorGeometryService } from './geometry/region-selector-geometry.service';
 import { CanvasGraphicService } from './graphic/canvas-graphic.service';
 import { RegionSelectorGraphicService } from './graphic/region-selector-graphic.service';
 import { Coordinate, Eclipse, FreePolygon, Rectangle } from './models';
 import { RegionSelectorContent } from './region-selector-content';
-import { RegionClickedEvent, RegionEditedEvent, RegionSelectedEvent } from './region-selector-events';
+import { RegionSelectorClickedEvent, RegionEditedEvent, RegionSelectedEvent } from './region-selector-events';
 import { RegionSelectorSnapshot } from './snapshot/region-selector-editor-snapshot';
 import { RegionSelectorSnapshotService } from './snapshot/region-selector-snapshot.service';
 import {
@@ -20,6 +20,7 @@ import {
   EditState,
 } from './states';
 import { MAX_OPERATION_MOUSE_DISTANCE, RegionSelectorElement } from './common/constants';
+import { MouseTooltipComponent } from '../mouse-tooltip/mouse-tooltip.component';
 
 const VERTICES_MAX_DISTANCE = 1e-2;
 
@@ -30,6 +31,7 @@ const DEFAULT_ZOOM_LEVEL = 0.9;
 const ZOOM_LEVEL_CHANGE = 1.2;
 const SCROLL_ZOOM_RATE = 0.025;
 const MIN_MARGIN_DISTANCE = 0.05;
+const POINT_OF_INTEREST_RADIUS = 5;
 
 enum RegionSelectorMouseMoveOperation {
   TRANSLATE = 1,
@@ -45,6 +47,7 @@ enum RegionSelectorMouseMoveOperation {
 })
 export class RegionSelectorComponent implements OnInit {
   @ViewChild('canvas', { static: true }) canvas: ElementRef<HTMLCanvasElement> | undefined;
+  @ViewChild(MouseTooltipComponent, { static: true }) mouseTooltip: MouseTooltipComponent | undefined;
 
   private state: RegionSelectorState;
 
@@ -68,7 +71,13 @@ export class RegionSelectorComponent implements OnInit {
   @Input() set regionList(v: Region[]) {
     this.state.content.regionList = v;
     this.onDraw();
-    this.mouseOverRegionID = null;
+    this.mouseOverElementID = null;
+  }
+
+  @Input() set pointOfInterestList(v: PointOfInterest[]) {
+    this.state.content.pointOfInterestList = v;
+    this.onDraw();
+    this.mouseOverElementID = null;
   }
 
   private _editable = true;
@@ -82,6 +91,14 @@ export class RegionSelectorComponent implements OnInit {
 
   public get editable(): boolean {
     return this._editable;
+  }
+
+  public get mouseOverPointOfInterest(): PointOfInterest | undefined {
+    if (this.mouseOverElement !== RegionSelectorElement.POINT_OF_INTEREST_LIST || this.mouseOverElementID === null) {
+      return undefined;
+    }
+
+    return this.state.content.pointOfInterestList[this.mouseOverElementID];
   }
 
   private _symmetricalVerticalDrawMargins = false;
@@ -138,13 +155,13 @@ export class RegionSelectorComponent implements OnInit {
 
   @Output() public regionSelected = new EventEmitter<RegionSelectedEvent>();
   @Output() public regionEdited = new EventEmitter<RegionEditedEvent>();
-  @Output() public regionDbClicked = new EventEmitter<RegionClickedEvent>();
-  @Output() public contextMenu = new EventEmitter<RegionClickedEvent>();
+  @Output() public regionDbClicked = new EventEmitter<RegionSelectorClickedEvent>();
+  @Output() public contextMenu = new EventEmitter<RegionSelectorClickedEvent>();
 
   private isMouseDown = false;
   private isCtrlDown = false;
   private lastTranslateMousePos: Coordinate | null = null;
-  private mouseOverRegionID: number | null = null;
+  private mouseOverElementID: number | null = null;
   private mouseOverElement: RegionSelectorElement | null = null;
   private mouseMoveOperation: RegionSelectorMouseMoveOperation = RegionSelectorMouseMoveOperation.STATE_OPERATION;
 
@@ -182,6 +199,7 @@ export class RegionSelectorComponent implements OnInit {
       drawnShapeList: [],
       image: null,
       imageOrigin: { x: 0, y: 0 },
+      pointOfInterestList: [],
       isRegionListVisible: true,
       regionList: [],
       zoom: DEFAULT_ZOOM_LEVEL,
@@ -863,7 +881,7 @@ export class RegionSelectorComponent implements OnInit {
   }
 
   public handleDbClick(event: MouseEvent): void {
-    if (event.button !== MOUSE_LEFT_BUTTON) {
+    if (event.button !== MOUSE_LEFT_BUTTON || !this.canvas) {
       return;
     }
     event.preventDefault();
@@ -871,24 +889,34 @@ export class RegionSelectorComponent implements OnInit {
       this.mouseOverElement === RegionSelectorElement.DRAWN_SHAPE_LIST ||
       this.mouseOverElement === RegionSelectorElement.REGION_LIST
     ) {
+      const canvasElement = this.canvas.nativeElement;
+      const mousePos = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+      const mouseImagePos = this.regionSelectorGeometryService.mouseToImagePosition(
+        canvasElement,
+        this.state.content,
+        mousePos
+      );
       this.regionDbClicked.emit(
-        new RegionClickedEvent(
-          this.mouseOverElement === RegionSelectorElement.DRAWN_SHAPE_LIST,
-          this.mouseOverRegionID,
-          event
-        )
+        new RegionSelectorClickedEvent(this.mouseOverElement, this.mouseOverElementID, event, mouseImagePos)
       );
     }
   }
 
   public handleContextMenu(event: MouseEvent): boolean {
+    if (!this.canvas) {
+      return false;
+    }
+
     event.preventDefault();
+    const canvasElement = this.canvas.nativeElement;
+    const mousePos = this.regionSelectorGeometryService.getMousePositionFromMouseEvent(event);
+    const mouseImagePos = this.regionSelectorGeometryService.mouseToImagePosition(
+      canvasElement,
+      this.state.content,
+      mousePos
+    );
     this.contextMenu.emit(
-      new RegionClickedEvent(
-        this.mouseOverElement === RegionSelectorElement.DRAWN_SHAPE_LIST,
-        this.mouseOverRegionID,
-        event
-      )
+      new RegionSelectorClickedEvent(this.mouseOverElement, this.mouseOverElementID, event, mouseImagePos)
     );
     return false;
   }
@@ -931,6 +959,22 @@ export class RegionSelectorComponent implements OnInit {
       mousePos
     );
 
+    // Check if mouse is over point of interest
+    const pointOfInterestList = this.state.content.pointOfInterestList;
+    for (let i = 0; i < pointOfInterestList.length; i++) {
+      const poi = pointOfInterestList[i];
+      const poiMousePos = this.regionSelectorGeometryService.imageToMousePosition(
+        this.canvas.nativeElement,
+        this.state.content,
+        poi.coordinate
+      );
+      if (this.geometryService.getDistance(poiMousePos, mousePos) <= POINT_OF_INTEREST_RADIUS) {
+        this.mouseOverElement = RegionSelectorElement.POINT_OF_INTEREST_LIST;
+        this.mouseOverElementID = i;
+        return;
+      }
+    }
+
     // Check if mouse is over drawn polygon list
     const drawnShapeList = this.state.content.drawnShapeList;
     const isInsideDrawnPolygon =
@@ -939,7 +983,7 @@ export class RegionSelectorComponent implements OnInit {
       }) !== -1;
     if (isInsideDrawnPolygon) {
       this.mouseOverElement = RegionSelectorElement.DRAWN_SHAPE_LIST;
-      this.mouseOverRegionID = null;
+      this.mouseOverElementID = null;
       return;
     }
 
@@ -961,7 +1005,7 @@ export class RegionSelectorComponent implements OnInit {
     }
     if (insideRegionID >= 0) {
       this.mouseOverElement = RegionSelectorElement.REGION_LIST;
-      this.mouseOverRegionID = insideRegionID;
+      this.mouseOverElementID = insideRegionID;
       return;
     }
 
@@ -974,7 +1018,7 @@ export class RegionSelectorComponent implements OnInit {
       );
       if (mouseOverMargin != null) {
         this.mouseOverElement = mouseOverMargin;
-        this.mouseOverRegionID = null;
+        this.mouseOverElementID = null;
         return;
       }
     }
@@ -983,13 +1027,13 @@ export class RegionSelectorComponent implements OnInit {
     if (this.state.content.drawBoundaryEnabled) {
       if (this.isMouseOverDrawBoundary(this.canvas.nativeElement, this.state.content, mouseImagePos)) {
         this.mouseOverElement = RegionSelectorElement.DRAW_BOUNDARY;
-        this.mouseOverRegionID = null;
+        this.mouseOverElementID = null;
         return;
       }
     }
 
     // Mouse is not inside anything
-    this.mouseOverRegionID = null;
+    this.mouseOverElementID = null;
     this.mouseOverElement = null;
   }
 
@@ -1082,13 +1126,29 @@ export class RegionSelectorComponent implements OnInit {
       this.regionSelectorGraphicService.drawDrawMargin(canvasElement, ctx, this.state.content, this.mouseOverElement);
       this.regionSelectorGraphicService.drawDrawBoundary(canvasElement, ctx, this.state.content, this.mouseOverElement);
 
-      if (this.mouseOverRegionID !== null && !this.isEditing() && this.isRegionListVisible()) {
+      if (
+        this.mouseOverElement === RegionSelectorElement.REGION_LIST &&
+        this.mouseOverElementID !== null &&
+        !this.isEditing() &&
+        this.isRegionListVisible()
+      ) {
         this.regionSelectorGraphicService.drawRegionLabel(
           canvasElement,
           ctx,
           this.state.content,
-          this.mouseOverRegionID
+          this.mouseOverElementID
         );
+      }
+
+      this.regionSelectorGraphicService.drawPointOfInterestList(canvasElement, ctx, this.state.content);
+      if (this.mouseTooltip) {
+        if (this.mouseOverElement === RegionSelectorElement.POINT_OF_INTEREST_LIST && !this.mouseTooltip.visible) {
+          this.mouseTooltip.show();
+        }
+
+        if (this.mouseOverElement !== RegionSelectorElement.POINT_OF_INTEREST_LIST && this.mouseTooltip.visible) {
+          this.mouseTooltip.hide();
+        }
       }
     });
   }

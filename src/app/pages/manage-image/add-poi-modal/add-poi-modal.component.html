@@ -1,0 +1,18 @@
+<nz-modal
+  [(nzVisible)]="visible"
+  nzTitle="Add point of interest"
+  [nzOkDisabled]="description === ''"
+  (nzOnOk)="onOkClicked()"
+  (nzOnCancel)="onCancelClicked()"
+>
+  <ng-container *nzModalContent>
+    <quill-editor
+      class="description-editor"
+      [modules]="quillModules"
+      [(ngModel)]="description"
+      placeholder="Add point of interest's description..."
+      defaultEmptyValue=""
+    >
+    </quill-editor>
+  </ng-container>
+</nz-modal>

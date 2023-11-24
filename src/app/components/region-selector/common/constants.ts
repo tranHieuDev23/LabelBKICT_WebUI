@@ -13,4 +13,5 @@ export enum RegionSelectorElement {
   DRAW_BOUNDARY = 5,
   DRAWN_SHAPE_LIST = 6,
   REGION_LIST = 7,
+  POINT_OF_INTEREST_LIST = 8,
 }

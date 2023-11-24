@@ -1,0 +1,37 @@
+<nz-modal
+  *ngIf="visible"
+  nzTitle="Region information"
+  [nzVisible]="visible"
+  [nzClosable]="false"
+  nzCancelText="Close"
+  (nzOnCancel)="onCancelClicked()"
+  [nzOkText]="null"
+>
+  <div *nzModalContent>
+    <nz-collapse nzAccordion>
+      <nz-collapse-panel nzHeader="Region information" nzActive="true">
+        <img class="image" [src]="regionImage" />
+        <p *ngIf="region?.label" nz-typography>
+          Labeled by
+          <b>{{ region?.labeledByUser?.displayName }}</b>
+          as <b>{{ region?.label?.displayName }}</b>
+        </p>
+        <p *ngIf="!region?.label" nz-typography>Not yet labeled</p>
+      </nz-collapse-panel>
+      <nz-collapse-panel nzHeader="Operation history">
+        <app-region-operation-log-list [operationLogList]="operationLogList">
+        </app-region-operation-log-list>
+      </nz-collapse-panel>
+    </nz-collapse>
+    <button
+      *ngIf="deletable"
+      nz-button
+      nzDanger
+      nzType="primary"
+      (click)="onDeleteRegionClicked()"
+      style="margin-top: 8px"
+    >
+      <i nz-icon nzType="delete"></i> Delete region
+    </button>
+  </div>
+</nz-modal>

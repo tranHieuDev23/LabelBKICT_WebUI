@@ -9,7 +9,7 @@ import {
   UploadImageBatchMessageType,
   UploadImageInput,
 } from './images.helper';
-import { Image, ImageBookmark, ImageStatus, ImageTag, Region, User } from './schemas';
+import { Image, ImageBookmark, ImageStatus, ImageTag, PointOfInterest, Region, User, Vertex } from './schemas';
 import { UserAlreadyInListError, UserNotInListError } from './users.service';
 
 export class ImageNotFoundError extends Error {
@@ -72,6 +72,18 @@ export class ImageHasUnlabeledRegionError extends Error {
   }
 }
 
+export class InvalidPointOfInterestInformationError extends Error {
+  constructor() {
+    super('Invalid point of interest information');
+  }
+}
+
+export class ImageOrPointOfInterestNotFound extends Error {
+  constructor() {
+    super('Cannot find image or point of interest');
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -98,6 +110,7 @@ export class ImagesService {
   public async getImage(id: number): Promise<{
     image: Image;
     imageTagList: ImageTag[];
+    pointOfInterestList: PointOfInterest[];
     regionList: Region[];
     canEdit: boolean;
     canVerify: boolean;
@@ -107,9 +120,10 @@ export class ImagesService {
       const image = Image.fromJSON(response.data.image);
       const imageTagList = response.data.image_tag_list.map(ImageTag.fromJSON);
       const regionList = response.data.region_list.map(Region.fromJSON);
+      const pointOfInterestList = response.data.point_of_interest_list.map(PointOfInterest.fromJSON);
       const canEdit = response.data.can_edit || false;
       const canVerify = response.data.can_verify || false;
-      return { image, imageTagList, regionList, canEdit, canVerify };
+      return { image, imageTagList, regionList, pointOfInterestList, canEdit, canVerify };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -411,6 +425,87 @@ export class ImagesService {
           throw new ImageNotFoundError();
         case HttpStatusCode.Conflict:
           throw new UserHasNotBookmarkedImageError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async addPointOfInterestToImage(
+    imageId: number,
+    coordinate: Vertex,
+    description: string
+  ): Promise<PointOfInterest> {
+    try {
+      const response = await this.axios.post(`/api/images/${imageId}/pois`, {
+        coordinate,
+        description,
+      });
+      return PointOfInterest.fromJSON(response.data.point_of_interest || undefined);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidPointOfInterestInformationError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageNotFoundError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async updatePointOfInterestOfImage(
+    imageId: number,
+    poiId: number,
+    coordinate: Vertex,
+    description: string
+  ): Promise<PointOfInterest> {
+    try {
+      const response = await this.axios.patch(`/api/images/${imageId}/pois/${poiId}`, {
+        coordinate,
+        description,
+      });
+      return PointOfInterest.fromJSON(response.data.point_of_interest || undefined);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.BadRequest:
+          throw new InvalidPointOfInterestInformationError();
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageOrPointOfInterestNotFound();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async deletePointOfInterestOfImage(imageId: number, poiId: number): Promise<void> {
+    try {
+      await this.axios.delete(`/api/images/${imageId}/pois/${poiId}`);
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageOrPointOfInterestNotFound();
         default:
           throw new UnknownAPIError(e);
       }

@@ -1,0 +1,16 @@
+<nz-modal
+  *ngIf="visible"
+  [(nzVisible)]="visible"
+  nzTitle="Add manageable user"
+  [nzOkDisabled]="!selectedUser"
+  (nzOnOk)="onOk()"
+  (nzOnCancel)="close()"
+>
+  <ng-container *nzModalContent>
+    <app-user-search-box (userSelected)="onUserSelected($event)">
+    </app-user-search-box>
+    <label style="margin-top: 8px" nz-checkbox [(ngModel)]="canEdit"
+      >Can edit image?</label
+    >
+  </ng-container>
+</nz-modal>

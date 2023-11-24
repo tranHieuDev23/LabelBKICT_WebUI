@@ -114,6 +114,34 @@ export class RegionSelectorGeometryService {
     throw new Error('Unsupported shape');
   }
 
+  public mouseToCanvasShape(canvas: HTMLCanvasElement, shape: Shape): Shape {
+    if (shape instanceof FreePolygon) {
+      const canvasVertices = shape.getVertices().map((vertex) => this.mouseToCanvasPosition(canvas, vertex));
+      return new FreePolygon(canvasVertices);
+    }
+
+    if (shape instanceof Eclipse) {
+      const pointXOnDiameter = { x: shape.center.x + shape.radiusX, y: shape.center.y };
+      const pointYOnDiameter = { x: shape.center.x, y: shape.center.y + shape.radiusY };
+      const canvasCenter = this.mouseToCanvasPosition(canvas, shape.center);
+      const canvasPointXOnDiameter = this.mouseToCanvasPosition(canvas, pointXOnDiameter);
+      const canvasPointYOnDiameter = this.mouseToCanvasPosition(canvas, pointYOnDiameter);
+      const canvasRadiusX = this.geometryService.getDistance(canvasCenter, canvasPointXOnDiameter);
+      const canvasRadiusY = this.geometryService.getDistance(canvasCenter, canvasPointYOnDiameter);
+      return new Eclipse(canvasCenter, canvasRadiusX, canvasRadiusY);
+    }
+
+    if (shape instanceof Rectangle) {
+      const bottomLeft = shape.getBottomLeft();
+      const topRight = shape.getTopRight();
+      const canvasBottomLeft = this.mouseToCanvasPosition(canvas, bottomLeft);
+      const canvasTopRight = this.mouseToCanvasPosition(canvas, topRight);
+      return new Rectangle(canvasBottomLeft.x, canvasTopRight.x, canvasBottomLeft.y, canvasTopRight.y);
+    }
+
+    throw new Error('Unsupported shape');
+  }
+
   public mouseToCanvasDistance(canvas: HTMLCanvasElement, from: Coordinate, to: Coordinate): number {
     const canvasFrom = this.mouseToCanvasPosition(canvas, from);
     const canvasTo = this.mouseToCanvasPosition(canvas, to);

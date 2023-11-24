@@ -24,9 +24,32 @@ import { EditableRichTextModule } from 'src/app/components/editable-rich-text/ed
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { UserSearchBoxModule } from 'src/app/components/user-search-box/user-search-box.module';
+import { QuillModule } from 'ngx-quill';
+import { AddPoiModalComponent } from './add-poi-modal/add-poi-modal.component';
+import { UpdatePoiModalComponent } from './update-poi-modal/update-poi-modal.component';
+import { RegionInformationComponent } from './region-information/region-information.component';
+import { ManageableUserListComponent } from './manageable-user-list/manageable-user-list.component';
+import { VerifiableUserListComponent } from './verifiable-user-list/verifiable-user-list.component';
+import { ImageSettingsModalComponent } from './image-settings-modal/image-settings-modal.component';
+import { MassDeleteRegionModalComponent } from './mass-delete-region-modal/mass-delete-region-modal.component';
+import { AddManageableUserModalComponent } from './add-manageable-user-modal/add-manageable-user-modal.component';
+import { AddVerifiableUserModalComponent } from './add-verifiable-user-modal/add-verifiable-user-modal.component';
+import { LabelRegionModalComponent } from './label-region-modal/label-region-modal.component';
 
 @NgModule({
-  declarations: [ManageImageComponent],
+  declarations: [
+    ManageImageComponent,
+    AddPoiModalComponent,
+    UpdatePoiModalComponent,
+    RegionInformationComponent,
+    ManageableUserListComponent,
+    VerifiableUserListComponent,
+    ImageSettingsModalComponent,
+    MassDeleteRegionModalComponent,
+    AddManageableUserModalComponent,
+    AddVerifiableUserModalComponent,
+    LabelRegionModalComponent,
+  ],
   imports: [
     CommonModule,
     ManageImageRoutingModule,
@@ -52,6 +75,7 @@ import { UserSearchBoxModule } from 'src/app/components/user-search-box/user-sea
     NzPaginationModule,
     NzCheckboxModule,
     UserSearchBoxModule,
+    QuillModule,
   ],
   exports: [ManageImageComponent],
 })

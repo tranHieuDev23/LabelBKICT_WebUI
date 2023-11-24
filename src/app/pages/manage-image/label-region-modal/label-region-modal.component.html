@@ -1,0 +1,23 @@
+<nz-modal
+  *ngIf="visible"
+  nzTitle="Label region"
+  [nzVisible]="visible"
+  [nzClosable]="false"
+  nzCancelText="Close"
+  (nzOnCancel)="close()"
+  [nzOkText]="null"
+>
+  <div *nzModalContent>
+    <nz-list [nzDataSource]="regionLabelList" nzBordered>
+      <nz-list-item
+        *ngFor="let regionLabel of regionLabelList"
+        class="item"
+        (click)="onRegionLabelClicked(regionLabel)"
+      >
+        <span nz-typography [nzDisabled]="isAddingSelectedRegion">
+          {{ regionLabel.displayName }}
+        </span>
+      </nz-list-item>
+    </nz-list>
+  </div>
+</nz-modal>

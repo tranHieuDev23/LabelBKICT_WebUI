@@ -1,8 +1,8 @@
-import { Region } from 'src/app/services/dataaccess/api';
+import { PointOfInterest, Region } from 'src/app/services/dataaccess/api';
 import { Coordinate, Eclipse, Rectangle, Shape } from './models';
 
 export interface RegionSelectorContent {
-  image: CanvasImageSource | null;
+  image: HTMLImageElement | null;
   imageOrigin: Coordinate;
   zoom: number;
 
@@ -11,6 +11,8 @@ export interface RegionSelectorContent {
 
   drawBoundaryEnabled: boolean;
   drawBoundary: Eclipse;
+
+  pointOfInterestList: PointOfInterest[];
 
   regionList: Region[];
   isRegionListVisible: boolean;
