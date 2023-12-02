@@ -206,7 +206,7 @@
 
       <div nz-row nzJustify="space-between" class="action-buttons">
         <button
-          [disabled]="prevImageID === undefined"
+          [disabled]="prevImageId === undefined"
           nz-col
           nz-button
           (click)="onPreviousClicked()"
@@ -214,7 +214,7 @@
           <i nz-icon nzType="left"></i>Previous
         </button>
         <button
-          [disabled]="nextImageID === undefined"
+          [disabled]="nextImageId === undefined"
           nz-col
           nz-button
           (click)="onNextClicked()"

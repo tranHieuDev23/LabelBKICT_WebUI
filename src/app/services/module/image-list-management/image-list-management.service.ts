@@ -19,12 +19,12 @@ import {
 export class ImageListManagementService {
   constructor(private readonly imageListService: ImageListService, private readonly imagesService: ImagesService) {}
 
-  public async updateImageListImageType(imageIDList: number[], imageTypeID: number): Promise<void> {
-    await this.imageListService.updateImageListImageType(imageIDList, imageTypeID);
+  public async updateImageListImageType(imageIdList: number[], imageTypeID: number): Promise<void> {
+    await this.imageListService.updateImageListImageType(imageIdList, imageTypeID);
   }
 
-  public async deleteImageList(imageIDList: number[]): Promise<void> {
-    await this.imageListService.deleteImageList(imageIDList);
+  public async deleteImageList(imageIdList: number[]): Promise<void> {
+    await this.imageListService.deleteImageList(imageIdList);
   }
 
   public async getImageDetectionTaskList(
@@ -39,8 +39,8 @@ export class ImageListManagementService {
     return this.imageListService.getImageDetectionTaskList(offset, limit, sortOption, filterOptions);
   }
 
-  public async createImageDetectionTaskList(imageIDList: number[]): Promise<void> {
-    await this.imageListService.createImageDetectionTaskList(imageIDList);
+  public async createImageDetectionTaskList(imageIdList: number[]): Promise<void> {
+    await this.imageListService.createImageDetectionTaskList(imageIdList);
   }
 
   public async getUserImageList(
@@ -117,16 +117,16 @@ export class ImageListManagementService {
   }
 
   public async getImagePositionInUserManageableImageList(
-    imageID: number,
+    imageId: number,
     sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<{
     position: number;
     totalImageCount: number;
-    prevImageID: number | undefined;
-    nextImageID: number | undefined;
+    prevImageId: number | undefined;
+    nextImageId: number | undefined;
   }> {
-    return await this.imageListService.getImagePositionInUserManageableImageList(imageID, sortOption, filterOptions);
+    return await this.imageListService.getImagePositionInUserManageableImageList(imageId, sortOption, filterOptions);
   }
 
   public async getImagePositionInUserVerifiableImageList(
@@ -136,17 +136,17 @@ export class ImageListManagementService {
   ): Promise<{
     position: number;
     totalImageCount: number;
-    prevImageID: number | undefined;
-    nextImageID: number | undefined;
+    prevImageId: number | undefined;
+    nextImageId: number | undefined;
   }> {
     return await this.imageListService.getImagePositionInUserVerifiableImageList(imageID, sortOption, filterOptions);
   }
 
-  public async addImageTagListToImageList(imageIDList: number[], imageTagIDList: number[]): Promise<void> {
-    if (imageIDList.length === 0 || imageTagIDList.length === 0) {
+  public async addImageTagListToImageList(imageIdList: number[], imageTagIdList: number[]): Promise<void> {
+    if (imageIdList.length === 0 || imageTagIdList.length === 0) {
       return;
     }
-    await this.imagesService.addImageTagListToImageList(imageIDList, imageTagIDList);
+    await this.imagesService.addImageTagListToImageList(imageIdList, imageTagIdList);
   }
 
   public async createEmptyBookmarkForImageList(idList: number[]): Promise<void> {
@@ -179,5 +179,17 @@ export class ImageListManagementService {
         }
       })
     );
+  }
+
+  public async createUserListCanManageImageList(
+    userIdList: number[],
+    imageIdList: number[],
+    canEdit: boolean
+  ): Promise<void> {
+    this.imagesService.createUserListCanManageImageList(userIdList, imageIdList, canEdit);
+  }
+
+  public async createUserListCanVerifyImageList(userIdList: number[], imageIdList: number[]): Promise<void> {
+    this.imagesService.createUserListCanVerifyImageList(userIdList, imageIdList);
   }
 }

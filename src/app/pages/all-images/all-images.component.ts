@@ -15,7 +15,6 @@ import {
   ImageType,
   OneOrMoreImagesNotFoundError,
   TooManyImagesError,
-  ImageTagGroup,
   ImageTagGroupAndTagList,
   ImageListFilterOptionsWithMetadata,
   ImageNotFoundError,
@@ -27,6 +26,9 @@ import { UserManagementService } from 'src/app/services/module/user-management';
 import { getUniqueValueList } from 'src/app/services/utils/array/unique-values';
 import { JSONCompressService } from 'src/app/services/utils/json-compress/json-compress.service';
 import { PaginationService } from 'src/app/services/utils/pagination/pagination.service';
+import { AddImageTagsModalComponent } from './add-image-tags-modal/add-image-tags-modal.component';
+import { AddManageableUsersModalComponent } from './add-manageable-users-modal/add-manageable-users-modal.component';
+import { AddVerifiableUsersModalComponent } from './add-verifiable-users-modal/add-verifiable-users-modal.component';
 
 const DEFAULT_PAGE_INDEX = 1;
 const DEFAULT_PAGE_SIZE = 12;
@@ -40,6 +42,9 @@ const MAX_SEARCH_USER_RESULT = 10;
 })
 export class AllImagesComponent implements OnInit {
   @ViewChild('contextMenu') public contextMenu: NzDropdownMenuComponent | undefined;
+  @ViewChild('addImageTagsModal') public addImageTagModal: AddImageTagsModalComponent | undefined;
+  @ViewChild('addManageableUsersModal') public addManageableUsersModal: AddManageableUsersModalComponent | undefined;
+  @ViewChild('addVerifiableUsersModal') public addVerifiableUsersModal: AddVerifiableUsersModalComponent | undefined;
 
   public pageIndex: number = DEFAULT_PAGE_INDEX;
   public pageSize: number = DEFAULT_PAGE_SIZE;
@@ -69,12 +74,6 @@ export class AllImagesComponent implements OnInit {
 
   public contextMenuIsBookmarkSelectedImagesVisible: boolean = false;
   public contextMenuIsDeleteBookmarksOfSelectedImagesVisible: boolean = false;
-
-  public isAddImageTagToSelectedImageListModalVisible: boolean = false;
-  public addImageTagToSelectedImageListModalImageTagGroupList: ImageTagGroup[] = [];
-  public addImageTagToSelectedImageListModalImageTagList: ImageTag[][] = [];
-  public addImageTagToSelectedImageListModalCurrentImageTagList: ImageTag[] = [];
-  public addImageTagToSelectedImageListModalAddedImageTagList: ImageTag[] = [];
 
   constructor(
     private readonly imageListManagementService: ImageListManagementService,
@@ -279,7 +278,7 @@ export class AllImagesComponent implements OnInit {
   }
 
   public async onAddImageTagToSelectedImageListClicked(): Promise<void> {
-    if (this.selectedIndexList.length === 0) {
+    if (this.selectedIndexList.length === 0 || !this.addImageTagModal) {
       return;
     }
 
@@ -293,13 +292,13 @@ export class AllImagesComponent implements OnInit {
       return;
     }
 
-    const selectedImageTypeIDList = getUniqueValueList(
+    const selectedImageTypeIdList = getUniqueValueList(
       this.selectedIndexList.map((index) => this.imageList[index].imageType?.id || 0)
     );
     let imageTagGroupAndTagListOfImageTypeList: ImageTagGroupAndTagList[] = [];
     try {
       imageTagGroupAndTagListOfImageTypeList =
-        await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(selectedImageTypeIDList);
+        await this.imageTypeManagementService.getImageTagGroupListOfImageTypeList(selectedImageTypeIdList);
     } catch (e) {
       this.handleError('Failed to retrieve eligible image tag group list', e);
       return;
@@ -307,48 +306,31 @@ export class AllImagesComponent implements OnInit {
 
     const intersectionImageTagGroupAndTagListOfImageTypeList =
       this.imageTagManagementService.getIntersectionImageTagGroupAndTagList(imageTagGroupAndTagListOfImageTypeList);
-    this.isAddImageTagToSelectedImageListModalVisible = true;
-    this.addImageTagToSelectedImageListModalImageTagGroupList =
-      intersectionImageTagGroupAndTagListOfImageTypeList.imageTagGroupList;
-    this.addImageTagToSelectedImageListModalImageTagList =
-      intersectionImageTagGroupAndTagListOfImageTypeList.imageTagList;
-    this.addImageTagToSelectedImageListModalCurrentImageTagList = this.imageTagManagementService.getUnionImageTagList(
-      this.selectedIndexList.map((index) => this.imageTagList[index])
+
+    const selectedImageIdList = this.selectedIndexList.map((index) => this.imageList[index].id);
+
+    this.addImageTagModal.open(
+      intersectionImageTagGroupAndTagListOfImageTypeList.imageTagGroupList,
+      intersectionImageTagGroupAndTagListOfImageTypeList.imageTagList,
+      this.imageTagManagementService.getUnionImageTagList(
+        this.selectedIndexList.map((index) => this.imageTagList[index])
+      ),
+      selectedImageIdList
     );
-    this.addImageTagToSelectedImageListModalAddedImageTagList = [];
   }
 
-  public onAddImageTagToSelectedImageListModalImageTagAdded(addedImageTag: ImageTag): void {
-    this.addImageTagToSelectedImageListModalAddedImageTagList = [
-      ...this.addImageTagToSelectedImageListModalAddedImageTagList,
-      addedImageTag,
-    ];
+  public async onAddImageTagsModalOk(): Promise<void> {
+    await this.getImageListFromPaginationInfo();
   }
 
-  public onAddImageTagToSelectedImageListModalImageTagDeleted(deletedImageTag: ImageTag): void {
-    this.addImageTagToSelectedImageListModalAddedImageTagList =
-      this.addImageTagToSelectedImageListModalAddedImageTagList.filter(
-        (imageTag) => imageTag.id !== deletedImageTag.id
-      );
+  public async onAddManageableUsersToSelectedImageListClicked(): Promise<void> {
+    const selectedImageIdList = this.selectedIndexList.map((index) => this.imageList[index].id);
+    this.addManageableUsersModal?.open(selectedImageIdList);
   }
 
-  public async onAddImageTagToSelectedImageListModalOk(): Promise<void> {
-    const selectedImageIDList = this.selectedIndexList.map((index) => this.imageList[index].id);
-    const addedImageTagIDList = this.addImageTagToSelectedImageListModalAddedImageTagList.map(
-      (imageTag) => imageTag.id
-    );
-    try {
-      await this.imageListManagementService.addImageTagListToImageList(selectedImageIDList, addedImageTagIDList);
-      this.notificationService.success('Added image tags to selected image(s) successfully', '');
-      this.isAddImageTagToSelectedImageListModalVisible = false;
-      await this.getImageListFromPaginationInfo();
-    } catch (e) {
-      this.handleError('Failed to add image tags to selected image(s)', e);
-    }
-  }
-
-  public onAddImageTagToSelectedImageListModalCancel(): void {
-    this.isAddImageTagToSelectedImageListModalVisible = false;
+  public async onAddVerifiableUsersToSelectedImageListClicked(): Promise<void> {
+    const selectedImageIdList = this.selectedIndexList.map((index) => this.imageList[index].id);
+    this.addVerifiableUsersModal?.open(selectedImageIdList);
   }
 
   public async onBookmarkSelectedImagesClicked(): Promise<void> {

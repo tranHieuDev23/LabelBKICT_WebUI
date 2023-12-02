@@ -103,8 +103,8 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
 
   public position: number | undefined;
   public totalImageCount: number | undefined;
-  public prevImageID: number | undefined;
-  public nextImageID: number | undefined;
+  public prevImageId: number | undefined;
+  public nextImageId: number | undefined;
 
   public isCreatingImageBookmark = false;
   public isDeletingImageBookmark = false;
@@ -245,11 +245,11 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
   ): Promise<void> {
     this.position = undefined;
     this.totalImageCount = undefined;
-    this.prevImageID = undefined;
-    this.nextImageID = undefined;
+    this.prevImageId = undefined;
+    this.nextImageId = undefined;
 
     try {
-      const { position, totalImageCount, prevImageID, nextImageID } =
+      const { position, totalImageCount, prevImageId, nextImageId } =
         await this.imageListManagementService.getImagePositionInUserVerifiableImageList(
           imageID,
           sortOption,
@@ -257,8 +257,8 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
         );
       this.position = position;
       this.totalImageCount = totalImageCount;
-      this.prevImageID = prevImageID;
-      this.nextImageID = nextImageID;
+      this.prevImageId = prevImageId;
+      this.nextImageId = nextImageId;
     } catch (e) {
       this.handleError('Failed to load image position in list', e);
     }
@@ -911,10 +911,10 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
   }
 
   public async onPreviousClicked(): Promise<void> {
-    if (this.prevImageID === undefined) {
+    if (this.prevImageId === undefined) {
       return;
     }
-    this.router.navigate([`/verify-image/${this.prevImageID}`], {
+    this.router.navigate([`/verify-image/${this.prevImageId}`], {
       queryParams: {
         sort: this.imageListSortOption,
         filter: this.jsonCompressService.compress(this.filterOptions),
@@ -923,10 +923,10 @@ export class VerifyImageComponent implements OnInit, AfterContentInit, OnDestroy
   }
 
   public async onNextClicked(): Promise<void> {
-    if (this.nextImageID === undefined) {
+    if (this.nextImageId === undefined) {
       return;
     }
-    this.router.navigate([`/verify-image/${this.nextImageID}`], {
+    this.router.navigate([`/verify-image/${this.nextImageId}`], {
       queryParams: {
         sort: this.imageListSortOption,
         filter: this.jsonCompressService.compress(this.filterOptions),

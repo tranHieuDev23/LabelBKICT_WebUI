@@ -436,18 +436,18 @@ export class ImageListService {
   }
 
   public async getImagePositionInUserManageableImageList(
-    imageID: number,
+    imageId: number,
     sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<{
     position: number;
     totalImageCount: number;
-    prevImageID: number | undefined;
-    nextImageID: number | undefined;
+    prevImageId: number | undefined;
+    nextImageId: number | undefined;
   }> {
     try {
       const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
-      const response = await this.axios.get(`/api/images/${imageID}/manageable-images-position`, {
+      const response = await this.axios.get(`/api/images/${imageId}/manageable-images-position`, {
         params: {
           sort_order: sortOption,
           ...filterOptionsQueryParams,
@@ -459,9 +459,9 @@ export class ImageListService {
 
       const position = +response.data.position;
       const totalImageCount = +response.data.total_image_count;
-      const prevImageID = response.data.prev_image_id;
-      const nextImageID = response.data.next_image_id;
-      return { position, totalImageCount, prevImageID, nextImageID };
+      const prevImageId = response.data.prev_image_id;
+      const nextImageId = response.data.next_image_id;
+      return { position, totalImageCount, prevImageId, nextImageId };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;
@@ -480,18 +480,18 @@ export class ImageListService {
   }
 
   public async getImagePositionInUserVerifiableImageList(
-    imageID: number,
+    imageId: number,
     sortOption: ImageListSortOption,
     filterOptions: ImageListFilterOptions
   ): Promise<{
     position: number;
     totalImageCount: number;
-    prevImageID: number | undefined;
-    nextImageID: number | undefined;
+    prevImageId: number | undefined;
+    nextImageId: number | undefined;
   }> {
     try {
       const filterOptionsQueryParams = this.getQueryParamsFromFilterOptions(filterOptions);
-      const response = await this.axios.get(`/api/images/${imageID}/verifiable-images-position`, {
+      const response = await this.axios.get(`/api/images/${imageId}/verifiable-images-position`, {
         params: {
           sort_order: sortOption,
           ...filterOptionsQueryParams,
@@ -503,9 +503,9 @@ export class ImageListService {
 
       const position = +response.data.position;
       const totalImageCount = +response.data.total_image_count;
-      const prevImageID = response.data.prev_image_id;
-      const nextImageID = response.data.next_image_id;
-      return { position, totalImageCount, prevImageID, nextImageID };
+      const prevImageId = response.data.prev_image_id;
+      const nextImageId = response.data.next_image_id;
+      return { position, totalImageCount, prevImageId, nextImageId };
     } catch (e) {
       if (!axios.isAxiosError(e)) {
         throw e;

@@ -10,9 +10,21 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { AddableTagListModule } from 'src/app/components/addable-tag-list/addable-tag-list.module';
+import { AddImageTagsModalComponent } from './add-image-tags-modal/add-image-tags-modal.component';
+import { UserSearchBoxModule } from 'src/app/components/user-search-box/user-search-box.module';
+import { NzListModule } from 'ng-zorro-antd/list';
+import { FormsModule } from '@angular/forms';
+import { AddManageableUsersModalComponent } from './add-manageable-users-modal/add-manageable-users-modal.component';
+import { AddVerifiableUsersModalComponent } from './add-verifiable-users-modal/add-verifiable-users-modal.component';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 
 @NgModule({
-  declarations: [MyImagesComponent],
+  declarations: [
+    MyImagesComponent,
+    AddImageTagsModalComponent,
+    AddManageableUsersModalComponent,
+    AddVerifiableUsersModalComponent,
+  ],
   imports: [
     CommonModule,
     MyImagesRoutingModule,
@@ -23,6 +35,10 @@ import { AddableTagListModule } from 'src/app/components/addable-tag-list/addabl
     NzDropDownModule,
     NzModalModule,
     AddableTagListModule,
+    UserSearchBoxModule,
+    NzListModule,
+    FormsModule,
+    NzCheckboxModule,
   ],
   exports: [MyImagesComponent],
 })

@@ -62,6 +62,12 @@
     <li nz-menu-item (click)="onAddImageTagToSelectedImageListClicked()">
       Add image tags to selected image(s)
     </li>
+    <li nz-menu-item (click)="onAddManageableUsersToSelectedImageListClicked()">
+      Add manageable users to selected image(s)
+    </li>
+    <li nz-menu-item (click)="onAddVerifiableUsersToSelectedImageListClicked()">
+      Add verifiable users to selected image(s)
+    </li>
     <li
       nz-menu-item
       (click)="onRequestRegionDetectionForSelectedImagesClicked()"
@@ -89,32 +95,13 @@
   </ul>
 </nz-dropdown-menu>
 
-<nz-modal
-  [(nzVisible)]="isAddImageTagToSelectedImageListModalVisible"
-  nzTitle="Add images tags to selected image(s)"
-  [nzOkDisabled]="
-    addImageTagToSelectedImageListModalAddedImageTagList.length === 0
-  "
-  (nzOnOk)="onAddImageTagToSelectedImageListModalOk()"
-  (nzOnCancel)="onAddImageTagToSelectedImageListModalCancel()"
->
-  <ng-container *nzModalContent>
-    <app-addable-tag-list
-      [allImageTagGroupList]="
-        addImageTagToSelectedImageListModalImageTagGroupList
-      "
-      [allImageTagList]="addImageTagToSelectedImageListModalImageTagList"
-      [currentImageTagList]="
-        addImageTagToSelectedImageListModalCurrentImageTagList
-      "
-      [addedImageTagList]="addImageTagToSelectedImageListModalAddedImageTagList"
-      (imageTagAdded)="
-        onAddImageTagToSelectedImageListModalImageTagAdded($event)
-      "
-      (imageTagDeleted)="
-        onAddImageTagToSelectedImageListModalImageTagDeleted($event)
-      "
-    >
-    </app-addable-tag-list>
-  </ng-container>
-</nz-modal>
+<app-add-image-tags-modal
+  #addImageTagsModal
+  (ok)="onAddImageTagsModalOk()"
+></app-add-image-tags-modal>
+<app-add-manageable-users-modal
+  #addManageableUsersModal
+></app-add-manageable-users-modal>
+<app-add-verifiable-users-modal
+  #addVerifiableUsersModal
+></app-add-verifiable-users-modal>

@@ -1,0 +1,19 @@
+<nz-modal
+  [(nzVisible)]="visible"
+  nzTitle="Add images tags to selected image(s)"
+  [nzOkDisabled]="addedImageTagList.length === 0"
+  (nzOnOk)="onOk()"
+  (nzOnCancel)="onCancel()"
+>
+  <ng-container *nzModalContent>
+    <app-addable-tag-list
+      [allImageTagGroupList]="allImageTagGroupList"
+      [allImageTagList]="allImageTagList"
+      [currentImageTagList]="currentImageTagList"
+      [addedImageTagList]="addedImageTagList"
+      (imageTagAdded)="onImageTagAdded($event)"
+      (imageTagDeleted)="onImageTagDeleted($event)"
+    >
+    </app-addable-tag-list>
+  </ng-container>
+</nz-modal>

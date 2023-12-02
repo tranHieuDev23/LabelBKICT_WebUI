@@ -273,12 +273,16 @@ export class ManageImageComponent implements OnInit, AfterContentInit, OnDestroy
     this.nextImageID = undefined;
 
     try {
-      const { position, totalImageCount, prevImageID, nextImageID } =
-        await this.imageListManagementService.getImagePositionInUserManageableImageList(
-          imageID,
-          sortOption,
-          filterOptions
-        );
+      const {
+        position,
+        totalImageCount,
+        prevImageId: prevImageID,
+        nextImageId: nextImageID,
+      } = await this.imageListManagementService.getImagePositionInUserManageableImageList(
+        imageID,
+        sortOption,
+        filterOptions
+      );
       this.position = position;
       this.totalImageCount = totalImageCount;
       this.prevImageID = prevImageID;

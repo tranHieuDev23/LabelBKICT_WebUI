@@ -84,6 +84,24 @@ export class ImageOrPointOfInterestNotFound extends Error {
   }
 }
 
+export class ImageOrUserNotFoundError extends Error {
+  constructor() {
+    super('Cannot find image or user');
+  }
+}
+
+export class UserCannotBeAddedToManageableUserListError extends Error {
+  constructor() {
+    super('User cannot be added to manageable user list of image');
+  }
+}
+
+export class UserCannotBeAddedToVerifiableUserListError extends Error {
+  constructor() {
+    super('User cannot be added to verifiable user list of image');
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -708,6 +726,61 @@ export class ImagesService {
           throw new ImageNotFoundError();
         case HttpStatusCode.Conflict:
           throw new UserNotInListError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async createUserListCanManageImageList(
+    userIdList: number[],
+    imageIdList: number[],
+    canEdit: boolean
+  ): Promise<void> {
+    try {
+      await this.axios.post(`/api/images/manageable-users`, {
+        image_id_list: imageIdList,
+        user_id_list: userIdList,
+        can_edit: canEdit,
+      });
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageOrUserNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserCannotBeAddedToManageableUserListError();
+        default:
+          throw new UnknownAPIError(e);
+      }
+    }
+  }
+
+  public async createUserListCanVerifyImageList(userIdList: number[], imageIdList: number[]): Promise<void> {
+    try {
+      await this.axios.post(`/api/images/verifiable-users`, {
+        image_id_list: imageIdList,
+        user_id_list: userIdList,
+      });
+    } catch (e) {
+      if (!axios.isAxiosError(e)) {
+        throw e;
+      }
+      switch (e.response?.status) {
+        case HttpStatusCode.Unauthorized:
+          throw new UnauthenticatedError();
+        case HttpStatusCode.Forbidden:
+          throw new UnauthorizedError();
+        case HttpStatusCode.NotFound:
+          throw new ImageOrUserNotFoundError();
+        case HttpStatusCode.Conflict:
+          throw new UserCannotBeAddedToVerifiableUserListError();
         default:
           throw new UnknownAPIError(e);
       }
