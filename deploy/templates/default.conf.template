@@ -7,10 +7,6 @@ server {
     proxy_pass http://${GATEWAY_HOST}:${GATEWAY_PORT}/api;
   }
 
-  location /kibana {
-    proxy_pass http://${KIBANA_HOST}:${KIBANA_PORT}/kibana;
-  }
-
   location /static/ {
     limit_except GET {
       deny all;
